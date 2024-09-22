@@ -1,17 +1,17 @@
 ﻿@page "/"
 @using System.ComponentModel.DataAnnotations;
-@using System.Diagnostics
+@using System.Diagnostics;
 @using System.Net.Http.Headers;
 @using System.IO;
 @using System.Net.Http;
 @using System.Threading.Tasks;
 @using System.Xml.Linq;
+@using Microsoft.Maui.Controls;
 
 <h3>Configuração de Rede Wi-Fi</h3>
 
 <EditForm Model="@wifiConfig" OnValidSubmit="SubmitForm">
     <DataAnnotationsValidator />
-    
 
     <div class="form-group">
         <label for="ssid">SSID (Nome da Rede)</label>
@@ -63,44 +63,78 @@
     <button type="submit" style="margin-top:10px;" class="btn btn-primary">Salvar Configurações</button>
 </EditForm>
 
+@if (showErrorMessage)
+{
+    <div class="alert alert-danger" style="margin-top: 10px;">
+        Verifique a conexão do Wi-Fi da Cuora Max ou desabilite sua conexão com os dados móveis.
+    </div>
+}
+
 @code {
     private WifiConfigModel wifiConfig = new WifiConfigModel();
+    private bool showErrorMessage = false;
 
     private async void SubmitForm()
     {
         string url = "http://192.168.0.1/export/config";
         string username = "admin";
         string password = "admin";
-        string filePath = "C:\\Users\\Systel\\Downloads\\Suporte Max e Qendra\\Scripts configuracion WiFi MAX- V3 para Rev E13\\Config extraido\\config_export.txt";
+        string filePath;
+
+        if (OperatingSystem.IsWindows())
+        {
+            filePath = "C:\\Users\\Systel\\Downloads\\Suporte Max e Qendra\\Scripts configuracion WiFi MAX- V3 para Rev E13\\Config extraido\\config_export.txt";
+        }
+        else if (DeviceInfo.Platform == DevicePlatform.Android)
+        {
+            filePath = Path.Combine(FileSystem.AppDataDirectory, "config_export.txt");
+        }
+        else
+        {
+            Debug.WriteLine("Plataforma não suportada");
+            return; // Saia do método se a plataforma não for suportada
+        }
+
+        if (string.IsNullOrEmpty(filePath))
+        {
+            Debug.WriteLine("Erro: O caminho do arquivo não foi definido.");
+            return; // Saia do método se filePath não estiver definido
+        }
 
         var handler = new HttpClientHandler
             {
                 Credentials = new System.Net.NetworkCredential(username, password)
             };
 
-        using (var client = new HttpClient(handler))
+        try
         {
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-            HttpResponseMessage response = await client.PostAsync(url, null);
-
-            if (response.IsSuccessStatusCode)
+            using (var client = new HttpClient(handler))
             {
-                string responseData = await response.Content.ReadAsStringAsync();
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-                // Salva a resposta em um arquivo de texto
+                HttpResponseMessage response = await client.PostAsync(url, null);
+                response.EnsureSuccessStatusCode();
+
+                string responseData = await response.Content.ReadAsStringAsync();
                 await File.WriteAllTextAsync(filePath, responseData);
 
                 Debug.WriteLine($"Config exportado e salvo no arquivo: {filePath}");
 
-                // Lê o arquivo e extrai o valor do campo <value>
                 string ssidValue = ExtractValueFromXml(filePath, "SSID");
                 Debug.WriteLine($"SSID extraído: {ssidValue}");
+
+                showErrorMessage = false; // Limpar a mensagem de erro em caso de sucesso
             }
-            else
-            {
-                Debug.WriteLine($"Erro: {response.StatusCode}");
-            }
+        }
+        catch (HttpRequestException ex)
+        {
+            Debug.WriteLine($"Erro na requisição: {ex.Message}");
+            showErrorMessage = true; // Exibir mensagem de erro
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Erro ao processar a requisição: {ex.Message}");
+            showErrorMessage = true; // Exibir mensagem de erro
         }
     }
 

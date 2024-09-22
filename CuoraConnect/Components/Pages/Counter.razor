@@ -1,16 +1,52 @@
 ﻿@page "/counter"
+@using CuoraConnect.Services
+@using System.Diagnostics;
+@inject INetworkService NetworkService
+@inject IJSRuntime JS
 
-<h1>Counter</h1>
+<h3>Informações da Rede</h3>
 
-<p role="status">Current count: @currentCount</p>
+<p>SSID: @ssid</p>
+<p>Gateway Padrão: @gateway</p>
+<p>IP Local: @localIP</p>
+<p>IPs Disponíveis: @availableIP</p>
 
-<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+<button @onclick="GetNetworkInfo">Obter Informações da Rede</button>
 
 @code {
-    private int currentCount = 0;
+    private string ssid = "SSID Desconhecido";
+    private string gateway = "Gateway Padrão Desconhecido";
+    private string localIP = "IP Local Desconhecido";
+    private string availableIP = "IP Disponível Desconhecido"; 
 
-    private void IncrementCount()
+
+    private async Task GetNetworkInfo()
     {
-        currentCount++;
+        Debug.WriteLine("Tentando obter informações da rede...");
+        try
+        {
+            Debug.WriteLine("Serviço de rede obtido.");
+
+            // Obtém o SSID
+            ssid = await NetworkService.GetCurrentSSID();
+            Debug.WriteLine($"SSID: {ssid}");
+
+            // Obtém o Gateway Padrão
+            gateway = NetworkService.GetDefaultGateway();
+            Debug.WriteLine($"Gateway Padrão: {gateway}");
+
+            // Obtém o IP Local
+            localIP = NetworkService.GetLocalIPAddress();
+            Debug.WriteLine($"IP Local: {localIP}");
+
+            // Uncomment se necessário
+            availableIP = NetworkService.GetAvailableIPAddress();
+            Debug.WriteLine($"IP Disponível: {availableIP}");
+        }
+        catch (Exception ex)
+        {
+            ssid = $"Erro: {ex.Message}";
+            Debug.WriteLine($"Erro: {ex.Message}");
+        }
     }
 }
