@@ -179,27 +179,57 @@ namespace CuoraConnect.Platforms.Android
             for (int i = 1; i <= 254; i++)
             {
                 string ip = subnetPrefix + i;
+
                 if (ip != localIPAddress)
                 {
                     try
                     {
-                        Ping ping = new Ping();
-                        PingReply reply = ping.Send(ip, 100);
-                        if (reply.Status != IPStatus.Success)
+                        int count = 0;
+                        int failedPingCount = 0;
+
+                        while (count < 5)
                         {
-                            // IP está livre
-                            return ip; // Retorna o primeiro IP disponível encontrado
+                            count++;
+                            try
+                            {
+                                Ping ping = new Ping();
+                                PingReply reply = ping.Send(ip, 100); // Timeout de 100ms
+
+                                // Se o ping for bem-sucedido, o IP está em uso
+                                if (reply.Status == IPStatus.Success)
+                                {
+                                    // Saímos do loop e vamos testar o próximo IP
+                                    break;
+                                }
+                                else
+                                {
+                                    failedPingCount++;
+                                }
+
+                                // Se falhou nos 5 pings, o IP pode ser considerado disponível
+                                if (failedPingCount == 5)
+                                {
+                                    return ip; // IP está disponível
+                                }
+                            }
+                            catch
+                            {
+                                failedPingCount++;
+                                if (failedPingCount == 5)
+                                {
+                                    return ip; // IP está disponível mesmo com exceção
+                                }
+                            }
                         }
                     }
                     catch
                     {
-                        // Ignorar erros no ping
+                        // Ignorar exceções externas ao ping
                     }
                 }
             }
 
             return "Nenhum IP disponível encontrado.";
         }
-
     }
-}
+    }

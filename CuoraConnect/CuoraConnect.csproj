@@ -48,12 +48,14 @@
 	</PropertyGroup>
 
 
+		
+	
 	<ItemGroup>
-        <!-- App Icon -->
-        <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
+		<!-- Icon -->
+		<MauiIcon Include="Resources\AppIcon\appicon.svg" Color="#ffffff" BorderColor="Transparent" BaseSize="48x48"/>
 
-        <!-- Splash Screen -->
-        <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
+		<!-- Splash Screen -->
+        <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#75a8d9" BaseSize="128,128" />
 
         <!-- Images -->
         <MauiImage Include="Resources\Images\*" />
