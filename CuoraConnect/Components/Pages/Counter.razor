@@ -9,7 +9,14 @@
 <p>SSID: @ssid</p>
 <p>Gateway Padrão: @gateway</p>
 <p>IP Local: @localIP</p>
-<p>IPs Disponíveis: @availableIP</p>
+<p>IP Disponível: @availableIP</p>
+<p>Redes Wi-Fi disponíveis:</p>
+<ul>
+    @foreach (var Ssid in networks)
+    {
+        <li>@Ssid</li>
+    }
+</ul>
 
 <button @onclick="GetNetworkInfo">Obter Informações da Rede</button>
 
@@ -17,8 +24,8 @@
     private string ssid = "SSID Desconhecido";
     private string gateway = "Gateway Padrão Desconhecido";
     private string localIP = "IP Local Desconhecido";
-    private string availableIP = "IP Disponível Desconhecido"; 
-
+    private string availableIP = "IP Disponível Desconhecido";
+    private List<string> networks = new List<string>(); // Adicione esta linha
 
     private async Task GetNetworkInfo()
     {
@@ -39,9 +46,13 @@
             localIP = NetworkService.GetLocalIPAddress();
             Debug.WriteLine($"IP Local: {localIP}");
 
-            // Uncomment se necessário
+            // Obtém o IP disponível
             availableIP = NetworkService.GetAvailableIPAddress();
             Debug.WriteLine($"IP Disponível: {availableIP}");
+
+            // Obtém redes Wi-Fi disponíveis
+            networks = NetworkService.GetAvailableWifiNetworks(); // Certifique-se de que este método seja assíncrono
+            Debug.WriteLine($"Redes Wi-Fi disponíveis: {string.Join(", ", networks)}");
         }
         catch (Exception ex)
         {

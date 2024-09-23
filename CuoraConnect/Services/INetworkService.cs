@@ -9,5 +9,7 @@ namespace CuoraConnect.Services
         string GetLocalIPAddress();
         string GetAvailableIPAddress();
         string GetDefaultGateway();
+
+        List<string> GetAvailableWifiNetworks();
     }
 }

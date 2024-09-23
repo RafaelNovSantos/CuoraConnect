@@ -143,6 +143,28 @@ namespace CuoraConnect.Platforms.Android
             return "IP Não Encontrado";
         }
 
+        public List<string> GetAvailableWifiNetworks()
+        {
+            var context = Application.Context;
+            var wifiManager = (WifiManager)context.GetSystemService(Context.WifiService);
+
+            // Inicia o escaneamento de redes Wi-Fi
+            wifiManager.StartScan();
+
+            // Obtém os resultados do escaneamento
+            var results = wifiManager.ScanResults;
+
+            // Cria uma lista para armazenar os SSIDs
+            List<string> availableNetworks = new List<string>();
+
+            foreach (var scanResult in results)
+            {
+                availableNetworks.Add(scanResult.Ssid);
+            }
+
+            return availableNetworks;
+        }
+
         public string GetAvailableIPAddress()
         {
             string localIPAddress = GetLocalIPAddress();
