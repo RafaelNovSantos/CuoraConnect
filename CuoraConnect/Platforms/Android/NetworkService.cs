@@ -176,7 +176,7 @@ namespace CuoraConnect.Platforms.Android
             string[] ipParts = localIPAddress.Split('.');
             string subnetPrefix = $"{ipParts[0]}.{ipParts[1]}.{ipParts[2]}.";
 
-            for (int i = 1; i <= 254; i++)
+            for (int i = 70; i <= 254; i++)
             {
                 string ip = subnetPrefix + i;
 
