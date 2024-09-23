@@ -42,17 +42,27 @@
     <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-android|AnyCPU'">
       <AndroidPackageFormat>apk</AndroidPackageFormat>
     </PropertyGroup>
+	
+	<PropertyGroup>
+    
+    <BlazorWebAssemblyEnableExperimentalWasmSatF2iConversions>true</BlazorWebAssemblyEnableExperimentalWasmSatF2iConversions>
+  
+</PropertyGroup>
+
 
 	<PropertyGroup>
 		<AndroidSdkDirectory>D:\Android\android-sdk</AndroidSdkDirectory>
 	</PropertyGroup>
 
+	<PropertyGroup>
+		<EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
+	</PropertyGroup>
 
-		
-	
+
+
 	<ItemGroup>
 		<!-- Icon -->
-		<MauiIcon Include="Resources\AppIcon\appicon.svg" Color="#ffffff" BorderColor="Transparent" BaseSize="48x48"/>
+		<MauiIcon Include="Resources\AppIcon\appicon.svg" Color="#ffffff" BorderColor="Transparent" BaseSize="48x48" />
 
 		<!-- Splash Screen -->
         <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#75a8d9" BaseSize="128,128" />
@@ -78,7 +88,12 @@
         <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)" />
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
+        <PackageReference Include="Microsoft.Maui.Essentials" Version="8.0.90" />
         <PackageReference Include="RestSharp" Version="112.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="wwwroot\import_conf_xpico\" />
     </ItemGroup>
 
 </Project>
