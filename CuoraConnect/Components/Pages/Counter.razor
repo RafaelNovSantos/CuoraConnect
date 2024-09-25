@@ -6,26 +6,47 @@
 
 <h3>Informações da Rede</h3>
 
-<p>SSID: @ssid</p>
-<p>Gateway Padrão: @gateway</p>
-<p>IP Local: @localIP</p>
-<p>IP Disponível: @availableIP</p>
-<p>Redes Wi-Fi disponíveis:</p>
-<ul>
-    @foreach (var Ssid in networks)
-    {
-        <li>@Ssid</li>
-    }
-</ul>
+<div class="container">
+    <div class="form-group">
+        <label for="ssidInput">SSID</label>
+        <input type="text" class="form-control" id="ssidInput" @bind="ssid" />
+    </div>
 
-<button @onclick="GetNetworkInfo">Obter Informações da Rede</button>
+    <div class="form-group">
+        <label for="gatewayInput">Gateway Padrão</label>
+        <input type="text" class="form-control" id="gatewayInput" @bind="gateway" />
+    </div>
+
+    <div class="form-group">
+        <label for="localIPInput">IP Local</label>
+        <input type="text" class="form-control mt-01" id="localIPInput" @bind="localIP" />
+    </div>
+
+    <div class="form-group">
+        <label for="availableIPInput">IP Disponível</label>
+        <input type="text" class="form-control mt-01" id="availableIPInput" @bind="availableIP" />
+    </div>
+
+    <div class="form-group">
+        <label>Redes Wi-Fi disponíveis</label>
+        <ul class="list-group">
+            @foreach (var Ssid in networks)
+            {
+                <li class="list-group-item">@Ssid</li>
+            }
+        </ul>
+    </div>
+
+    <button class="btn btn-primary mb-2" @onclick="GetNetworkInfo">Obter Informações da Rede</button>
+    <button class="btn btn-success mb-2" @onclick="SaveNetworkInfo">Salvar Alterações</button>
+</div>
 
 @code {
-    private string ssid = "SSID Desconhecido";
-    private string gateway = "Gateway Padrão Desconhecido";
-    private string localIP = "IP Local Desconhecido";
-    private string availableIP = "IP Disponível Desconhecido";
-    private List<string> networks = new List<string>(); // Adicione esta linha
+    private string ssid = "SSID";
+    private string gateway = "Gateway Padrão";
+    private string localIP = "IP Local";
+    private string availableIP = "IP Disponível";
+    private List<string> networks = new List<string>();
 
     private async Task GetNetworkInfo()
     {
@@ -51,7 +72,7 @@
             Debug.WriteLine($"IP Disponível: {availableIP}");
 
             // Obtém redes Wi-Fi disponíveis
-            networks = NetworkService.GetAvailableWifiNetworks(); // Certifique-se de que este método seja assíncrono
+            networks = NetworkService.GetAvailableWifiNetworks();
             Debug.WriteLine($"Redes Wi-Fi disponíveis: {string.Join(", ", networks)}");
         }
         catch (Exception ex)
@@ -59,5 +80,18 @@
             ssid = $"Erro: {ex.Message}";
             Debug.WriteLine($"Erro: {ex.Message}");
         }
+    }
+
+    private void SaveNetworkInfo()
+    {
+        Debug.WriteLine("Salvando alterações...");
+        // Aqui você pode implementar a lógica para salvar as alterações
+        Debug.WriteLine($"Novo SSID: {ssid}");
+        Debug.WriteLine($"Novo Gateway: {gateway}");
+        Debug.WriteLine($"Novo IP Local: {localIP}");
+        Debug.WriteLine($"Novo IP Disponível: {availableIP}");
+
+        // Supondo que você tenha um método para atualizar as configurações
+        // NetworkService.UpdateNetworkSettings(ssid, gateway, localIP, availableIP);
     }
 }

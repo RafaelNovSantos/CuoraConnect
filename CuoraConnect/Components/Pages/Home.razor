@@ -1,22 +1,229 @@
 ﻿@page "/"
+@using System.Reflection
+@using System.IO
+@using System.Diagnostics
+@using System.Net
+@using System.Security.Cryptography
+@using System.Text
+@using System.Text.RegularExpressions
 @using CuoraConnect.Services
 @inject IFileUploadService FileUploadService
-@inject DigestAuthService DigestAuthService
 
-<h3>Gerador XML</h3>
+<h3>Enviar Configuração</h3>
 
-<button @onclick="GenerateXml">Gerar XML</button>
+<button @onclick="EnviarConfig">Enviar Configuração</button>
+
+@if (statusMessage != null)
+{
+    <p>@statusMessage</p>
+}
 
 @code {
-    private async void GenerateXml()
-    {
-        FileUploadService.SaveXmlToFile();
-        // Você pode adicionar lógica adicional para exibir uma mensagem ou atualizar a interface do usuário
+    private static readonly HttpClient client = new HttpClient();
+    private string? statusMessage;
 
+    private async Task EnviarConfig()
+    {
+        Debug.WriteLine("Iniciando envio de configuração...");
+
+        FileUploadService.SaveXmlToFile();
+
+        // Função para calcular o hash MD5 de uma string
+        string Md5Hash(string data)
+        {
+            Debug.WriteLine($"Calculando hash MD5 para: {data}");
+            using var md5 = MD5.Create();
+            byte[] hashBytes = md5.ComputeHash(Encoding.UTF8.GetBytes(data));
+            StringBuilder sb = new StringBuilder();
+            foreach (byte b in hashBytes)
+            {
+                sb.Append(b.ToString("x2"));
+            }
+            Debug.WriteLine($"Hash MD5 calculado: {sb}");
+            return sb.ToString();
+        }
+
+        // Função para extrair valores dos parâmetros do cabeçalho WWW-Authenticate
+        Dictionary<string, string> ExtractDigestParts(string header)
+        {
+            Debug.WriteLine($"Extraindo partes do cabeçalho WWW-Authenticate: {header}");
+            var values = new Dictionary<string, string>();
+            var pattern = new Regex(@"(\w+)=[\""']?([^\"",]+)[\""']?");
+            var matches = pattern.Matches(header);
+
+            foreach (Match match in matches)
+            {
+                values[match.Groups[1].Value] = match.Groups[2].Value;
+                Debug.WriteLine($"Extraído: {match.Groups[1].Value} = {match.Groups[2].Value}");
+            }
+
+            return values;
+        }
+
+        // Função para realizar a autenticação digest com MD5 e enviar o arquivo
+        async Task<HttpWebResponse> DigestAuthWithFile(string urlString, string username, string password, string filePath)
+        {
+            Debug.WriteLine($"Iniciando autenticação Digest para URL: {urlString}");
+            var url = new Uri(urlString);
+            var request = (HttpWebRequest)WebRequest.Create(url);
+            request.Method = "POST";
+
+            // Primeira requisição sem autenticação para obter o desafio digest
+            HttpWebResponse httpResponse;
+            try
+            {
+                Debug.WriteLine("Enviando primeira requisição sem autenticação...");
+                httpResponse = (HttpWebResponse)await request.GetResponseAsync();
+                if (httpResponse.StatusCode != HttpStatusCode.Unauthorized)
+                {
+                    Debug.WriteLine($"Resposta recebida sem autenticação, status: {httpResponse.StatusCode}");
+                    return httpResponse;
+                }
+            }
+            catch (WebException ex)
+            {
+                Debug.WriteLine("Recebido erro na primeira requisição (esperado para obter o desafio digest)...");
+                httpResponse = (HttpWebResponse)ex.Response;
+                if (httpResponse.StatusCode != HttpStatusCode.Unauthorized)
+                {
+                    Debug.WriteLine($"Erro inesperado: {ex.Message}");
+                    throw;
+                }
+            }
+
+            // Obtém o cabeçalho WWW-Authenticate que contém os parâmetros do Digest
+            string authHeader = httpResponse.Headers["WWW-Authenticate"];
+            Debug.WriteLine($"Cabeçalho WWW-Authenticate recebido: {authHeader}");
+            if (string.IsNullOrEmpty(authHeader))
+            {
+                Debug.WriteLine("O cabeçalho WWW-Authenticate não foi encontrado.");
+                throw new InvalidOperationException("O cabeçalho WWW-Authenticate não foi encontrado na resposta.");
+            }
+
+            var parts = ExtractDigestParts(authHeader);
+
+            // Extrai valores de realm, nonce, etc.
+            if (!parts.TryGetValue("realm", out var realm) ||
+                !parts.TryGetValue("nonce", out var nonce) ||
+                !parts.TryGetValue("qop", out var qop))
+            {
+                Debug.WriteLine("Os valores 'realm', 'nonce' ou 'qop' não foram encontrados.");
+                throw new InvalidOperationException("Os valores 'realm', 'nonce' ou 'qop' não podem ser nulos.");
+            }
+
+            Debug.WriteLine($"Valores extraídos - Realm: {realm}, Nonce: {nonce}, Qop: {qop}");
+
+            // Configura os valores para o cálculo do hash MD5
+            var method = "POST";
+            var uri = urlString;
+
+            // HA1: md5(username:realm:password)
+            var ha1 = Md5Hash($"{username}:{realm}:{password}");
+
+            // HA2: md5(method:uri)
+            var ha2 = Md5Hash($"{method}:{uri}");
+
+            // Resposta Digest: md5(HA1:nonce:nc:cnonce:qop:HA2)
+            var nc = "00000001"; // Nonce Count
+            var cnonce = "xyz"; // Client Nonce (valor qualquer, como "xyz")
+            var responseDigest = Md5Hash($"{ha1}:{nonce}:{nc}:{cnonce}:{qop}:{ha2}");
+
+            Debug.WriteLine($"Digest calculado: {responseDigest}");
+
+            // Monta o valor do cabeçalho Authorization conforme o padrão Digest
+            var authValue = $"Digest username=\"{username}\", realm=\"{realm}\", nonce=\"{nonce}\", uri=\"{uri}\", " +
+                            $"response=\"{responseDigest}\", qop={qop}, nc={nc}, cnonce=\"{cnonce}\", algorithm=MD5";
+
+            Debug.WriteLine($"Cabeçalho Authorization montado: {authValue}");
+
+            // Cria a nova conexão para enviar o arquivo com autenticação
+            request = (HttpWebRequest)WebRequest.Create(url);
+            request.Method = "POST";
+            request.Headers["Authorization"] = authValue;
+
+            // Cria o body da requisição multipart/form-data
+            var boundary = "===" + DateTime.Now.Ticks.ToString("x") + "===";
+            request.ContentType = $"multipart/form-data; boundary={boundary}";
+            request.AllowWriteStreamBuffering = true;
+
+            Debug.WriteLine($"Enviando arquivo {filePath} com tipo de conteúdo {request.ContentType}");
+
+            using (var requestStream = await request.GetRequestStreamAsync())
+            using (var writer = new StreamWriter(requestStream, Encoding.UTF8))
+            {
+                // Adiciona o arquivo ao multipart/form-data
+                var filePathName = Path.GetFileName(filePath);
+                writer.Write($"--{boundary}\r\n");
+                writer.Write($"Content-Disposition: form-data; name=\"configrecord\"; filename=\"{filePathName}\"\r\n");
+                string mimeType = GetMimeType(filePath);
+                writer.Write($"Content-Type: {mimeType}\r\n");
+                writer.Write("\r\n");
+                writer.Flush();
+
+                // Copia o conteúdo do arquivo
+                using (var fileStream = File.OpenRead(filePath))
+                {
+                    Debug.WriteLine($"Lendo e copiando o conteúdo do arquivo: {filePathName}");
+                    await fileStream.CopyToAsync(requestStream);
+                }
+
+                writer.Write("\r\n");
+                writer.Write($"--{boundary}--\r\n");
+                writer.Flush();
+            }
+
+            Debug.WriteLine("Arquivo enviado, aguardando resposta do servidor...");
+
+            // Lê a resposta do servidor
+            using (var response = (HttpWebResponse)await request.GetResponseAsync())
+            {
+                using (var responseStream = response.GetResponseStream())
+                using (var reader = new StreamReader(responseStream))
+                {
+                    string responseContent = await reader.ReadToEndAsync();
+                    Debug.WriteLine($"Resposta do servidor: {responseContent}");
+
+                    // Adiciona a resposta ao statusMessage
+                    statusMessage = $"Resposta do servidor: {response.StatusCode} - {responseContent}";
+                }
+                return response;
+            }
+        }
+
+        string GetMimeType(string filePath)
+        {
+            string extension = Path.GetExtension(filePath).ToLowerInvariant();
+            Debug.WriteLine($"Identificando MIME type para o arquivo: {filePath}");
+
+            switch (extension)
+            {
+                case ".txt": return "text/plain";
+                case ".xml": return "application/xml";
+                case ".jpg": return "image/jpeg";
+                case ".png": return "image/png";
+                case ".pdf": return "application/pdf";
+                // Adicione mais extensões conforme necessário
+                default: return "application/octet-stream";
+            }
+        }
+
+        // Executando a função de envio
         string url = "http://127.0.0.1/import/config";
         string username = "admin";
         string password = "admin";
+        string _filePath = FileUploadService.SaveXmlToFile(); // Agora deve funcionar corretamente
 
-        await DigestAuthService.SendFileAsync(url, username, password);
+        try
+        {
+            Debug.WriteLine($"Tentando enviar arquivo para {url}...");
+            var response = await DigestAuthWithFile(url, username, password, _filePath);
+
+            // A resposta do servidor já estará capturada dentro do método DigestAuthWithFile
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Erro ao enviar configuração: {ex.Message}");
+            statusMessage = $"Erro ao enviar configuração: {ex.Message}";
+        }
     }
 }
