@@ -78,6 +78,16 @@
         <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
     </ItemGroup>
 
+
+
+	<ItemGroup>
+	  <AndroidResource Remove="wwwroot\import_conf_xpico\**" />
+	  <Compile Remove="wwwroot\import_conf_xpico\**" />
+	  <Content Remove="wwwroot\import_conf_xpico\**" />
+	  <EmbeddedResource Remove="wwwroot\import_conf_xpico\**" />
+	  <None Remove="wwwroot\import_conf_xpico\**" />
+	</ItemGroup>
+
     <ItemGroup>
       <None Remove="Resources\Raw\config_default.xml" />
     </ItemGroup>
@@ -90,10 +100,6 @@
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
         <PackageReference Include="Microsoft.Maui.Essentials" Version="8.0.90" />
         <PackageReference Include="RestSharp" Version="112.0.0" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="wwwroot\import_conf_xpico\" />
     </ItemGroup>
 
 </Project>

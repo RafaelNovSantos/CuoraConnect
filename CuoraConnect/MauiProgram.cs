@@ -15,9 +15,12 @@ namespace CuoraConnect
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 });
 
+            builder.Services.AddScoped<DigestAuthService>();
 
 
-
+#if ANDROID
+            builder.Services.AddSingleton<IFileUploadService, Platforms.Android.FileUploadService>();
+#endif
             builder.Services.AddMauiBlazorWebView();
 
 #if DEBUG
