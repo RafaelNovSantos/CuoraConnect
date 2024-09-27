@@ -7,6 +7,7 @@
 @using System.Text
 @using System.Text.RegularExpressions
 @using CuoraConnect.Services
+@using CuoraConnect.Components.Layout
 @using Microsoft.AspNetCore.Components
 @inject IFileUploadService FileUploadService
 
@@ -59,14 +60,40 @@
         document.addEventListener('DOMContentLoaded', function () {
             var userAgent = navigator.userAgent.toLowerCase();
 
-            if (userAgent.indexOf('android') > -1) {
-                document.body.classList.add('android');
-            } else if (userAgent.indexOf('windows') > -1) {
-                document.body.classList.add('windows');
+
+
+@code {
+    private static readonly HttpClient client = new HttpClient();
+    private string? statusMessage;
+
+    private async Task EnviarConfig()
+    {
+        Debug.WriteLine("Iniciando envio de configuração...");
+
+        FileUploadService.SaveXmlToFile();
+
+        // Função para calcular o hash MD5 de uma string
+        string Md5Hash(string data)
+        {
+            Debug.WriteLine($"Calculando hash MD5 para: {data}");
+            using var md5 = MD5.Create();
+            byte[] hashBytes = md5.ComputeHash(Encoding.UTF8.GetBytes(data));
+            StringBuilder sb = new StringBuilder();
+            foreach (byte b in hashBytes)
+            {
+                sb.Append(b.ToString("x2"));
             }
-        });
-    </script>
-</body>
+            Debug.WriteLine($"Hash MD5 calculado: {sb}");
+            return sb.ToString();
+        }
+
+        // Função para extrair valores dos parâmetros do cabeçalho WWW-Authenticate
+        Dictionary<string, string> ExtractDigestParts(string header)
+        {
+            Debug.WriteLine($"Extraindo partes do cabeçalho WWW-Authenticate: {header}");
+            var values = new Dictionary<string, string>();
+            var pattern = new Regex(@"(\w+)=[\""']?([^\"",]+)[\""']?");
+            var matches = pattern.Matches(header);
 
 
 
