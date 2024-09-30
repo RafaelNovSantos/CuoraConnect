@@ -101,8 +101,13 @@
 	</ItemGroup>
 
     <ItemGroup>
+      <None Remove="Components\Pages\Counter.razor.css" />
       <None Remove="Resources\Images\logocuoraconnect.png" />
       <None Remove="Resources\Raw\config_default.xml" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="Components\Pages\Counter.razor.css" />
     </ItemGroup>
 
     <ItemGroup>

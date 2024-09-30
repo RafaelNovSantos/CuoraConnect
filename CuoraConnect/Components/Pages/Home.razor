@@ -12,259 +12,68 @@
 
 
 
-<Layout class="d-flex flex-column align-items-center vh-100">
-          
-                        <div class="row justify-content-center">
-                            <div class="col-lg-12 text-center">
-                                <h1 class="display-4 fw-bold mb-3 text-primary text-center">
-                                Configuração da rede Wi-Fi Balança Cuora Max </h1>
-                            </div>
-                        </div>
-                 
-            <main class="d-flex flex-column justify-content-center align-items-center flex-grow-1">
-                <section class="text-secondary w-100 d-flex justify-content-center align-items-center">
-                    <div class="row content px-2" style="max-width: 1200px; width: 100%;">
-                        <!-- Primeiro Passo -->
-                        <div class="pb-3 pt-3">
-                            <div class="bg-light d-block pb-5 ps-4 pe-4 pt-5 shadow" style="text-align: center;">
-                                <section class="d-flex align-items-center position-relative">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="2.5em" height="2.5em" class="text-primary">
-                                        <g>
-                                            <path fill="none" d="M0 0h24v24H0z"/>
-                                            <polyline fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="2" points="20 8.5 20 22.5 4 22.5 4 8.5"/>
-                                            <polyline fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="2" points="23 10.5 12 1.5 1 10.5"/>
-                                            <circle cx="12" cy="18.5" r="1" fill="currentColor"/>
-                                            <path fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="2" d="M9.17,15.67a4,4,0,0,1,5.66,0"/>
-                                            <path fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="2" d="M7.05,13.55a7,7,0,0,1,9.9,0"/>
-                                        </g>
-                                    </svg>
-                                    <h1 class="text-primary text-center w-100">
-                                    1° Primeiro Passo </h1>
-                                </section>
-                                <h4 class="fw-bold text-dark text-center w-100">
-                                Conecte no Wi-Fi do seu comércio </h4>
-                                <p class="text-center w-100">
-                                Após conectar no seu Wi-Fi clique no botão abaixo para pegar as informações da sua rede. </p><a @onclick="EnviarConfig" class="btn btn-primary" style="text-align: center;">Enviar arquivo</a>
-                                @if (statusMessage != null)
-                                {
-                                <p class="mt-3">@statusMessage</p>
-                                }
-                            </div>
-                        </div>
+<body class="d-flex justify-content-center flex-column align-items-center vh-100">
+    <main class="d-flex flex-column justify-content-center align-items-center flex-grow-1">
+        <div class="col-lg-12 text-center">
+            <h1 class=" fw-bold mb-3 text-primary">
+                Configuração da rede Wi-Fi Balança Cuora Max
+            </h1>
+        </div>
+        <section class="text-secondary w-100 d-flex justify-content-center align-items-center">
+            <div class="row content px-2" style="width: 100%;">
+                <!-- Primeiro Passo -->
+                <div class="col-sm-12 col-xl-12 pb-3 pt-3">
+                    <div class="bg-light d-block pb-5 ps-4 pe-4 pt-5 shadow" style="text-align: center;">
+                        <section class="d-flex align-items-center position-relative">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="2.5em" height="2.5em" class="text-primary">
+                                <g>
+                                    <path fill="none" d="M0 0h24v24H0z" />
+                                    <polyline fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="2" points="20 8.5 20 22.5 4 22.5 4 8.5" />
+                                    <polyline fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="2" points="23 10.5 12 1.5 1 10.5" />
+                                    <circle cx="12" cy="18.5" r="1" fill="currentColor" />
+                                    <path fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="2" d="M9.17,15.67a4,4,0,0,1,5.66,0" />
+                                    <path fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="2" d="M7.05,13.55a7,7,0,0,1,9.9,0" />
+                                </g>
+                            </svg>
+                            <h1 class="text-primary text-center w-100">
+                                3° Terceiro Passo
+                            </h1>
+                        </section>
+                        <h4 class="fw-bold text-dark text-center w-100">
+                            Conecte no Wi-Fi do seu comércio
+                        </h4>
+                        <p>Após conectar no seu Wi-Fi clique no botão abaixo para pegar as informações da sua rede.</p>
+                        <a href="sendfile" class="btn btn-primary">Prosseguir</a>
+                        @if (statusMessage != null)
+                        {
+                            <p class="mt-3">@statusMessage</p>
+                        }
                     </div>
-                </section>
-            </main>
-        </Layout>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Detectar o sistema operacional e adicionar a classe correspondente ao body
+        document.addEventListener('DOMContentLoaded', function () {
+            var userAgent = navigator.userAgent.toLowerCase();
+
+            if (userAgent.indexOf('android') > -1) {
+                document.body.classList.add('android');
+            } else if (userAgent.indexOf('windows') > -1) {
+                document.body.classList.add('windows');
+            }
+        });
+    </script>
+</body>
 
 
 
 
 @code {
-    private static readonly HttpClient client = new HttpClient();
+ 
     private string? statusMessage;
 
-    private async Task EnviarConfig()
-    {
-        Debug.WriteLine("Iniciando envio de configuração...");
-
-        FileUploadService.SaveXmlToFile();
-
-        // Função para calcular o hash MD5 de uma string
-        string Md5Hash(string data)
-        {
-            Debug.WriteLine($"Calculando hash MD5 para: {data}");
-            using var md5 = MD5.Create();
-            byte[] hashBytes = md5.ComputeHash(Encoding.UTF8.GetBytes(data));
-            StringBuilder sb = new StringBuilder();
-            foreach (byte b in hashBytes)
-            {
-                sb.Append(b.ToString("x2"));
-            }
-            Debug.WriteLine($"Hash MD5 calculado: {sb}");
-            return sb.ToString();
-        }
-
-        // Função para extrair valores dos parâmetros do cabeçalho WWW-Authenticate
-        Dictionary<string, string> ExtractDigestParts(string header)
-        {
-            Debug.WriteLine($"Extraindo partes do cabeçalho WWW-Authenticate: {header}");
-            var values = new Dictionary<string, string>();
-            var pattern = new Regex(@"(\w+)=[\""']?([^\"",]+)[\""']?");
-            var matches = pattern.Matches(header);
-
-            foreach (Match match in matches)
-            {
-                values[match.Groups[1].Value] = match.Groups[2].Value;
-                Debug.WriteLine($"Extraído: {match.Groups[1].Value} = {match.Groups[2].Value}");
-            }
-
-            return values;
-        }
-
-        // Função para realizar a autenticação digest com MD5 e enviar o arquivo
-        async Task<HttpWebResponse> DigestAuthWithFile(string urlString, string username, string password, string filePath)
-        {
-            Debug.WriteLine($"Iniciando autenticação Digest para URL: {urlString}");
-            var url = new Uri(urlString);
-            var request = (HttpWebRequest)WebRequest.Create(url);
-            request.Method = "POST";
-
-            // Primeira requisição sem autenticação para obter o desafio digest
-            HttpWebResponse httpResponse;
-            try
-            {
-                Debug.WriteLine("Enviando primeira requisição sem autenticação...");
-                httpResponse = (HttpWebResponse)await request.GetResponseAsync();
-                if (httpResponse.StatusCode != HttpStatusCode.Unauthorized)
-                {
-                    Debug.WriteLine($"Resposta recebida sem autenticação, status: {httpResponse.StatusCode}");
-                    return httpResponse;
-                }
-            }
-            catch (WebException ex)
-            {
-                Debug.WriteLine("Recebido erro na primeira requisição (esperado para obter o desafio digest)...");
-                httpResponse = (HttpWebResponse)ex.Response;
-                if (httpResponse.StatusCode != HttpStatusCode.Unauthorized)
-                {
-                    Debug.WriteLine($"Erro inesperado: {ex.Message}");
-                    throw;
-                }
-            }
-
-            // Obtém o cabeçalho WWW-Authenticate que contém os parâmetros do Digest
-            string authHeader = httpResponse.Headers["WWW-Authenticate"];
-            Debug.WriteLine($"Cabeçalho WWW-Authenticate recebido: {authHeader}");
-            if (string.IsNullOrEmpty(authHeader))
-            {
-                Debug.WriteLine("O cabeçalho WWW-Authenticate não foi encontrado.");
-                throw new InvalidOperationException("O cabeçalho WWW-Authenticate não foi encontrado na resposta.");
-            }
-
-            var parts = ExtractDigestParts(authHeader);
-
-            // Extrai valores de realm, nonce, etc.
-            if (!parts.TryGetValue("realm", out var realm) ||
-                !parts.TryGetValue("nonce", out var nonce) ||
-                !parts.TryGetValue("qop", out var qop))
-            {
-                Debug.WriteLine("Os valores 'realm', 'nonce' ou 'qop' não foram encontrados.");
-                throw new InvalidOperationException("Os valores 'realm', 'nonce' ou 'qop' não podem ser nulos.");
-            }
-
-            Debug.WriteLine($"Valores extraídos - Realm: {realm}, Nonce: {nonce}, Qop: {qop}");
-
-            // Configura os valores para o cálculo do hash MD5
-            var method = "POST";
-            var uri = urlString;
-
-            // HA1: md5(username:realm:password)
-            var ha1 = Md5Hash($"{username}:{realm}:{password}");
-
-            // HA2: md5(method:uri)
-            var ha2 = Md5Hash($"{method}:{uri}");
-
-            // Resposta Digest: md5(HA1:nonce:nc:cnonce:qop:HA2)
-            var nc = "00000001"; // Nonce Count
-            var cnonce = "xyz"; // Client Nonce (valor qualquer, como "xyz")
-            var responseDigest = Md5Hash($"{ha1}:{nonce}:{nc}:{cnonce}:{qop}:{ha2}");
-
-            Debug.WriteLine($"Digest calculado: {responseDigest}");
-
-            // Monta o valor do cabeçalho Authorization conforme o padrão Digest
-            var authValue = $"Digest username=\"{username}\", realm=\"{realm}\", nonce=\"{nonce}\", uri=\"{uri}\", " +
-                            $"response=\"{responseDigest}\", qop={qop}, nc={nc}, cnonce=\"{cnonce}\", algorithm=MD5";
-
-            Debug.WriteLine($"Cabeçalho Authorization montado: {authValue}");
-
-            // Cria a nova conexão para enviar o arquivo com autenticação
-            request = (HttpWebRequest)WebRequest.Create(url);
-            request.Method = "POST";
-            request.Headers["Authorization"] = authValue;
-
-            // Cria o body da requisição multipart/form-data
-            var boundary = "===" + DateTime.Now.Ticks.ToString("x") + "===";
-            request.ContentType = $"multipart/form-data; boundary={boundary}";
-            request.AllowWriteStreamBuffering = true;
-
-            Debug.WriteLine($"Enviando arquivo {filePath} com tipo de conteúdo {request.ContentType}");
-
-            using (var requestStream = await request.GetRequestStreamAsync())
-            using (var writer = new StreamWriter(requestStream, Encoding.UTF8))
-            {
-                // Adiciona o arquivo ao multipart/form-data
-                var filePathName = Path.GetFileName(filePath);
-                writer.Write($"--{boundary}\r\n");
-                writer.Write($"Content-Disposition: form-data; name=\"configrecord\"; filename=\"{filePathName}\"\r\n");
-                string mimeType = GetMimeType(filePath);
-                writer.Write($"Content-Type: {mimeType}\r\n");
-                writer.Write("\r\n");
-                writer.Flush();
-
-                // Copia o conteúdo do arquivo
-                using (var fileStream = File.OpenRead(filePath))
-                {
-                    Debug.WriteLine($"Lendo e copiando o conteúdo do arquivo: {filePathName}");
-                    await fileStream.CopyToAsync(requestStream);
-                }
-
-                writer.Write("\r\n");
-                writer.Write($"--{boundary}--\r\n");
-                writer.Flush();
-            }
-
-            Debug.WriteLine("Arquivo enviado, aguardando resposta do servidor...");
-
-            // Lê a resposta do servidor
-            using (var response = (HttpWebResponse)await request.GetResponseAsync())
-            {
-                using (var responseStream = response.GetResponseStream())
-                using (var reader = new StreamReader(responseStream))
-                {
-                    string responseContent = await reader.ReadToEndAsync();
-                    Debug.WriteLine($"Resposta do servidor: {responseContent}");
-
-                    // Adiciona a resposta ao statusMessage
-                    statusMessage = $"Resposta do servidor: {response.StatusCode} - {responseContent}";
-                }
-                return response;
-            }
-        }
-
-        string GetMimeType(string filePath)
-        {
-            string extension = Path.GetExtension(filePath).ToLowerInvariant();
-            Debug.WriteLine($"Identificando MIME type para o arquivo: {filePath}");
-
-            switch (extension)
-            {
-                case ".txt": return "text/plain";
-                case ".xml": return "application/xml";
-                case ".jpg": return "image/jpeg";
-                case ".png": return "image/png";
-                case ".pdf": return "application/pdf";
-                // Adicione mais extensões conforme necessário
-                default: return "application/octet-stream";
-            }
-        }
-
-        // Executando a função de envio
-        string url = "http://192.168.0.1/import/config";
-        string username = "admin";
-        string password = "admin";
-        string _filePath = FileUploadService.SaveXmlToFile(); // Agora deve funcionar corretamente
-
-        try
-        {
-            Debug.WriteLine($"Tentando enviar arquivo para {url}...");
-            var response = await DigestAuthWithFile(url, username, password, _filePath);
-
-            // A resposta do servidor já estará capturada dentro do método DigestAuthWithFile
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"Erro ao enviar configuração: {ex.Message}");
-            statusMessage = $"Erro ao enviar configuração: {ex.Message}";
-        }
-    }
+  
 }

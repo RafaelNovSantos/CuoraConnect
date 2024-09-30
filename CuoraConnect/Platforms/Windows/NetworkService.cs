@@ -154,5 +154,29 @@ namespace CuoraConnect.Platforms.Windows
 
             return availableNetworks.Count > 0 ? availableNetworks : new List<string> { "Nenhuma rede disponível." };
         }
+
+        public string GetSubnetMask()
+        {
+            foreach (var networkInterface in NetworkInterface.GetAllNetworkInterfaces())
+            {
+                if (networkInterface.OperationalStatus == OperationalStatus.Up &&
+                    networkInterface.NetworkInterfaceType != NetworkInterfaceType.Loopback &&
+                    networkInterface.NetworkInterfaceType != NetworkInterfaceType.Tunnel)
+                {
+                    foreach (var ipInfo in networkInterface.GetIPProperties().UnicastAddresses)
+                    {
+                        if (ipInfo.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                        {
+                            string subnetMask = ipInfo.IPv4Mask.ToString();
+                            Debug.WriteLine($"Máscara de Sub-rede encontrada: {subnetMask}");
+                            return subnetMask; // Retorna a máscara de sub-rede
+                        }
+                    }
+                }
+            }
+            return "Máscara de rede não encontrada.";
+        }
     }
+
+
 }

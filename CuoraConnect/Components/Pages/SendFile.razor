@@ -11,44 +11,11 @@
 @inject IFileUploadService FileUploadService
 
 
-<head>
-    <style>
-        /* Estilos padrões */
-        h1, h4, p {
-            font-size: 16px;
-        }
 
-        /* Estilos específicos para Windows */
-        body.windows h1 {
-            font-size: 20px;
-        }
-
-        body.windows h4 {
-            font-size: 20px;
-        }
-
-        body.windows p {
-            font-size: 18px;
-        }
-
-        /* Estilos específicos para Android */
-        body.android h1 {
-            font-size: 5px;
-        }
-
-        body.android h4 {
-            font-size: 18px;
-        }
-
-        body.android p {
-            font-size: 16px;
-        }
-    </style>
-</head>
 <body class="d-flex justify-content-center flex-column align-items-center vh-100">
     <main class="d-flex flex-column justify-content-center align-items-center flex-grow-1">
         <div class="col-lg-12 text-center">
-            <h1 class="display-4 fw-bold mb-3 text-primary">
+            <h1 class=" fw-bold mb-3 text-primary">
                 Configuração da rede Wi-Fi Balança Cuora Max
             </h1>
         </div>
@@ -68,9 +35,13 @@
                                     <path fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="2" d="M7.05,13.55a7,7,0,0,1,9.9,0" />
                                 </g>
                             </svg>
-                            <h1 class="text-primary">3° Terceiro Passo</h1>
+                            <h1 class="text-primary text-center w-100">
+                                3° Terceiro Passo
+                            </h1>
                         </section>
-                        <h4 class="fw-bold h5 text-dark">Conecte no Wi-Fi do seu comércio</h4>
+                        <h4 class="fw-bold text-dark text-center w-100">
+                            Conecte no Wi-Fi do seu comércio
+                        </h4>
                         <p>Após conectar no seu Wi-Fi clique no botão abaixo para pegar as informações da sua rede.</p>
                         <a @onclick="EnviarConfig" class="btn btn-primary">Enviar arquivo</a>
                         @if (statusMessage != null)
@@ -96,7 +67,6 @@
         });
     </script>
 </body>
-
 
 
 
@@ -291,7 +261,7 @@
         }
 
         // Executando a função de envio
-        string url = "http://127.0.0.1/import/config";
+        string url = "http://192.168.0.1/import/config";
         string username = "admin";
         string password = "admin";
         string _filePath = FileUploadService.SaveXmlToFile(); // Agora deve funcionar corretamente

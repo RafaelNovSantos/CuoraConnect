@@ -1,3 +1,10 @@
+.h1, .h2, .h3, .h4, .h5, .h6, h1, h2, h3, h4, h5, h6 {
+    margin: 0 !important;
+    margin-right: 5px;
+    font-weight: bold; /* Adiciona o negrito */
+}
+
+
 .navbar-toggler {
     appearance: none;
     cursor: pointer;
@@ -21,6 +28,9 @@
 }
 
 .navbar-brand {
+    text-align: center;
+    width: 50vw;
+    
     font-size: 1.1rem;
 }
 
@@ -95,7 +105,19 @@
         /* Never collapse the sidebar for wide screens */
         display: block;
         /* Allow sidebar to scroll for tall menus */
-        height: calc(100vh - 3.5rem);
-        overflow-y: auto;
+      
+      
     }
 }
+
+@media (max-width: 640px) {
+
+    .navbar-toggler {
+        display: none; /* Esconde a barra de navegação para evitar sobrecarga visual */
+    }
+
+    .nav-scrollable {
+        display: none; /* Esconde a barra de navegação para evitar sobrecarga visual */
+    }
+}
+
