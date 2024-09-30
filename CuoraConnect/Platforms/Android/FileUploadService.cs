@@ -1,9 +1,14 @@
-﻿using System;
+﻿using SQLite;
+using System;
 using System.IO;
+using System.Linq;
 using Android.App;
+using SQLite;
+using CuoraConnect.Models;
 using CuoraConnect.Platforms.Android;
 using CuoraConnect.Services;
 using Application = Android.App.Application;
+using System.Diagnostics;
 
 [assembly: Dependency(typeof(FileUploadService))]
 namespace CuoraConnect.Platforms.Android
@@ -33,7 +38,7 @@ namespace CuoraConnect.Platforms.Android
                 System.Diagnostics.Debug.WriteLine($"Arquivo existente apagado: {_filePath}");
             }
 
-            // Gera o novo conteúdo XML
+            // Gera o novo conteúdo XML com os dados do banco de dados
             var xmlContent = GenerateXml();
             File.WriteAllText(_filePath, xmlContent);
             System.Diagnostics.Debug.WriteLine($"Novo XML gerado e salvo em: {_filePath}");
@@ -41,10 +46,31 @@ namespace CuoraConnect.Platforms.Android
             return _filePath;
         }
 
+        public string pathDB()
+        {
+            var dbPath = Path.Combine(Application.Context.GetExternalFilesDir(null).AbsolutePath, "networkinfo.db");
+            return dbPath;
+        }
+
         public string GenerateXml()
         {
-            // Conteúdo XML em uma string
-            string xmlContent = @"<?xml version=""1.0"" standalone=""yes""?>
+            // Conecta ao banco de dados
+            var dbPath = pathDB();
+            using var db = new SQLiteConnection(dbPath);
+
+            // Buscar os dados que serão inseridos no XML
+            var NETConfig = db.Table<NetworkInfo>().FirstOrDefault(c => c.Id == "$");
+
+            var ssid = NETConfig.SSID;
+            var ipAddressConfig = NETConfig.AvailableIP;
+            var ipDefault = NETConfig.Gateway;
+            var password = NETConfig.Password;
+            var cidr = NETConfig.CIDR;
+
+
+
+            // Gera o conteúdo XML em uma string com os dados do banco de dados
+            string xmlContent = $@"<?xml version='1.0' standalone='yes'?>
 <!-- Automatically generated XML -->
 <!DOCTYPE configrecord [
    <!ELEMENT configrecord (configgroup+)>
@@ -58,117 +84,119 @@ namespace CuoraConnect.Platforms.Android
    <!ATTLIST configitem instance CDATA #IMPLIED>
    <!ATTLIST value name CDATA #IMPLIED>
 ]>
-<configrecord version = ""0.1.0.1"">
-   <configgroup name = ""Access Point"" instance = ""ap0"">
-      <configitem name = ""SSID"">
-         <value>CUORA_MAX</value>
+<configrecord version = '0.1.0.1'>
+   <configgroup name = 'Access Point' instance = 'ap0'>
+      <configitem name = 'SSID'>
+         <value>CUORA_MAX_0080a3d84695</value>
       </configitem>
-      <configitem name = ""Guest"">
+      <configitem name = 'Guest'>
          <value>Enabled</value>
       </configitem>
-      <configitem name = ""Channel"">
+      <configitem name = 'Channel'>
          <value>1</value>
       </configitem>
-      <configitem name = ""Suite"">
+      <configitem name = 'Suite'>
          <value>WPA2</value>
       </configitem>
-      <configitem name = ""Encryption"">
+      <configitem name = 'Encryption'>
          <value>CCMP</value>
       </configitem>
-      <configitem name = ""Passphrase"">
-         <value>&lt;Configured&gt;</value>
+      <configitem name = 'Passphrase'>
+         <value>SYSTEL1234</value>
       </configitem>
-      <configitem name = ""Mode"">
+      <configitem name = 'Mode'>
          <value>Always Up</value>
       </configitem>
-      <configitem name = ""DNS Redirect"">
+      <configitem name = 'DNS Redirect'>
          <value>xpicowifi.lantronix.com</value>
       </configitem>
    </configgroup>
-   <configgroup name = ""Interface"" instance = ""ap0"">
-      <configitem name = ""State"">
+   <configgroup name = 'Interface' instance = 'ap0'>
+      <configitem name = 'State'>
          <value>Enabled</value>
       </configitem>
-      <configitem name = ""IP Address"">
+      <configitem name = 'IP Address'>
          <value>192.168.0.1/24</value>
       </configitem>
-      <configitem name = ""MSS"">
+      <configitem name = 'MSS'>
          <value>1460 bytes</value>
       </configitem>
-      <configitem name = ""DHCP IP Address Range"">
-         <value name = ""Start"">&lt;Minimum&gt;</value>
-         <value name = ""End"">&lt;Maximum&gt;</value>
+      <configitem name = 'DHCP IP Address Range'>
+         <value name = 'Start'>&lt;Minimum&gt;</value>
+         <value name = 'End'>&lt;Maximum&gt;</value>
       </configitem>
    </configgroup>
-   <configgroup name = ""Interface"" instance = ""wlan0"">
-      <configitem name = ""State"">
+   <configgroup name = 'Interface' instance = 'wlan0'>
+      <configitem name = 'State'>
          <value>Enabled</value>
       </configitem>
-      <configitem name = ""DHCP Client"">
+      <configitem name = 'DHCP Client'>
          <value>Disabled</value>
       </configitem>
-      <configitem name = ""IP Address"">
-         <value>192.168.1.130/24</value>
+      <configitem name = 'IP Address'>
+         <value>{ipAddressConfig ?? ""}/{(cidr != 0 ? cidr.ToString() : "24")}</value>
+
       </configitem>
-      <configitem name = ""Default Gateway"">
-         <value>192.168.1.1</value>
+      <configitem name = 'Default Gateway'>
+         <value>{ipDefault ?? "192.168.1.1"}</value>
       </configitem>
-      <configitem name = ""Hostname"">
+      <configitem name = 'Hostname'>
          <value></value>
       </configitem>
-      <configitem name = ""Primary DNS"">
+      <configitem name = 'Primary DNS'>
          <value>8.8.8.8</value>
       </configitem>
-      <configitem name = ""Secondary DNS"">
+      <configitem name = 'Secondary DNS'>
          <value>1.1.1.1</value>
       </configitem>
-      <configitem name = ""MSS"">
+      <configitem name = 'MSS'>
          <value>1460 bytes</value>
       </configitem>
    </configgroup>
-   <configgroup name = ""WLAN Profile"" instance = ""SYSTEL_BALANCAS"">
-      <configitem name = ""Basic"">
-         <value name = ""Network Name"">SYSTEL_BALANCAS</value>
-         <value name = ""State"">Enabled</value>
+   <configgroup name = 'WLAN Profile' instance = '{ssid ?? "CUORA_MAX"}'>
+      <configitem name = 'Basic'>
+         <value name = 'Network Name'>{ssid ?? "CUORA_MAX"}</value>
+         <value name = 'State'>Enabled</value>
       </configitem>
-      <configitem name = ""Security"">
-         <value name = ""Suite"">WPA2</value>
-         <value name = ""WEP Key Size"">40</value>
-         <value name = ""WEP TX Key Index"">1</value>
-         <value name = ""WEP Key 1 Key""></value>
-         <value name = ""WEP Key 2 Key""></value>
-         <value name = ""WEP Key 3 Key""></value>
-         <value name = ""WEP Key 4 Key""></value>
-         <value name = ""WPAx Key Type"">Passphrase</value>
-         <value name = ""WPAx Passphrase"">systel1234</value>
-         <value name = ""WPAx Key""></value>
-         <value name = ""WPAx Encryption"">CCMP</value>
+      <configitem name = 'Security'>
+         <value name = 'Suite'>WPA2</value>
+         <value name = 'WEP Key Size'>40</value>
+         <value name = 'WEP TX Key Index'>1</value>
+         <value name = 'WEP Key 1 Key'></value>
+         <value name = 'WEP Key 2 Key'></value>
+         <value name = 'WEP Key 3 Key'></value>
+         <value name = 'WEP Key 4 Key'></value>
+         <value name = 'WPAx Key Type'>Passphrase</value>
+         <value name = 'WPAx Passphrase'>{password ?? "senhaRede"}</value>
+         <value name = 'WPAx Key'></value>
+         <value name = 'WPAx Encryption'>CCMP</value>
       </configitem>
-      <configitem name = ""Advanced"">
-         <value name = ""TX Power Maximum"">17 dBm</value>
-         <value name = ""Power Management"">Enabled</value>
-         <value name = ""PM Interval"">1 beacons (100 ms each)</value>
+      <configitem name = 'Advanced'>
+         <value name = 'TX Power Maximum'>17 dBm</value>
+         <value name = 'Power Management'>Enabled</value>
+         <value name = 'PM Interval'>1 beacons (100 ms each)</value>
       </configitem>
    </configgroup>
-   <configgroup name = ""XML Import Control"">
-      <configitem name = ""Restore Factory Configuration"">
+   <configgroup name = 'XML Import Control'>
+      <configitem name = 'Restore Factory Configuration'>
          <value>Disabled</value>
       </configitem>
-      <configitem name = ""Reboot"">
+      <configitem name = 'Reboot'>
          <value>Disabled</value>
       </configitem>
-      <configitem name = ""Missing Values"">
+      <configitem name = 'Missing Values'>
          <value>Set to Default</value>
       </configitem>
-      <configitem name = ""Delete WLAN Profiles"">
+      <configitem name = 'Delete WLAN Profiles'>
          <value>Enabled</value>
       </configitem>
-      <configitem name = ""WLAN Profile delete"">
-         <value name = ""name""></value>
+      <configitem name = 'WLAN Profile delete'>
+         <value name = 'name'></value>
       </configitem>
    </configgroup>
 </configrecord>";
 
+            Debug.WriteLine($"{xmlContent}");
             return xmlContent;
         }
     }

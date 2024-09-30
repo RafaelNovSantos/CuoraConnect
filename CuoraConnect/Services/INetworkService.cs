@@ -11,5 +11,6 @@ namespace CuoraConnect.Services
         string GetDefaultGateway();
 
         List<string> GetAvailableWifiNetworks();
+        string GetSubnetMask();
     }
 }

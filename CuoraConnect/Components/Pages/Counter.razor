@@ -1,52 +1,114 @@
 ﻿@page "/counter"
 @using CuoraConnect.Services
 @using System.Diagnostics;
+@using CuoraConnect.Models;
+@using SQLite
 @inject INetworkService NetworkService
+@inject IFileUploadService FileUploadService
 @inject IJSRuntime JS
 
 <h3>Informações da Rede</h3>
 
-<div class="container">
-    <div class="form-group">
-        <label for="ssidInput">SSID</label>
-        <input type="text" class="form-control" id="ssidInput" @bind="ssid" />
-    </div>
+<body>
 
-    <div class="form-group">
-        <label for="gatewayInput">Gateway Padrão</label>
-        <input type="text" class="form-control" id="gatewayInput" @bind="gateway" />
-    </div>
+    <section>
+        <div class="href-target" id="icons"></div>
+        <h1>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-feather">
+                <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path>
+                <line x1="16" y1="8" x2="2" y2="22"></line>
+                <line x1="17.5" y1="15" x2="9" y2="15"></line>
+            </svg>Informações da rede {"Wi-Fi"}
+        </h1>
+        <div class="nice-form-group">
+            <label>Sua Rede</label>
+            <input type="tel" placeholder="Wi-Fi do seu comercio" id="ssidInput" @bind="ssid" class="icon-right" />
+        </div>
+        <div class="nice-form-group">
+            <label>Senha do Wi-Fi</label>
+            <input type="password" placeholder="Senha do Wi-Fi do seu comercio" @bind="password" class="icon-right" />
+        </div>
+        <div class="nice-form-group">
+            <label>Gateway Padrão</label>
+            <input type="url" placeholder="IP do seu Roteador" id="gatewayInput" @bind="gateway" class="icon-right" />
+        </div>
+        <div class="nice-form-group">
+            <label>Máscara de Rede</label>
+            <input type="url" placeholder="IP do seu Roteador" @bind="subnetMask" class="icon-right" />
+        </div>
+        <div class="nice-form-group">
+            <label>IP Disponível</label>
+            <input type="email" placeholder="IP disponível em seu Wi-Fi" id="availableIPInput" @bind="availableIP" class="icon-right" />
+        </div>
+        <div class="nice-form-group">
+            <label>Redes Wi-Fi disponíveis</label>
+            <ul class="nice-form-group">
+                @foreach (var Ssid in networks)
+                {
+                    <li class="nice-form-group">@Ssid</li>
+                }
+            </ul>
+        </div>
 
-    <div class="form-group">
-        <label for="localIPInput">IP Local</label>
-        <input type="text" class="form-control mt-01" id="localIPInput" @bind="localIP" />
-    </div>
-
-    <div class="form-group">
-        <label for="availableIPInput">IP Disponível</label>
-        <input type="text" class="form-control mt-01" id="availableIPInput" @bind="availableIP" />
-    </div>
-
-    <div class="form-group">
-        <label>Redes Wi-Fi disponíveis</label>
-        <ul class="list-group">
-            @foreach (var Ssid in networks)
-            {
-                <li class="list-group-item">@Ssid</li>
-            }
-        </ul>
-    </div>
-
-    <button class="btn btn-primary mb-2" @onclick="GetNetworkInfo">Obter Informações da Rede</button>
-    <button class="btn btn-success mb-2" @onclick="SaveNetworkInfo">Salvar Alterações</button>
-</div>
+        <button class="btn btn-primary mt-2" @onclick="GetNetworkInfo">Obter Informações da Rede</button>
+        <button class="btn btn-success mt-2" @onclick="SaveNetworkInfo">Salvar Alterações</button>
+    </section>
+</body>
 
 @code {
     private string ssid = "SSID";
     private string gateway = "Gateway Padrão";
     private string localIP = "IP Local";
     private string availableIP = "IP Disponível";
+    private string password = "";
+    private string subnetMask = "Máscara de rede";
+    private int cidr;
     private List<string> networks = new List<string>();
+
+    private string dbPath;
+
+
+    // Inicializa o caminho do banco de dados e cria a tabela
+    protected override void OnInitialized()
+    {
+
+        string dbPath = FileUploadService.pathDB();
+
+        using var db = new SQLiteConnection(dbPath);
+        db.CreateTable<NetworkInfo>();
+    }
+
+
+    public int ConvertSubnetMaskToCIDR(string subnetMask)
+    {
+
+        // Divide a máscara em octetos
+        string[] parts = subnetMask.Split('.');
+        int cidr = 0;
+
+        foreach (var part in parts)
+        {
+            // Converte cada octeto para um inteiro
+            byte octet = byte.Parse(part);
+            // Conta o número de bits `1` no octeto
+            cidr += CountBits(octet);
+        }
+        Debug.WriteLine($"SubNetMask: {subnetMask}");
+        Debug.WriteLine($"CIDR: {cidr}");
+        return cidr;
+
+    }
+
+    private int CountBits(byte octet)
+    {
+        int count = 0;
+        while (octet > 0)
+        {
+            count += octet & 1; // Incrementa se o bit menos significativo for `1`
+            octet >>= 1; // Desloca o bit para a direita
+        }
+        return count;
+    }
 
     private async Task GetNetworkInfo()
     {
@@ -71,6 +133,10 @@
             availableIP = NetworkService.GetAvailableIPAddress();
             Debug.WriteLine($"IP Disponível: {availableIP}");
 
+            subnetMask = NetworkService.GetSubnetMask();
+
+            Debug.WriteLine($"Máscara disponível: {subnetMask}");
+
             // Obtém redes Wi-Fi disponíveis
             networks = NetworkService.GetAvailableWifiNetworks();
             Debug.WriteLine($"Redes Wi-Fi disponíveis: {string.Join(", ", networks)}");
@@ -84,14 +150,38 @@
 
     private void SaveNetworkInfo()
     {
-        Debug.WriteLine("Salvando alterações...");
-        // Aqui você pode implementar a lógica para salvar as alterações
-        Debug.WriteLine($"Novo SSID: {ssid}");
-        Debug.WriteLine($"Novo Gateway: {gateway}");
-        Debug.WriteLine($"Novo IP Local: {localIP}");
-        Debug.WriteLine($"Novo IP Disponível: {availableIP}");
+        cidr = ConvertSubnetMaskToCIDR(subnetMask);
+        // Salvando no SQLite
+        using var db = new SQLiteConnection(FileUploadService.pathDB());
 
-        // Supondo que você tenha um método para atualizar as configurações
-        // NetworkService.UpdateNetworkSettings(ssid, gateway, localIP, availableIP);
+        var table = db.Table<NetworkInfo>().FirstOrDefault(c => c.Id == "$");
+        if(table is null)
+        {
+            var networkInfo = new NetworkInfo
+                {
+                    Id = "$",
+                    SSID = ssid,
+                    Gateway = gateway,
+                    LocalIP = localIP,
+                    Password = password,
+                    AvailableIP = availableIP,
+                    SubnetMask = subnetMask,
+                    CIDR = cidr
+                };
+
+            db.Insert(networkInfo);
+        }
+        else
+        {
+            table.SSID = ssid;
+            table.Gateway = gateway;
+            table.LocalIP = localIP;
+            table.AvailableIP = availableIP;
+            table.Password = password;
+            table.SubnetMask = subnetMask;
+            table.CIDR = cidr;
+            db.Update(table);
+        }
+        Debug.WriteLine("Informações de rede salvas no banco de dados.");
     }
 }

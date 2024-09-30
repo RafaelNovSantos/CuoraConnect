@@ -4,5 +4,6 @@
     {
         string SaveXmlToFile();
         string GenerateXml();
+        string pathDB();
     }
 }

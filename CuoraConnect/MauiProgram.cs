@@ -20,6 +20,9 @@ namespace CuoraConnect
 
 #if ANDROID
             builder.Services.AddSingleton<IFileUploadService, Platforms.Android.FileUploadService>();
+#elif WINDOWS
+            builder.Services.AddSingleton<IFileUploadService, Platforms.Windows.FileUploadService>();
+            // Se houver uma implementação para Windows, registre aqui
 #endif
             builder.Services.AddMauiBlazorWebView();
 
@@ -34,8 +37,8 @@ namespace CuoraConnect
             // Se houver uma implementação para iOS, registre aqui
             // builder.Services.AddSingleton<INetworkService, Platforms.iOS.NetworkService>();
 #elif WINDOWS
+            builder.Services.AddSingleton<INetworkService, Platforms.Windows.NetworkService>();
             // Se houver uma implementação para Windows, registre aqui
-            // builder.Services.AddSingleton<INetworkService, Platforms.Windows.NetworkService>();
 #endif
 
             return builder.Build();
