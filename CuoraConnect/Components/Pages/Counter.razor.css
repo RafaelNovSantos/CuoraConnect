@@ -1,6 +1,6 @@
 ﻿﻿
 
-a, abbr, acronym, address, applet, article, aside, audio, b, big, blockquote, body, canvas, caption, center, cite, code, dd, del, details, dfn, div, dl, dt, em, embed, fieldset, figcaption, figure, footer, form, h1, h2, h3, h4, h5, h6, header, hgroup, html, i, iframe, img, ins, kbd, label, legend, li, mark, menu, nav, object, ol, output, p, pre, q, ruby, s, samp, section, small, span, strike, strong, sub, summary, sup, table, tbody, td, tfoot, th, thead, time, tr, tt, u, ul, var, video {
+a, abbr, acronym, address, applet, article, aside, audio, b, big, blockquote, body, canvas, caption, center, cite, code, dd, del, details, dfn, div, dl, dt, em, embed, fieldset, figcaption, figure, footer, form, h3, h2, h3, h4, h5, h6, header, hgroup, html, i, iframe, img, ins, kbd, label, legend, li, mark, menu, nav, object, ol, output, p, pre, q, ruby, s, samp, section, small, span, strike, strong, sub, summary, sup, table, tbody, td, tfoot, th, thead, time, tr, tt, u, ul, var, video {
     margin: 0;
     padding: 0;
     border: 0;
@@ -338,7 +338,7 @@ table {
 
     .nice-form-group > input[type=date], .nice-form-group > input[type=month], .nice-form-group > input[type=week] {
         min-width: 14em;
-        background-image: url("data:image/svg + xml;charset=utf-8, %3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='feather feather-calendar'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'/%3E%3Cpath d='M16 2v4M8 2v4M3 10h18'/%3E%3C/svg%3E")
+        background-image: url("data:image/svg + xml;charset=utf-8, %3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='feather feather-calendar'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'/%3E%3Cpath d='M16 2v4M8 2v4M3 10h38'/%3E%3C/svg%3E")
     }
 
     .nice-form-group > input[type=time] {
@@ -636,7 +636,7 @@ a, .btn-link {
     border-color: #1861ac;
 }
 
-h1 {
+h3 {
     font-size: 25px; /* Tamanho base */
 }
 
@@ -662,7 +662,7 @@ svg {
     font-size: 14px;
 }
 
-section h1 svg {
+ h3 svg {
     width: 1.8em;
     height: 1.8em;
     display: inline-block;
@@ -671,12 +671,32 @@ section h1 svg {
 }
 /* Para telas médias (tablets ou pequenas resoluções) */
 
+
+@media (max-width: 640px) {
+    .nav--icons {
+        display: none;
+    }
+
+    section {
+        margin: 2rem 2rem 6rem 2rem;
+    }
+
+         h3 svg {
+            width: 2.0em;
+            height: 2.0em;
+        }
+}
+
 @media (min-width: 640px) {
     .nav--icons {
         display: none;
     }
 
-    section h1 svg {
+    section {
+        margin: 2rem 2rem 2rem 2rem;
+    }
+
+     h3 svg {
         width: 2.0em;
         height: 2.0em;
     }
@@ -687,7 +707,11 @@ section h1 svg {
         display: none;
     }
 
-    h1 {
+    section {
+        margin: 2rem 2rem 2rem 2rem;
+    }
+
+    h3 {
         font-size: 28px; /* Aumenta o texto para tablets */
     }
 
@@ -703,7 +727,7 @@ section h1 svg {
         font-size: 17px;
     }
 
-    section h1 svg {
+     h3 svg {
         width: 2.0em;
         height: 2.0em;
     }
@@ -715,7 +739,11 @@ section h1 svg {
         display: none;
     }
 
-    h1 {
+    section {
+        margin: 2rem 2rem 2rem 2rem;
+    }
+
+    h3 {
         font-size: 30px; /* Aumenta ainda mais para desktops */
     }
 
@@ -731,7 +759,7 @@ section h1 svg {
         font-size: 19px;
     }
 
-    section h1 svg {
+     h3 svg {
         width: 2.0em;
         height: 2.0em;
     }
@@ -744,8 +772,11 @@ section h1 svg {
         display: none;
     }
 
+    section {
+        margin: 2rem 2rem 2rem 2rem;
+    }
 
-    h1 {
+    h3 {
         font-size: 35px; /* Aumenta consideravelmente para grandes monitores */
     }
 
@@ -761,26 +792,30 @@ section h1 svg {
         font-size: 23px;
     }
 
-    section h1 svg {
+     h3 svg {
         width: 2.5em;
         height: 2.5em;
     }
 }
 
 section {
+    display: flex;
+    justify-content: center;
+    list-style: none;
+    counter-reset: list;
+    padding: 0 1rem;
     background: #fff;
     padding: 2em;
     border-radius: .75rem;
     line-height: 1.6;
     overflow: hidden;
-    margin: 2rem 2rem 6rem 2rem;
     position: relative;
     font-size: .875rem;
     box-shadow: 0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -2px rgba(0,0,0,.05)
 }
 
 
-        section h1.package-name {
+        section h3.package-name {
             font-size: 2rem;
             margin-bottom: .75rem;
             margin-top: -.5rem
