@@ -626,32 +626,159 @@ footer {
         background: #2538df
     }
 
+a, .btn-link {
+    color: #006bb7;
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: #1b6ec2;
+    border-color: #1861ac;
+}
+
+h1 {
+    font-size: 25px; /* Tamanho base */
+}
+
+h4 {
+    font-size: 22px; /* Tamanho base */
+}
+
+p {
+    font-size: 16px; /* Tamanho base */
+}
+
+#svgBalanca {
+    height: 50px;
+    width: 50px;
+}
+
+.nav--icons svg {
+    height: 30px;
+    width: 30px;
+}
+
+svg {
+    font-size: 14px;
+}
+
+section h1 svg {
+    width: 1.8em;
+    height: 1.8em;
+    display: inline-block;
+    vertical-align: -10%;
+    margin-right: .25em
+}
+/* Para telas médias (tablets ou pequenas resoluções) */
+
+@media (min-width: 640px) {
+    .nav--icons {
+        display: none;
+    }
+
+    section h1 svg {
+        width: 2.0em;
+        height: 2.0em;
+    }
+}
+
+@media (min-width: 768px) {
+    .nav--icons {
+        display: none;
+    }
+
+    h1 {
+        font-size: 28px; /* Aumenta o texto para tablets */
+    }
+
+    h4 {
+        font-size: 22px;
+    }
+
+    p {
+        font-size: 18px;
+    }
+
+    svg {
+        font-size: 17px;
+    }
+
+    section h1 svg {
+        width: 2.0em;
+        height: 2.0em;
+    }
+}
+
+@media (min-width: 992px) {
+
+    .nav--icons {
+        display: none;
+    }
+
+    h1 {
+        font-size: 30px; /* Aumenta ainda mais para desktops */
+    }
+
+    h4 {
+        font-size: 22px;
+    }
+
+    p {
+        font-size: 20px;
+    }
+
+    svg {
+        font-size: 19px;
+    }
+
+    section h1 svg {
+        width: 2.0em;
+        height: 2.0em;
+    }
+}
+/* Para telas muito grandes (monitores ultra-wide ou TVs) */
+
+@media (min-width: 1200px) {
+
+    .nav--icons {
+        display: none;
+    }
+
+
+    h1 {
+        font-size: 35px; /* Aumenta consideravelmente para grandes monitores */
+    }
+
+    h4 {
+        font-size: 24px;
+    }
+
+    p {
+        font-size: 24px;
+    }
+
+    svg {
+        font-size: 23px;
+    }
+
+    section h1 svg {
+        width: 2.5em;
+        height: 2.5em;
+    }
+}
+
 section {
     background: #fff;
     padding: 2em;
     border-radius: .75rem;
     line-height: 1.6;
     overflow: hidden;
-    margin: 2rem;
+    margin: 2rem 2rem 6rem 2rem;
     position: relative;
     font-size: .875rem;
     box-shadow: 0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -2px rgba(0,0,0,.05)
 }
 
-    section h1 {
-        font-weight: 500;
-        font-size: 3rem;
-        color: #000;
-        margin-bottom: .75rem
-    }
-
-        section h1 svg {
-            width: 1em;
-            height: 1em;
-            display: inline-block;
-            vertical-align: -10%;
-            margin-right: .25em
-        }
 
         section h1.package-name {
             font-size: 2rem;
