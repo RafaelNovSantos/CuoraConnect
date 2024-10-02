@@ -1,13 +1,4 @@
-﻿﻿
-
-a, abbr, acronym, address, applet, article, aside, audio, b, big, blockquote, body, canvas, caption, center, cite, code, dd, del, details, dfn, div, dl, dt, em, embed, fieldset, figcaption, figure, footer, form, h3, h2, h3, h4, h5, h6, header, hgroup, html, i, iframe, img, ins, kbd, label, legend, li, mark, menu, nav, object, ol, output, p, pre, q, ruby, s, samp, section, small, span, strike, strong, sub, summary, sup, table, tbody, td, tfoot, th, thead, time, tr, tt, u, ul, var, video {
-    margin: 0;
-    padding: 0;
-    border: 0;
-    font-size: 100%;
-    font: inherit;
-    vertical-align: initial
-}
+﻿
 
 article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {
     display: block
@@ -16,6 +7,7 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
 
 
 ol, ul {
+
     list-style: none
 }
 
@@ -518,6 +510,7 @@ table {
 }
 
 html {
+
     font-size: 16px;
     box-sizing: border-box
 }
@@ -630,11 +623,7 @@ a, .btn-link {
     color: #006bb7;
 }
 
-.btn-primary {
-    color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
-}
+
 
 h3 {
     font-size: 25px; /* Tamanho base */
@@ -662,7 +651,7 @@ svg {
     font-size: 14px;
 }
 
- h3 svg {
+h3 svg {
     width: 1.8em;
     height: 1.8em;
     display: inline-block;
@@ -677,14 +666,11 @@ svg {
         display: none;
     }
 
-    section {
-        margin: 2rem 2rem 6rem 2rem;
-    }
 
-         h3 svg {
-            width: 2.0em;
-            height: 2.0em;
-        }
+    h3 svg {
+        width: 2.0em;
+        height: 2.0em;
+    }
 }
 
 @media (min-width: 640px) {
@@ -692,11 +678,10 @@ svg {
         display: none;
     }
 
-    section {
-        margin: 2rem 2rem 2rem 2rem;
-    }
 
-     h3 svg {
+
+
+    h3 svg {
         width: 2.0em;
         height: 2.0em;
     }
@@ -707,9 +692,7 @@ svg {
         display: none;
     }
 
-    section {
-        margin: 2rem 2rem 2rem 2rem;
-    }
+
 
     h3 {
         font-size: 28px; /* Aumenta o texto para tablets */
@@ -727,7 +710,7 @@ svg {
         font-size: 17px;
     }
 
-     h3 svg {
+    h3 svg {
         width: 2.0em;
         height: 2.0em;
     }
@@ -739,9 +722,7 @@ svg {
         display: none;
     }
 
-    section {
-        margin: 2rem 2rem 2rem 2rem;
-    }
+
 
     h3 {
         font-size: 30px; /* Aumenta ainda mais para desktops */
@@ -759,7 +740,7 @@ svg {
         font-size: 19px;
     }
 
-     h3 svg {
+    h3 svg {
         width: 2.0em;
         height: 2.0em;
     }
@@ -772,9 +753,7 @@ svg {
         display: none;
     }
 
-    section {
-        margin: 2rem 2rem 2rem 2rem;
-    }
+
 
     h3 {
         font-size: 35px; /* Aumenta consideravelmente para grandes monitores */
@@ -792,7 +771,7 @@ svg {
         font-size: 23px;
     }
 
-     h3 svg {
+    h3 svg {
         width: 2.5em;
         height: 2.5em;
     }
@@ -815,11 +794,11 @@ section {
 }
 
 
-        section h3.package-name {
-            font-size: 2rem;
-            margin-bottom: .75rem;
-            margin-top: -.5rem
-        }
+    section h3.package-name {
+        font-size: 2rem;
+        margin-bottom: .75rem;
+        margin-top: -.5rem
+    }
 
     section strong {
         font-weight: 500;
