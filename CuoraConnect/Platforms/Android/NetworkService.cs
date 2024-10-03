@@ -10,6 +10,7 @@ using Android.App;
 using Android.Net;
 using Application = Android.App.Application;
 using System.Diagnostics;
+using Android.Telephony;
 
 [assembly: Dependency(typeof(CuoraConnect.Platforms.Android.NetworkService))]
 namespace CuoraConnect.Platforms.Android
@@ -258,7 +259,31 @@ namespace CuoraConnect.Platforms.Android
 
 
 
+        public bool IsConnectedTo5G()
+        {
+            // Obtém o WifiManager usando o Context do Android
+            var wifiManager = (WifiManager)Application.Context.GetSystemService(Context.WifiService);
 
+            if (wifiManager != null && wifiManager.IsWifiEnabled)
+            {
+                // Obtém as informações da conexão Wi-Fi atual
+                var wifiInfo = wifiManager.ConnectionInfo;
+
+                if (wifiInfo != null)
+                {
+                    // Verifica a frequência da rede Wi-Fi
+                    var frequency = wifiInfo.Frequency;
+
+                    // As redes de 5GHz têm uma frequência entre 4900 e 5900 MHz
+                    if (frequency >= 4900 && frequency <= 5900)
+                    {
+                        return true; // Conectado a uma rede 5G
+                    }
+                }
+            }
+
+            return false; // Não conectado a uma rede 5G
+        }
 
 
     }

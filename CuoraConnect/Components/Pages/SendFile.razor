@@ -9,6 +9,7 @@
 @using CuoraConnect.Services
 @using Microsoft.AspNetCore.Components
 @inject IFileUploadService FileUploadService
+@inject IJSRuntime JSRuntime
 
 
 <ol style="--length: 5">
@@ -141,6 +142,9 @@
         <button type="button" class="btn btn-outline-info btn-sm">Feito</button>
     </div>
 
+
+      @if (statusAlerta != null)
+        {
     <!-- Warning Alert -->
     <div class="alert alert-warning d-flex justify-content-between align-items-center" role="alert">
         <div class="d-flex align-items-center">
@@ -153,10 +157,11 @@
 	c-7.816-1.161-13.676-7.289-14.881-14.692l-10.601-65.597c-2.468-15.273,7.912-29.655,23.185-32.123
 	c15.273-2.468,29.655,7.912,32.123,23.185C183.284,110.192,183.268,113.161,182.875,115.9z" fill="#664d03"></path>
 </svg>
-            <div class="mx-3">Atênção - Desconecte da rede Wi-Fi do seu estabelecimento e conecte no Wi-Fi da Cuora Max.</div>
+                <div class="mx-3">Atênção - @statusAlerta</div>
         </div>
-        <button type="button" class="btn btn-outline-warning btn-sm">Feito</button>
+            <a href="Wi-FiConfig" type="button" class="btn btn-outline-warning btn-sm" @onclick="@(() => SetActiveMenu("Wi-FiConfig"))">Configurar Wi-Fi</a>
     </div>
+        }
 
     <!-- Error Alert -->
     <div class="alert alert-danger d-flex justify-content-between align-items-center" role="alert">
@@ -175,14 +180,30 @@
 
 
 @code {
+    private string statusAlerta;
     private static readonly HttpClient client = new HttpClient();
     private string? statusMessage;
+    private string fileXMLPath;
 
     private async Task EnviarConfig()
     {
         Debug.WriteLine("Iniciando envio de configuração...");
 
         FileUploadService.SaveXmlToFile();
+
+        fileXMLPath = FileUploadService.alertXMLCreate();
+
+        if (string.IsNullOrEmpty(fileXMLPath)) // Verifica se fileXMLPath é nulo ou vazio
+        {
+            statusAlerta = "Vá para a página de Configuração da rede Wi-Fi do seu estabelecimento.";
+            return;
+        }
+        else
+        {
+            // Lógica para o caso em que o arquivo XML foi criado
+            Debug.WriteLine($"Arquivo XML já estava criado");
+           
+        }
 
         // Função para calcular o hash MD5 de uma string
         string Md5Hash(string data)
@@ -380,6 +401,20 @@
         {
             Debug.WriteLine($"Erro ao enviar configuração: {ex.Message}");
             statusMessage = $"Erro ao enviar configuração: {ex.Message}";
+
+
         }
     }
+
+    private async Task SendConfigBasicAuth()
+    {
+      
+    }
+
+    private async Task SetActiveMenu(string menuId)
+    {
+        // Chama a função JavaScript passando o ID do menu ativo
+        await JSRuntime.InvokeVoidAsync("setActiveClass", menuId);
+    }
+}
 }
