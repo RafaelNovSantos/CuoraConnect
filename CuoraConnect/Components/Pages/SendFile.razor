@@ -8,9 +8,11 @@
 @using System.Text.RegularExpressions
 @using CuoraConnect.Services
 @using Microsoft.AspNetCore.Components
+@using SQLite
+@using CuoraConnect.Models;
 @inject IFileUploadService FileUploadService
+@inject INetworkService NetworkService
 @inject IJSRuntime JSRuntime
-
 
 <ol style="--length: 5">
     <li id="pop-up" style="--i: 5; text-align: center; counter-reset: list 3;">
@@ -180,30 +182,184 @@
 
 
 @code {
-    private string statusAlerta;
+    private string? statusAlerta;
     private static readonly HttpClient client = new HttpClient();
-    private string? statusMessage;
-    private string fileXMLPath;
+    private string? statusMessage { get; set; }
+    private string? fileXMLPath;
+
+    private bool TableExists(string tableName)
+    {
+        var _pathDB = FileUploadService.pathDB();
+
+        // Conecta ao banco de dados
+        using var db = new SQLiteConnection(_pathDB);
+
+        // Executa uma consulta para verificar se a tabela existe no esquema
+        var query = $"SELECT name FROM sqlite_master WHERE type='table' AND name='{tableName}';";
+
+        var result = db.ExecuteScalar<string>(query);
+
+        // Se result não for nulo ou vazio, a tabela existe
+        return !string.IsNullOrEmpty(result);
+    }
 
     private async Task EnviarConfig()
     {
+        string filePath = FileUploadService.SaveXmlToFile();
+
+        // Verifica se o arquivo existe
+        if (!File.Exists(filePath))
+        {
+            statusMessage = "Arquivo não encontrado.";
+            StateHasChanged();
+            return;
+        }
+
+        try
+        {
+            var response = await BasicAuthWithFile();
+        }
+        catch (Exception ex) // Captura qualquer exceção
+        {
+            statusMessage = $"Erro ao enviar configuração: {ex.Message}";
+            StateHasChanged();
+            // Aqui você pode adicionar lógica adicional para registrar o erro ou exibi-lo ao usuário
+        }
+
+        async Task<HttpWebResponse> BasicAuthWithFile()
+        {
+            var url = new Uri("http://192.168.0.1/import/config");
+            var request = (HttpWebRequest)WebRequest.Create(url);
+            request.Method = "POST";
+            var authValue = Convert.ToBase64String(Encoding.ASCII.GetBytes("admin:admin"));
+            request.Headers["Authorization"] = "Basic " + authValue;
+
+            var boundary = "===" + DateTime.Now.Ticks.ToString("x") + "===";
+            request.ContentType = $"multipart/form-data; boundary={boundary}";
+
+            using (var requestStream = await request.GetRequestStreamAsync())
+            using (var writer = new StreamWriter(requestStream, Encoding.UTF8))
+            {
+                var fileName = Path.GetFileName(filePath);
+                writer.Write($"--{boundary}\r\n");
+                writer.Write($"Content-Disposition: form-data; name=\"configrecord\"; filename=\"{fileName}\"\r\n");
+                writer.Write($"Content-Type: application/xml\r\n\r\n");
+                writer.Flush();
+
+                using (var fileStream = File.OpenRead(filePath))
+                {
+                    await fileStream.CopyToAsync(requestStream);
+                }
+
+                writer.Write($"\r\n--{boundary}--\r\n");
+                writer.Flush();
+            }
+
+            try
+            {
+                var response = (HttpWebResponse)await request.GetResponseAsync();
+                // Lê o corpo da resposta
+                using (var streamReader = new StreamReader(response.GetResponseStream()))
+                {
+                    string responseBody = streamReader.ReadToEnd();
+                    statusMessage = $"Resposta do servidor: {responseBody}";
+                    StateHasChanged();
+                }
+
+                return response;
+            }
+            catch (WebException ex)
+            {
+                using (var responseStream = ex.Response.GetResponseStream())
+                using (var reader = new StreamReader(responseStream))
+                {
+                    string errorResponse = await reader.ReadToEndAsync();
+
+
+                    // Verifica se a mensagem de erro contém o código de status 401
+                    if (ex.Response is HttpWebResponse httpResponse && httpResponse.StatusCode == HttpStatusCode.Unauthorized)
+                    {
+                        // Chama o método desejado se a resposta for 401
+                        SendConfigBasicAuth(); // Substitua pelo nome do seu método
+
+                    }
+                    else
+                    {
+                        
+                        statusMessage = $"Erro: {ex.Message}, Resposta: {errorResponse}";
+                        StateHasChanged();
+                    }
+                }
+                // Não lança a exceção novamente
+                return null; // Ou outra lógica que você preferir
+            }
+        }
+    }
+
+
+
+
+    private async Task SendConfigBasicAuth()
+    {
+
+        // Função GenerateXml() para gerar o XML e verificar dados
+        string GenerateXml()
+        {
+            var _pathDB = FileUploadService.pathDB();
+
+            // Conecta ao banco de dados
+            using var db = new SQLiteConnection(_pathDB);
+
+            // Verifica se a tabela NetworkInfo existe
+            if (!TableExists("NetworkInfo"))
+            {
+                Debug.WriteLine("Erro: A tabela NetworkInfo não existe.");
+                statusAlerta = "Vá para a página de Configuração da rede Wi-Fi do seu estabelecimento para buscar informações da rede.";
+                StateHasChanged();
+                return "Erro: Nenhum dado foi encontrado na tabela NetworkInfo."; // Encerrar o método
+            }
+            else
+            {
+                var NETConfig = db.Table<NetworkInfo>().FirstOrDefault();
+
+                // Verificar se o registro foi encontrado
+                if (NETConfig == null)
+                {
+                    return "Erro: Nenhum dado foi encontrado na tabela NetworkInfo.";
+                }
+
+                // Verificar se os campos importantes estão preenchidos
+                var ssid = NETConfig.SSID;
+                var ipAddressConfig = NETConfig.AvailableIP;
+                var ipDefault = NETConfig.Gateway;
+                var password = NETConfig.Password;
+                var cidr = NETConfig.CIDR;
+
+                if (string.IsNullOrEmpty(ssid) || string.IsNullOrEmpty(ipAddressConfig) || string.IsNullOrEmpty(ipDefault))
+                {
+                    return "Erro: Alguns campos obrigatórios estão vazios.";
+                }
+
+                // Dados foram criados corretamente
+                return "Dados criados com sucesso.";
+            }
+
+        }
+
+        // Chamar GenerateXml() e verificar o resultado
+        var resultadoXml = GenerateXml();
+
+        // Se houver um erro na geração dos dados, encerrar o método
+        if (resultadoXml.StartsWith("Erro") || resultadoXml.Contains("Erro"))
+        {
+            Debug.WriteLine(resultadoXml); // Exibe a mensagem de erro
+            return; // Encerrar o método EnviarConfig
+        }
+
         Debug.WriteLine("Iniciando envio de configuração...");
 
         FileUploadService.SaveXmlToFile();
 
-        fileXMLPath = FileUploadService.alertXMLCreate();
-
-        if (string.IsNullOrEmpty(fileXMLPath)) // Verifica se fileXMLPath é nulo ou vazio
-        {
-            statusAlerta = "Vá para a página de Configuração da rede Wi-Fi do seu estabelecimento.";
-            return;
-        }
-        else
-        {
-            // Lógica para o caso em que o arquivo XML foi criado
-            Debug.WriteLine($"Arquivo XML já estava criado");
-           
-        }
 
         // Função para calcular o hash MD5 de uma string
         string Md5Hash(string data)
@@ -349,7 +505,9 @@
                 writer.Flush();
             }
 
-            Debug.WriteLine("Arquivo enviado, aguardando resposta do servidor...");
+
+            statusMessage = "Configuração enviada, aguardando resposta da balança.";
+            StateHasChanged();
 
             // Lê a resposta do servidor
             using (var response = (HttpWebResponse)await request.GetResponseAsync())
@@ -358,10 +516,12 @@
                 using (var reader = new StreamReader(responseStream))
                 {
                     string responseContent = await reader.ReadToEndAsync();
-                    Debug.WriteLine($"Resposta do servidor: {responseContent}");
-
                     // Adiciona a resposta ao statusMessage
                     statusMessage = $"Resposta do servidor: {response.StatusCode} - {responseContent}";
+                    StateHasChanged();
+                    Debug.WriteLine($"Resposta do servidor: {responseContent}");
+
+
                 }
                 return response;
             }
@@ -401,14 +561,10 @@
         {
             Debug.WriteLine($"Erro ao enviar configuração: {ex.Message}");
             statusMessage = $"Erro ao enviar configuração: {ex.Message}";
+            StateHasChanged();
 
 
         }
-    }
-
-    private async Task SendConfigBasicAuth()
-    {
-      
     }
 
     private async Task SetActiveMenu(string menuId)

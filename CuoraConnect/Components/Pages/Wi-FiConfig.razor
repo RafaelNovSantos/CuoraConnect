@@ -92,6 +92,9 @@
         <button type="button" class="btn btn-outline-info btn-sm">Avançar</button>
     </div>
 
+
+    @if (statusAlert != null)
+    {
     <!-- Warning Alert -->
     <div class="alert alert-warning d-flex justify-content-between align-items-center" role="alert">
         <div class="d-flex align-items-center">
@@ -104,10 +107,11 @@
 	c-7.816-1.161-13.676-7.289-14.881-14.692l-10.601-65.597c-2.468-15.273,7.912-29.655,23.185-32.123
 	c15.273-2.468,29.655,7.912,32.123,23.185C183.284,110.192,183.268,113.161,182.875,115.9z" fill="#664d03"></path>
 </svg>
-            <div  class="mx-3">Atênção - Desconecte da rede Cuora Max e conecte no Wi-Fi do seu estabelecimento.</div>
+            <div  class="mx-3">Atênção - @statusAlert</div>
         </div>
-        <button type="button" class="btn btn-outline-warning btn-sm">Avançar</button>
+        <a class="btn btn-outline-success btn-sm" @onclick="buttonHide">Entendido</a>
     </div>
+    }
 
     <!-- Error Alert -->
     <div class="alert alert-danger d-flex justify-content-between align-items-center" role="alert">
@@ -129,6 +133,7 @@
 
 @code {
     private string? statusSucesso;
+    private string? statusAlert;
     private string ssid = "";
     private string gateway = "";
     private string localIP = "";
@@ -151,6 +156,12 @@
         db.CreateTable<NetworkInfo>();
     }
 
+
+    private Task buttonHide()
+    {
+        statusAlert = null;
+        return Task.CompletedTask;
+    }
 
     public int ConvertSubnetMaskToCIDR(string subnetMask)
     {
@@ -224,6 +235,14 @@
     private async void SaveNetworkInfo()
     {
 
+
+        if (string.IsNullOrEmpty(ssid) || string.IsNullOrEmpty(gateway) || string.IsNullOrEmpty(localIP) || string.IsNullOrEmpty(availableIP) || string.IsNullOrEmpty(subnetMask) || string.IsNullOrEmpty(password))
+        {
+            statusAlert = "Preencha todos os campos";
+        }
+        else{
+
+
         cidr = ConvertSubnetMaskToCIDR(subnetMask);
         // Salvando no SQLite
         using var db = new SQLiteConnection(FileUploadService.pathDB());
@@ -259,6 +278,7 @@
         
         statusSucesso = "Informações de rede salvas no banco de dados.";
         Debug.WriteLine("Informações de rede salvas no banco de dados.");
+        }
     }
 
     private async Task SetActiveMenu(string menuId)

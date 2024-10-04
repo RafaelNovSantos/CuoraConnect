@@ -5,6 +5,5 @@
         string SaveXmlToFile();
         string GenerateXml();
         string pathDB();
-        string alertXMLCreate();
     }
 }

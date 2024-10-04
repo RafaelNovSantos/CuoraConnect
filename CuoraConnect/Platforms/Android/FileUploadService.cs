@@ -35,32 +35,17 @@ namespace CuoraConnect.Platforms.Android
             {
                 // Apaga o arquivo existente
                 File.Delete(_filePath);
-                Debug.WriteLine($"Arquivo existente apagado: {_filePath}");
+                System.Diagnostics.Debug.WriteLine($"Arquivo existente apagado: {_filePath}");
             }
 
             // Gera o novo conteúdo XML com os dados do banco de dados
             var xmlContent = GenerateXml();
 
-            // Se não houver XML, retorna e não cria o arquivo
-            if (xmlContent == null)
-            {
-                alertXMLCreate();
-                return null;
-            }
-
             File.WriteAllText(_filePath, xmlContent);
-            Debug.WriteLine($"Novo XML gerado e salvo em: {_filePath}");
+            System.Diagnostics.Debug.WriteLine($"Novo XML gerado e salvo em: {_filePath}");
 
             return _filePath;
         }
-
-
-        public string alertXMLCreate()
-        {
-            Debug.WriteLine("Vá para a página de configuração da rede para salvar as configurações");
-            return null; // Retorna um valor booleano
-        }
-
 
         public string pathDB()
         {
@@ -76,13 +61,6 @@ namespace CuoraConnect.Platforms.Android
 
             // Buscar os dados que serão inseridos no XML
             var NETConfig = db.Table<NetworkInfo>().FirstOrDefault(c => c.Id == "$");
-
-            // Verifica se existem dados no banco de dados
-            if (NETConfig == null)
-            {
-                Debug.WriteLine("Nenhum dado encontrado no banco de dados. XML não será criado.");
-                return null; // Retorna null para indicar que o XML não foi gerado
-            }
 
             var ssid = NETConfig.SSID;
             var ipAddressConfig = NETConfig.AvailableIP;
@@ -110,7 +88,7 @@ namespace CuoraConnect.Platforms.Android
 <configrecord version = '0.1.0.1'>
    <configgroup name = 'Access Point' instance = 'ap0'>
       <configitem name = 'SSID'>
-         <value>CUORA_MAX_0080a3d84695</value>
+         <value>CUORA_MAX_%s</value>
       </configitem>
       <configitem name = 'Guest'>
          <value>Enabled</value>
