@@ -164,7 +164,7 @@
             <a href="Wi-FiConfig" type="button" class="btn btn-outline-warning btn-sm" @onclick="@(() => SetActiveMenu("Wi-FiConfig"))">Configurar Wi-Fi</a>
     </div>
         }
-
+        @if(statusError != null){
     <!-- Error Alert -->
     <div class="alert alert-danger d-flex justify-content-between align-items-center" role="alert">
         <div class="d-flex align-items-center">
@@ -173,10 +173,11 @@
                 <path d="M135.937 24.1855C98.2715 27.0176 64.0605 47.3516 43.0469 79.2969C20.4473 113.734 17.6719 160.35 35.9668 197.959C41.9707 210.307 48.2578 219.256 58.0566 229.338C70.8008 242.422 84.3379 251.484 100.934 257.998C114.98 263.436 128.234 265.871 144.717 265.871C159.5 265.871 170.035 264.342 182.553 260.264C221.918 247.52 252.277 214.951 262.529 174.453C266.041 160.633 267.004 141.262 264.908 127.441C260.83 100.934 248.029 76.0117 228.998 57.7734C203.963 33.7012 170.375 21.5801 135.937 24.1855ZM158.594 49.5039C187.084 53.2988 212.289 69.2715 226.449 92.4375C236.135 108.24 240.496 122.797 241.119 141.375C241.855 162.785 236.814 181.477 225.6 198.809C212.912 218.293 193.088 232.453 170.205 238.23C146.643 244.234 121.437 241.516 100.254 230.754C90.8515 225.939 83.7148 220.785 76.4648 213.535C69.2148 206.285 64.0605 199.148 59.2461 189.746C51.4863 174.453 48.2578 159.387 48.8808 141.375C49.5605 122.117 54.3183 106.824 64.457 91.1914C73.8594 76.748 85.4707 66.4961 101.67 58.5098C110.109 54.3184 120.191 51.1465 129.141 49.9004C131.463 49.5605 134.012 49.1641 134.805 49.0508C138.486 48.541 153.27 48.8242 158.594 49.5039Z" fill="#842029" />
                 <path d="M104.502 97.1387C100.141 98.668 96.2891 104.162 96.2891 108.75C96.2891 113.281 96.9688 114.131 112.602 129.82L127.725 145L112.602 160.123C96.9688 175.869 96.2891 176.719 96.2891 181.25C96.2891 187.594 102.406 193.711 108.75 193.711C113.281 193.711 114.131 193.031 129.877 177.398L145 162.275L160.18 177.398C175.869 193.031 176.719 193.711 181.25 193.711C187.594 193.711 193.711 187.594 193.711 181.25C193.711 176.719 193.031 175.869 177.398 160.123L162.275 145L177.398 129.82C193.031 114.131 193.711 113.281 193.711 108.75C193.711 102.406 187.594 96.2891 181.25 96.2891C176.719 96.2891 175.869 96.9687 160.18 112.602L145 127.725L129.877 112.602C117.246 100.084 114.301 97.4219 112.432 96.9121C109.43 96.1191 107.277 96.1758 104.502 97.1387Z" fill="#842029" />
             </svg>
-            <div class="mx-3">Erro - Não foi possível configurar o Wi-Fi da balança.</div>
+            <div class="mx-3">Erro - @statusError</div>
         </div>
-        <button type="button" class="btn btn-outline-danger btn-sm">Tentar novamente</button>
+            <button type="button" class="btn btn-outline-danger btn-sm" @onclick="buttonHide">Entendido</button>
     </div>
+    }
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -186,6 +187,7 @@
     private static readonly HttpClient client = new HttpClient();
     private string? statusMessage { get; set; }
     private string? fileXMLPath;
+    private string? statusError;
 
     private bool TableExists(string tableName)
     {
@@ -203,9 +205,26 @@
         return !string.IsNullOrEmpty(result);
     }
 
+    private Task buttonHide()
+    {
+        statusError = null;
+        return Task.CompletedTask;
+    }
+
     private async Task EnviarConfig()
     {
+        bool connected5g = NetworkService.IsConnectedTo5G();
         string filePath = FileUploadService.SaveXmlToFile();
+
+        if (connected5g == true){
+            Debug.WriteLine("Conectado no 5g");
+            statusError = "Conecte no Wi-Fi da balança Cuora Max";
+            return;
+        }
+        else
+        {
+            Debug.WriteLine("Conexão 2.4g");
+        }
 
         // Verifica se o arquivo existe
         if (!File.Exists(filePath))

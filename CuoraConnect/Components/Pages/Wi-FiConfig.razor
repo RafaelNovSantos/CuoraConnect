@@ -3,6 +3,7 @@
 @using System.Diagnostics;
 @using CuoraConnect.Models;
 @using SQLite
+@using System.ComponentModel
 @inject INetworkService NetworkService
 @inject IFileUploadService FileUploadService
 @inject IJSRuntime JSRuntime
@@ -10,7 +11,15 @@
 
 
 
-
+<script>
+    function scrollToElement() {
+        // Alvo para rolar
+        var element = document.getElementById('container');
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth' }); // Rolagem suave
+        }
+    }
+</script>
 
 <ol style="--length: 5;">
     <li id="pop-up" style="--i: 3; counter-reset: list 2;">
@@ -49,19 +58,19 @@
             </ul>
         </div>
 
-        <button class="btn btn-primary mt-2" @onclick="GetNetworkInfo">Obter Informações da Rede</button>
-        <button class="btn btn-success mt-2" @onclick="() => SaveNetworkInfo()">Salvar Alterações</button>
+        <a class="btn btn-primary mt-2" @onclick="GetNetworkInfo">Obter Informações da Rede</a>
+        <a class="btn btn-success mt-2" @onclick="() => SaveNetworkInfo()">Salvar Alterações</a>
 
 
     </li>
 </ol>
-<div class="container ">
+<div id="container" class="container ">
 
     <div class="text-center">
         <h4 class="fw-bold">Status de conexão </h4>
     </div>
 
-     @if (statusSucesso != null)
+     @if (statusSucess != null)
         {
     <!-- Success Alert -->
     <div class="alert alert-success d-flex justify-content-between align-items-center" role="alert">
@@ -70,7 +79,7 @@
                 <circle fill="#0f5132" cx="24" cy="24" r="21" />
                 <polygon fill="#d1e7dd" points="34.6,14.6 21,28.2 15.4,22.6 12.6,25.4 21,33.8 37.4,17.4" />
             </svg>
-            <div class="mx-3">Sucesso - @statusSucesso</div>
+            <div class="mx-3">Sucesso - @statusSucess</div>
         </div>
             <a href="sendfile" class="btn btn-outline-success btn-sm" @onclick="@(() => SetActiveMenu("sendfile"))">Avançar</a>
 
@@ -109,10 +118,11 @@
 </svg>
             <div  class="mx-3">Atênção - @statusAlert</div>
         </div>
-        <a class="btn btn-outline-success btn-sm" @onclick="buttonHide">Entendido</a>
+            <a class="btn btn-outline-success btn-sm" @onclick="() => buttonHide(statusAlert)">Entendido</a>
     </div>
     }
 
+    @if(statusError != null){
     <!-- Error Alert -->
     <div class="alert alert-danger d-flex justify-content-between align-items-center" role="alert">
         <div class="d-flex align-items-center">
@@ -123,17 +133,21 @@
                 <path d="M104.502 97.1387C100.141 98.668 96.2891 104.162 96.2891 108.75C96.2891 113.281 96.9688 114.131 112.602 129.82L127.725 145L112.602 160.123C96.9688 175.869 96.2891 176.719 96.2891 181.25C96.2891 187.594 102.406 193.711 108.75 193.711C113.281 193.711 114.131 193.031 129.877 177.398L145 162.275L160.18 177.398C175.869 193.031 176.719 193.711 181.25 193.711C187.594 193.711 193.711 187.594 193.711 181.25C193.711 176.719 193.031 175.869 177.398 160.123L162.275 145L177.398 129.82C193.031 114.131 193.711 113.281 193.711 108.75C193.711 102.406 187.594 96.2891 181.25 96.2891C176.719 96.2891 175.869 96.9687 160.18 112.602L145 127.725L129.877 112.602C117.246 100.084 114.301 97.4219 112.432 96.9121C109.43 96.1191 107.277 96.1758 104.502 97.1387Z" fill="#842029" />
             </svg>
 
-            <div class="mx-3">Erro - Nenhuma conexão encontrada.</div>
+            <div class="mx-3">Erro - @statusError</div>
         </div>
-        <button type="button" class="btn btn-outline-danger btn-sm">Avançar</button>
+        <a type="button" class="btn btn-outline-danger btn-sm" @onclick="@(() => buttonHide("statusErrorHide"))">Entendido</a>
+         
+
     </div>
+    }
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
 
 
 @code {
-    private string? statusSucesso;
+    private string? statusSucess;
     private string? statusAlert;
+    private string? statusError;
     private string ssid = "";
     private string gateway = "";
     private string localIP = "";
@@ -157,11 +171,26 @@
     }
 
 
-    private Task buttonHide()
+
+
+    private Task buttonHide(string status)
     {
-        statusAlert = null;
+        if (status == "statusAlertHide")
+        {
+            statusAlert = null;
+        }
+        else if (status == "statusErrorHide")
+        {
+            statusError = null;
+        }
+        else if (status == "statusSucessHide")
+        {
+            statusSucess = null;
+        }
+
         return Task.CompletedTask;
     }
+
 
     public int ConvertSubnetMaskToCIDR(string subnetMask)
     {
@@ -199,6 +228,38 @@
         Debug.WriteLine("Tentando obter informações da rede...");
         try
         {
+            bool isMobileDataEnabled = NetworkService.IsMobileDataEnabled();
+            if (isMobileDataEnabled)
+            {
+                Debug.WriteLine("Dados móveis estão ativados.");
+                statusError = "Desative sua conexão com os dados móveis.";
+                await JSRuntime.InvokeVoidAsync("scrollToElement");
+                return;
+            }
+            else
+            {
+                Debug.WriteLine("Dados móveis estão desativados.");
+            }
+            bool connected5g = NetworkService.IsConnectedTo5G();
+            if (connected5g == true)
+            {
+                Debug.WriteLine("Conectado no 5g");
+                statusError = "Não é possível configurar em redes Wi-Fi 5g, conecte em uma rede Wi-Fi 2.4g";
+
+                if (!string.IsNullOrEmpty(statusAlert) || !string.IsNullOrEmpty(statusSucess) || statusError != null)
+                {
+                    await JSRuntime.InvokeVoidAsync("scrollToElement");
+                }
+                return;
+            }
+            else
+            {
+                Debug.WriteLine("Conexão 2.4g");
+            }
+
+            
+
+
             Debug.WriteLine("Serviço de rede obtido.");
 
             // Obtém o SSID
@@ -276,7 +337,7 @@
             db.Update(table);
         }
         
-        statusSucesso = "Informações de rede salvas no banco de dados.";
+        statusSucess = "Informações de rede salvas no banco de dados.";
         Debug.WriteLine("Informações de rede salvas no banco de dados.");
         }
     }

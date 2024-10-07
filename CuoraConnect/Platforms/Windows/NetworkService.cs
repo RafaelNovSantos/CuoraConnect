@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Net.NetworkInformation;
 using System.Threading.Tasks;
 using CuoraConnect.Services;
+using NativeWifi;
 using Microsoft.Maui.Controls;
 
 [assembly: Dependency(typeof(CuoraConnect.Platforms.Windows.NetworkService))]
@@ -175,6 +176,24 @@ namespace CuoraConnect.Platforms.Windows
                 }
             }
             return "Máscara de rede não encontrada.";
+        }
+
+
+        public bool IsMobileDataEnabled()
+        {
+            var interfaces = NetworkInterface.GetAllNetworkInterfaces();
+
+            foreach (NetworkInterface ni in interfaces)
+            {
+                if (ni.NetworkInterfaceType == NetworkInterfaceType.Wwan) // WWAN refere-se à rede de dados móveis
+                {
+                    if (ni.OperationalStatus == OperationalStatus.Up)
+                    {
+                        return true; // Dados móveis estão habilitados e em uso
+                    }
+                }
+            }
+            return false; // Não há dados móveis ativos
         }
     }
 

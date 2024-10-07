@@ -286,5 +286,25 @@ namespace CuoraConnect.Platforms.Android
         }
 
 
+        public bool IsMobileDataEnabled()
+        {
+            var context = Application.Context;
+            var connectivityManager = (ConnectivityManager)context.GetSystemService(Context.ConnectivityService);
+
+            try
+            {
+                // Usa reflexão para acessar o método "getMobileDataEnabled"
+                var method = connectivityManager.Class.GetDeclaredMethod("getMobileDataEnabled");
+                method.Accessible = true;
+                bool isMobileDataEnabled = (bool)method.Invoke(connectivityManager);
+                return isMobileDataEnabled;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Erro ao verificar dados móveis: " + ex.Message);
+                return false;
+            }
+        }
+
     }
 }

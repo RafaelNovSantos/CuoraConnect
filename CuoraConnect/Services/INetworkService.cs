@@ -9,8 +9,9 @@ namespace CuoraConnect.Services
         string GetLocalIPAddress();
         string GetAvailableIPAddress();
         string GetDefaultGateway();
-
         List<string> GetAvailableWifiNetworks();
         string GetSubnetMask();
+        bool IsConnectedTo5G();
+        bool IsMobileDataEnabled();
     }
 }
