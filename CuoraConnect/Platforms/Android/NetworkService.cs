@@ -1,16 +1,11 @@
-﻿using System.Net;
-using System.Net.NetworkInformation;
+﻿using System.Net.NetworkInformation;
 using CuoraConnect.Services;
-using Microsoft.Maui.Controls;
 using Android.Net.Wifi;
-using System.Threading.Tasks;
 using Android.Content;
-using Microsoft.Maui.ApplicationModel;
-using Android.App;
 using Android.Net;
 using Application = Android.App.Application;
 using System.Diagnostics;
-using Android.Telephony;
+using static Android.Net.ConnectivityManager;
 
 [assembly: Dependency(typeof(CuoraConnect.Platforms.Android.NetworkService))]
 namespace CuoraConnect.Platforms.Android
@@ -81,7 +76,7 @@ namespace CuoraConnect.Platforms.Android
             // Verifica se há uma conexão Wi-Fi ativa
             if (activeNetwork == null || !activeNetwork.IsConnected || activeNetwork.Type != ConnectivityType.Wifi)
             {
-                return "Nenhuma conexão Wi-Fi ativa.";
+                return "Nenhuma conexão Wi-Fi ativa";
             }
 
             // Obtém informações sobre a conexão
@@ -101,35 +96,86 @@ namespace CuoraConnect.Platforms.Android
 
 
 
-        public void ConnectToWifi(string ssid, string password)
+
+        private ConnectivityManager.NetworkCallback _networkCallback;
+
+        public async Task<bool> ConnectToWifiAsync(string ssid, string password)
         {
-#if ANDROID
-            var wifiManager = (WifiManager)Application.Context.GetSystemService(Context.WifiService);
-
-            var wifiConfig = new WifiConfiguration
+            var status = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
+            if (status != PermissionStatus.Granted)
             {
-                Ssid = $"\"{ssid}\"", // Adicione aspas ao SSID
-                PreSharedKey = $"\"{password}\"" // Adicione aspas à senha
-            };
-
-            int networkId = wifiManager.AddNetwork(wifiConfig);
-            if (networkId == -1)
-            {
-                Console.WriteLine($"Não foi possível adicionar a rede: {ssid}");
-                return;
+                status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
+                if (status != PermissionStatus.Granted)
+                {
+                    return false;
+                }
             }
 
-            wifiManager.Disconnect();
-            wifiManager.EnableNetwork(networkId, true);
-            wifiManager.Reconnect();
-            Debug.WriteLine($"Conectado à rede: {ssid}");
-#endif
+            var wifiNetworkSpecifier = new WifiNetworkSpecifier.Builder()
+                .SetSsid(ssid)
+                .SetWpa2Passphrase(password)
+                .Build();
+
+            var networkRequest = new NetworkRequest.Builder()
+                .AddTransportType(TransportType.Wifi)
+                .SetNetworkSpecifier(wifiNetworkSpecifier)
+                .Build();
+
+            var connectivityManager = (ConnectivityManager)Application.Context.GetSystemService(Context.ConnectivityService);
+
+            var tcs = new TaskCompletionSource<bool>();
+
+            _networkCallback = new CustomNetworkCallback(tcs);
+            connectivityManager.RequestNetwork(networkRequest, _networkCallback);
+
+            return await tcs.Task;
         }
 
+        public void DisconnectFromWifi()
+        {
+            var connectivityManager = (ConnectivityManager)Application.Context.GetSystemService(Context.ConnectivityService);
+            if (_networkCallback != null)
+            {
+                connectivityManager.UnregisterNetworkCallback(_networkCallback);
+                _networkCallback = null;
+            }
+        }
+
+        private class CustomNetworkCallback : ConnectivityManager.NetworkCallback
+        {
+            private TaskCompletionSource<bool> _tcs;
+
+            public CustomNetworkCallback(TaskCompletionSource<bool> tcs)
+            {
+                _tcs = tcs;
+            }
+
+            public override void OnAvailable(Network network)
+            {
+                base.OnAvailable(network);
+                _tcs.TrySetResult(true);
+            }
+
+            public override void OnUnavailable()
+            {
+                base.OnUnavailable();
+                _tcs.TrySetResult(false);
+            }
+
+            public override void OnLost(Network network)
+            {
+                base.OnLost(network);
+                _tcs.TrySetResult(false);
+            }
+        }
+    
 
 
 
-        public string GetLocalIPAddress()
+
+
+
+    public string GetLocalIPAddress()
         {
             foreach (NetworkInterface networkInterface in NetworkInterface.GetAllNetworkInterfaces())
             {

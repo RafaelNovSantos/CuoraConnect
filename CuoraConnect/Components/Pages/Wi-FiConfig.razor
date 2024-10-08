@@ -12,13 +12,15 @@
 
 
 <script>
+
     function scrollToElement() {
-        // Alvo para rolar
-        var element = document.getElementById('container');
-        if (element) {
-            element.scrollIntoView({ behavior: 'smooth' }); // Rolagem suave
-        }
+        // Rola até o final da página
+        window.scrollTo({
+            top: document.body.scrollHeight, // Altura total do corpo da página
+            behavior: 'smooth' // Rolagem suave
+        });
     }
+
 </script>
 
 <ol style="--length: 5;">
@@ -30,7 +32,7 @@
         </h3>
         <div class="nice-form-group">
             <label>Sua Rede</label>
-            <input type="tel" placeholder="Wi-Fi do seu comércio" id="ssidInput" @bind="ssid" class="icon-right" />
+            <input type="url" placeholder="Wi-Fi do seu comércio" id="ssidInput" @bind="ssid" class="icon-right" />
         </div>
         <div class="nice-form-group">
             <label>Senha do Wi-Fi</label>
@@ -64,13 +66,14 @@
 
     </li>
 </ol>
+    @if (!string.IsNullOrEmpty(statusAlert) || !string.IsNullOrEmpty(statusSuccess) || !string.IsNullOrEmpty(statusInfo) || statusError != null){
 <div id="container" class="container ">
 
     <div class="text-center">
         <h4 class="fw-bold">Status de conexão </h4>
     </div>
-
-     @if (statusSucess != null)
+        
+     @if (statusSuccess != null)
         {
     <!-- Success Alert -->
     <div class="alert alert-success d-flex justify-content-between align-items-center" role="alert">
@@ -79,7 +82,7 @@
                 <circle fill="#0f5132" cx="24" cy="24" r="21" />
                 <polygon fill="#d1e7dd" points="34.6,14.6 21,28.2 15.4,22.6 12.6,25.4 21,33.8 37.4,17.4" />
             </svg>
-            <div class="mx-3">Sucesso - @statusSucess</div>
+            <div class="mx-3">Sucesso - @statusSuccess</div>
         </div>
             <a href="sendfile" class="btn btn-outline-success btn-sm" @onclick="@(() => SetActiveMenu("sendfile"))">Avançar</a>
 
@@ -87,7 +90,7 @@
         }
 
 
-
+        @if(statusInfo != null){
     <!-- Info Alert -->
     <div class="alert alert-info d-flex justify-content-between align-items-center" role="alert">
         <div class="d-flex align-items-center">
@@ -96,11 +99,11 @@
                 <path d="m8 5.25v0m0 6v-3.5" />
             </svg>
 
-            <div  class="mx-3">Informação - Desabilite os dados móveis do celular.</div>
+            <div  class="mx-3">Informação - @statusInfo</div>
         </div>
-        <button type="button" class="btn btn-outline-info btn-sm">Avançar</button>
+        <a  class="btn btn-outline-info btn-sm">Avançar</a>
     </div>
-
+    }
 
     @if (statusAlert != null)
     {
@@ -118,7 +121,7 @@
 </svg>
             <div  class="mx-3">Atênção - @statusAlert</div>
         </div>
-            <a class="btn btn-outline-success btn-sm" @onclick="() => buttonHide(statusAlert)">Entendido</a>
+                <a class="btn btn-outline-warning btn-sm" @onclick="@(() => aHide("statusAlertHide"))">Entendido</a>
     </div>
     }
 
@@ -135,19 +138,22 @@
 
             <div class="mx-3">Erro - @statusError</div>
         </div>
-        <a type="button" class="btn btn-outline-danger btn-sm" @onclick="@(() => buttonHide("statusErrorHide"))">Entendido</a>
+        <a  class="btn btn-outline-danger btn-sm" @onclick="@(() => aHide("statusErrorHide"))">Entendido</a>
          
 
     </div>
     }
 </div>
+}
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
 
 
+
 @code {
-    private string? statusSucess;
+    private string? statusSuccess;
     private string? statusAlert;
     private string? statusError;
+    private string? statusInfo;
     private string ssid = "";
     private string gateway = "";
     private string localIP = "";
@@ -170,10 +176,15 @@
         db.CreateTable<NetworkInfo>();
     }
 
+    private async Task CallJavaScriptAfterRender()
+    {
+        // Aguarda até a próxima renderização do componente
+        await Task.Yield(); // Isso força a execução do código a continuar após a renderização
+        await JSRuntime.InvokeVoidAsync("scrollToElement");
+    }
 
 
-
-    private Task buttonHide(string status)
+    private Task aHide(string status)
     {
         if (status == "statusAlertHide")
         {
@@ -183,14 +194,26 @@
         {
             statusError = null;
         }
-        else if (status == "statusSucessHide")
+        else if (status == "statusSuccessHide")
         {
-            statusSucess = null;
+            statusSuccess = null;
         }
-
+        else if (status == "statusInfoHide")
+        {
+            statusInfo = null;
+        }
         return Task.CompletedTask;
     }
 
+
+    private string CleanStatus()
+    {
+        statusAlert = null;
+        statusError = null;
+        statusSuccess = null;
+        statusInfo = null;
+        return "";
+    }
 
     public int ConvertSubnetMaskToCIDR(string subnetMask)
     {
@@ -225,15 +248,27 @@
 
     private async Task GetNetworkInfo()
     {
+        CleanStatus();
+
         Debug.WriteLine("Tentando obter informações da rede...");
         try
         {
+            ssid = await NetworkService.GetCurrentSSID();
+            Debug.WriteLine($"SSID: {ssid}");
+
+            if (ssid.StartsWith("CUORA_MAX"))
+            {
+                statusError = "Desconecte da rede Cuora Max e conecte na rede do seu estabelecimento";
+                await CallJavaScriptAfterRender();
+            }
+
+
             bool isMobileDataEnabled = NetworkService.IsMobileDataEnabled();
             if (isMobileDataEnabled)
             {
                 Debug.WriteLine("Dados móveis estão ativados.");
                 statusError = "Desative sua conexão com os dados móveis.";
-                await JSRuntime.InvokeVoidAsync("scrollToElement");
+                await CallJavaScriptAfterRender();
                 return;
             }
             else
@@ -245,11 +280,7 @@
             {
                 Debug.WriteLine("Conectado no 5g");
                 statusError = "Não é possível configurar em redes Wi-Fi 5g, conecte em uma rede Wi-Fi 2.4g";
-
-                if (!string.IsNullOrEmpty(statusAlert) || !string.IsNullOrEmpty(statusSucess) || statusError != null)
-                {
-                    await JSRuntime.InvokeVoidAsync("scrollToElement");
-                }
+                await CallJavaScriptAfterRender();
                 return;
             }
             else
@@ -257,7 +288,7 @@
                 Debug.WriteLine("Conexão 2.4g");
             }
 
-            
+
 
 
             Debug.WriteLine("Serviço de rede obtido.");
@@ -295,14 +326,34 @@
 
     private async void SaveNetworkInfo()
     {
-
+        statusAlert = null;
+        statusError = null;
+        statusSuccess = null;
+        statusInfo = null;
 
         if (string.IsNullOrEmpty(ssid) || string.IsNullOrEmpty(gateway) || string.IsNullOrEmpty(localIP) || string.IsNullOrEmpty(availableIP) || string.IsNullOrEmpty(subnetMask) || string.IsNullOrEmpty(password))
         {
             statusAlert = "Preencha todos os campos";
+            StateHasChanged();
+            await CallJavaScriptAfterRender();
         }
         else{
 
+            bool isConnected = await NetworkService.ConnectToWifiAsync(ssid, password);
+
+            if (isConnected)
+            {
+                Debug.WriteLine("Conexão Wi-Fi bem-sucedida!");
+                 NetworkService.DisconnectFromWifi();
+            }
+            else
+            {
+                Debug.WriteLine("Verifique se a senha do Wi-Fi está correta.");
+                statusError = "Verifique se a senha do Wi-Fi está correta.";
+                StateHasChanged();
+                await CallJavaScriptAfterRender();
+                return;
+            }
 
         cidr = ConvertSubnetMaskToCIDR(subnetMask);
         // Salvando no SQLite
@@ -337,7 +388,9 @@
             db.Update(table);
         }
         
-        statusSucess = "Informações de rede salvas no banco de dados.";
+        statusSuccess = "Informações de rede salvas no banco de dados.";
+            await CallJavaScriptAfterRender();
+            StateHasChanged();
         Debug.WriteLine("Informações de rede salvas no banco de dados.");
         }
     }

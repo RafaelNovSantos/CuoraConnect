@@ -3,8 +3,10 @@ using System.Diagnostics;
 using System.Net.NetworkInformation;
 using System.Threading.Tasks;
 using CuoraConnect.Services;
-using NativeWifi;
 using Microsoft.Maui.Controls;
+using Windows.Devices.Enumeration;
+using Windows.Devices.WiFi;
+using Windows.Security.Credentials;
 
 [assembly: Dependency(typeof(CuoraConnect.Platforms.Windows.NetworkService))]
 namespace CuoraConnect.Platforms.Windows
@@ -181,19 +183,74 @@ namespace CuoraConnect.Platforms.Windows
 
         public bool IsMobileDataEnabled()
         {
-            var interfaces = NetworkInterface.GetAllNetworkInterfaces();
 
-            foreach (NetworkInterface ni in interfaces)
-            {
-                if (ni.NetworkInterfaceType == NetworkInterfaceType.Wwan) // WWAN refere-se à rede de dados móveis
-                {
-                    if (ni.OperationalStatus == OperationalStatus.Up)
-                    {
-                        return true; // Dados móveis estão habilitados e em uso
-                    }
-                }
-            }
             return false; // Não há dados móveis ativos
+        }
+
+        public bool IsConnectedTo5G()
+        {
+            // Cria um processo para executar o comando 'netsh wlan show interfaces'
+            Process process = new Process();
+            process.StartInfo.FileName = "netsh";
+            process.StartInfo.Arguments = "wlan show interfaces";
+            process.StartInfo.RedirectStandardOutput = true;
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.CreateNoWindow = true;
+
+            process.Start();
+            string output = process.StandardOutput.ReadToEnd();
+            process.WaitForExit();
+
+            // Verifica se a saída contém a frequência de 5 GHz
+            if (output.Contains("5 GHz"))
+            {
+                return true; // Conectado a uma rede de 5 GHz
+            }
+
+            return false; // Não conectado a uma rede de 5 GHz
+        }
+
+        private WiFiAdapter _wifiAdapter;
+
+        public async Task<bool> ConnectToWifiAsync(string ssid, string password)
+        {
+            // Get the first WiFi Adapter
+            var result = await DeviceInformation.FindAllAsync(WiFiAdapter.GetDeviceSelector());
+            if (result.Count == 0)
+            {
+                throw new Exception("No WiFi adapters found.");
+            }
+
+            _wifiAdapter = await WiFiAdapter.FromIdAsync(result[0].Id);
+
+            // Scan for available networks
+            await _wifiAdapter.ScanAsync();
+
+            // Find the network with the given SSID
+            var network = _wifiAdapter.NetworkReport.AvailableNetworks.FirstOrDefault(n => n.Ssid == ssid);
+            if (network == null)
+            {
+                return false; // Network not found
+            }
+
+            // Create the WiFi connection profile
+            var credential = new PasswordCredential
+            {
+                Password = password
+            };
+
+            var connectionResult = await _wifiAdapter.ConnectAsync(network, WiFiReconnectionKind.Automatic, credential);
+
+            // Check the connection result
+            return connectionResult.ConnectionStatus == WiFiConnectionStatus.Success;
+        }
+
+        public void DisconnectFromWifi()
+        {
+            if (_wifiAdapter != null)
+            {
+                _wifiAdapter.Disconnect();
+            }
         }
     }
 
