@@ -50,15 +50,7 @@
             <label>IP Disponível</label>
             <input type="email" placeholder="IP disponível em seu Wi-Fi" id="availableIPInput" @bind="availableIP" class="icon-right" />
         </div>
-        <div class="nice-form-group">
-            <label>Redes Wi-Fi disponíveis</label>
-            <ul class="nice-form-group">
-                @foreach (var Ssid in networks)
-                {
-                    <li class="nice-form-group">@Ssid</li>
-                }
-            </ul>
-        </div>
+       
 
         <a class="btn btn-primary mt-2" @onclick="GetNetworkInfo">Obter Informações da Rede</a>
         <a class="btn btn-success mt-2" @onclick="() => SaveNetworkInfo()">Salvar Alterações</a>
@@ -275,12 +267,13 @@
             {
                 Debug.WriteLine("Dados móveis estão desativados.");
             }
+            NetworkService.GetConnectedNetworkBSSIDs();
             bool connected5g = NetworkService.IsConnectedTo5G();
             if (connected5g == true)
             {
                 Debug.WriteLine("Conectado no 5g");
                 statusError = "Não é possível configurar em redes Wi-Fi 5g, conecte em uma rede Wi-Fi 2.4g";
-                await CallJavaScriptAfterRender();
+                 CallJavaScriptAfterRender();
                 return;
             }
             else

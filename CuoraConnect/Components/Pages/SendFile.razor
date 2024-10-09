@@ -264,7 +264,9 @@
             return;
         }
 
+        NetworkService.GetConnectedNetworkBSSIDs();
         bool connected5g = NetworkService.IsConnectedTo5G();
+
         string filePath = FileUploadService.SaveXmlToFile();
 
         bool isMobileDataEnabled = NetworkService.IsMobileDataEnabled();

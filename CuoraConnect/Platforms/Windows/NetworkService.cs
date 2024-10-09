@@ -1,11 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using System.Management;
 using System.Net.NetworkInformation;
 using System.Threading.Tasks;
 using CuoraConnect.Services;
 using Microsoft.Maui.Controls;
 using Windows.Devices.Enumeration;
 using Windows.Devices.WiFi;
+using Windows.Networking.Connectivity;
 using Windows.Security.Credentials;
 
 [assembly: Dependency(typeof(CuoraConnect.Platforms.Windows.NetworkService))]
@@ -187,9 +189,30 @@ namespace CuoraConnect.Platforms.Windows
             return false; // Não há dados móveis ativos
         }
 
-        public bool IsConnectedTo5G()
+       public bool IsConnectedTo5G()
+{
+    // Obtém o perfil de conexão atual
+    var profile = NetworkInformation.GetInternetConnectionProfile();
+
+    if (profile != null && profile.IsWlanConnectionProfile)
+    {
+        // Obtém o NetworkAdapter associado ao perfil de conexão
+        var networkAdapter = profile.NetworkAdapter;
+
+        // Verifica o tipo de interface do adaptador de rede
+        if (networkAdapter.IanaInterfaceType == 71) // 71 é o valor IANA para 802.11ac (5 GHz)
         {
-            // Cria um processo para executar o comando 'netsh wlan show interfaces'
+            return true; // Conectado a uma rede de 5 GHz
+        }
+    }
+
+    return false; // Não conectado a uma rede de 5 GHz
+}
+
+
+
+        private string GetConnectedSSID()
+        {
             Process process = new Process();
             process.StartInfo.FileName = "netsh";
             process.StartInfo.Arguments = "wlan show interfaces";
@@ -201,14 +224,152 @@ namespace CuoraConnect.Platforms.Windows
             string output = process.StandardOutput.ReadToEnd();
             process.WaitForExit();
 
-            // Verifica se a saída contém a frequência de 5 GHz
-            if (output.Contains("5 GHz"))
+            foreach (var line in output.Split('\n'))
             {
-                return true; // Conectado a uma rede de 5 GHz
+                if (line.Contains("SSID"))
+                {
+                    return line.Split(':')[1].Trim();
+                }
             }
 
-            return false; // Não conectado a uma rede de 5 GHz
+            return null;
         }
+
+
+        private Dictionary<string, List<(string BSSID, string Channel)>> GetAllNetworksBSSIDs()
+        {
+            // Dicionário para armazenar os dados de cada SSID
+            Dictionary<string, List<(string BSSID, string Channel)>> ssidData = new Dictionary<string, List<(string BSSID, string Channel)>>();
+
+            Process process = new Process();
+            process.StartInfo.FileName = "netsh";
+            process.StartInfo.Arguments = "wlan show networks mode=bssid";
+            process.StartInfo.RedirectStandardOutput = true;
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.CreateNoWindow = true;
+
+            process.Start();
+            string output = process.StandardOutput.ReadToEnd();
+            process.WaitForExit();
+
+            Debug.WriteLine("Output do comando:");
+            Debug.WriteLine(output); // Exibir output completo para diagnóstico
+
+            var lines = output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            string currentSSID = string.Empty;
+            string currentBSSID = string.Empty;
+
+            foreach (var line in lines)
+            {
+                Debug.WriteLine($"Analisando linha: {line}"); // Adicionando diagnóstico
+
+                // Captura o SSID atual
+                if (line.StartsWith("SSID"))
+                {
+                    currentSSID = line.Split(new[] { ':' }, 2)[1].Trim();
+                    Debug.WriteLine($"Current SSID: {currentSSID}");
+                }
+                // Captura o BSSID e canal
+                else if (line.Trim().StartsWith("BSSID"))
+                {
+                    currentBSSID = line.Split(new[] { ':' }, 2)[1].Trim();
+                    Debug.WriteLine($"Capturando BSSID: {currentBSSID}");
+
+                    // Espera pelo canal na linha seguinte
+                    string channel = string.Empty;
+
+                    // Procurando a linha do canal após a captura do BSSID
+                    int nextLineIndex = Array.IndexOf(lines, line) + 1;
+
+                    while (nextLineIndex < lines.Length)
+                    {
+                        if (lines[nextLineIndex].Trim().StartsWith("Canal"))
+                        {
+                            channel = lines[nextLineIndex].Split(new[] { ':' }, 2)[1].Trim();
+                            Debug.WriteLine($"Canal encontrado: {channel}");
+                            break;
+                        }
+                        nextLineIndex++;
+                    }
+
+                    // Se o SSID atual foi capturado, armazena o BSSID e canal
+                    if (!string.IsNullOrEmpty(currentSSID) && !string.IsNullOrEmpty(channel))
+                    {
+                        if (!ssidData.ContainsKey(currentSSID))
+                        {
+                            ssidData[currentSSID] = new List<(string, string)>();
+                        }
+
+                        ssidData[currentSSID].Add((currentBSSID, channel));
+                    }
+                }
+            }
+
+            return ssidData;
+        }
+
+        public string GetFrequencyFromChannel(int channel)
+        {
+            // Faixa de canais 2.4GHz
+            if (channel >= 1 && channel <= 11)
+            {
+                return "2.4 GHz";
+            }
+            // Faixa de canais 5GHz
+            else if ((channel >= 36 && channel <= 64) || (channel >= 100 && channel <= 144))
+            {
+                return "5 GHz";
+            }
+            // Canais não reconhecidos
+            return "Frequência desconhecida";
+        }
+
+        // Atualize o método GetConnectedNetworkBSSIDs para incluir a determinação da frequência
+        public void GetConnectedNetworkBSSIDs()
+        {
+            // Primeiro, obtemos a rede à qual estamos conectados
+            string connectedSSID = GetConnectedSSID();
+            if (string.IsNullOrEmpty(connectedSSID))
+            {
+                Debug.WriteLine("Não está conectado a nenhuma rede.");
+                return;
+            }
+
+            Debug.WriteLine($"Conectado à rede: {connectedSSID}");
+
+            // Obtemos todos os BSSIDs com seus canais
+            var allNetworksData = GetAllNetworksBSSIDs();
+
+            if (allNetworksData.TryGetValue(connectedSSID, out var bssidWithChannel))
+            {
+                Debug.WriteLine("BSSIDs disponíveis para a rede:");
+                foreach (var (bssid, channelStr) in bssidWithChannel)
+                {
+                    // Converta o canal para um int
+                    if (int.TryParse(channelStr, out int channel))
+                    {
+                        string frequency = GetFrequencyFromChannel(channel);
+                        Debug.WriteLine($"BSSID: {bssid}, Canal: {channel}, Frequência: {frequency}");
+                    }
+                    else
+                    {
+                        Debug.WriteLine($"Canal inválido para BSSID: {bssid}");
+                    }
+                }
+            }
+            else
+            {
+                Debug.WriteLine("Nenhum BSSID encontrado para a rede.");
+            }
+        }
+
+
+
+
+
+
+
+
 
         private WiFiAdapter _wifiAdapter;
 

@@ -189,6 +189,7 @@
         }
 
         bool connected5g = NetworkService.IsConnectedTo5G();
+        NetworkService.GetConnectedNetworkBSSIDs();
         if (connected5g == true)
         {
             Debug.WriteLine("Conectado no 5g");
