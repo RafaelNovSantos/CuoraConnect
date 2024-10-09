@@ -377,9 +377,7 @@
 
             Debug.WriteLine($"Máscara disponível: {subnetMask}");
 
-            // Obtém redes Wi-Fi disponíveis
-            networks = NetworkService.GetAvailableWifiNetworks();
-            Debug.WriteLine($"Redes Wi-Fi disponíveis: {string.Join(", ", networks)}");
+            loader = false;
         }
         catch (Exception ex)
         {
@@ -391,6 +389,7 @@
     private async void SaveNetworkInfo()
     {
         loader = true;
+        CallJavaScriptAfterRender();
         statusAlert = null;
         statusError = null;
         statusSuccess = null;
