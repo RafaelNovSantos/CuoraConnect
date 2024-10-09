@@ -188,18 +188,29 @@
             Debug.WriteLine("Dados móveis estão desativados.");
         }
 
-        bool connected5g = NetworkService.IsConnectedTo5G();
-        NetworkService.GetConnectedNetworkBSSIDs();
-        if (connected5g == true)
+        List<(string BSSID, int Channel, string Frequency)> frequency = await NetworkService.GetConnectedNetworkBSSIDs();
+
+        bool has2_4GHz = frequency.Any(item => item.Frequency == "2.4 GHz");
+
+        if (has2_4GHz)
         {
-            Debug.WriteLine("Conectado no 5g");
-            statusError = "Não é possível configurar em redes Wi-Fi 5g, conecte em uma rede Wi-Fi 2.4g";
-            await CallJavaScriptAfterRender();
-            return "";
+            Debug.WriteLine("A lista contém a frequência 2.4 GHz.");
         }
         else
         {
-            Debug.WriteLine("Conexão 2.4g");
+            bool connected5g = NetworkService.IsConnectedTo5G();
+            if (connected5g == true)
+            {
+                Debug.WriteLine("Conectado no 5g");
+                statusError = "Não é possível configurar em redes Wi-Fi 5g, conecte em uma rede Wi-Fi 2.4g";
+                CallJavaScriptAfterRender();
+
+                return "";
+            }
+            else
+            {
+                Debug.WriteLine("Conexão 2.4g");
+            }
         }
 
 
@@ -212,15 +223,16 @@
             statusError = "Desconecte da rede Cuora Max e conecte na rede do seu estabelecimento.";
             await CallJavaScriptAfterRender();
         }
-        else if (ssid == "Nenhuma conexão Wi-Fi ativa")
+        else if (ssid == "Nenhuma conexão Wi-Fi ativa" || ssid == "")
         {
             statusError = "Nenhuma conexão Wi-Fi ativa, conecte na rede do seu estabelecimento.";
             await CallJavaScriptAfterRender();
         }
-
         else
         {
+            
             statusSuccess = $"Conectado na rede {ssid} pode prosseguir para o próximo passo!";
+            
            
         }
 

@@ -325,14 +325,19 @@ namespace CuoraConnect.Platforms.Windows
         }
 
         // Atualize o método GetConnectedNetworkBSSIDs para incluir a determinação da frequência
-        public void GetConnectedNetworkBSSIDs()
+
+
+        public async Task<List<(string BSSID, int Channel, string Frequency)>> GetConnectedNetworkBSSIDs()
         {
+            // Lista de tuplas para armazenar BSSID, Canal e Frequência
+            var bssidList = new List<(string BSSID, int Channel, string Frequency)>();
+
             // Primeiro, obtemos a rede à qual estamos conectados
             string connectedSSID = GetConnectedSSID();
             if (string.IsNullOrEmpty(connectedSSID))
             {
                 Debug.WriteLine("Não está conectado a nenhuma rede.");
-                return;
+                return bssidList; // Retorna uma lista vazia se não estiver conectado
             }
 
             Debug.WriteLine($"Conectado à rede: {connectedSSID}");
@@ -350,6 +355,9 @@ namespace CuoraConnect.Platforms.Windows
                     {
                         string frequency = GetFrequencyFromChannel(channel);
                         Debug.WriteLine($"BSSID: {bssid}, Canal: {channel}, Frequência: {frequency}");
+
+                        // Adiciona os dados à lista de tuplas
+                        bssidList.Add((BSSID: bssid, Channel: channel, Frequency: frequency));
                     }
                     else
                     {
@@ -361,7 +369,12 @@ namespace CuoraConnect.Platforms.Windows
             {
                 Debug.WriteLine("Nenhum BSSID encontrado para a rede.");
             }
+
+            
+            // Retorna a lista completa de BSSIDs
+            return bssidList;
         }
+
 
 
 

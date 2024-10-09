@@ -12,7 +12,9 @@ namespace CuoraConnect.Services
         List<string> GetAvailableWifiNetworks();
         string GetSubnetMask();
         bool IsConnectedTo5G();
-        void GetConnectedNetworkBSSIDs();
+
+        Task<List<(string BSSID, int Channel, string Frequency)>> GetConnectedNetworkBSSIDs();
+
         bool IsMobileDataEnabled();
         Task<bool> ConnectToWifiAsync(string ssid, string password);
         void DisconnectFromWifi();

@@ -55,10 +55,10 @@
         <a class="btn btn-primary mt-2" @onclick="GetNetworkInfo">Obter Informações da Rede</a>
         <a class="btn btn-success mt-2" @onclick="() => SaveNetworkInfo()">Salvar Alterações</a>
 
-
+        
     </li>
 </ol>
-    @if (!string.IsNullOrEmpty(statusAlert) || !string.IsNullOrEmpty(statusSuccess) || !string.IsNullOrEmpty(statusInfo) || statusError != null){
+    @if (!string.IsNullOrEmpty(statusAlert) || !string.IsNullOrEmpty(statusSuccess) || !string.IsNullOrEmpty(statusInfo) || statusError != null || loader == true){
 <div id="container" class="container ">
 
     <div class="text-center">
@@ -67,7 +67,9 @@
         
      @if (statusSuccess != null)
         {
-    <!-- Success Alert -->
+            loader
+            = false;
+            <!-- Success Alert -->
     <div class="alert alert-success d-flex justify-content-between align-items-center" role="alert">
         <div class="d-flex align-items-center">
             <svg width="30px" height="30px" viewBox="0 0 48 48" version="1" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 48 48">
@@ -77,12 +79,15 @@
             <div class="mx-3">Sucesso - @statusSuccess</div>
         </div>
             <a href="sendfile" class="btn btn-outline-success btn-sm" @onclick="@(() => SetActiveMenu("sendfile"))">Avançar</a>
-
+                
     </div>
         }
 
 
-        @if(statusInfo != null){
+        @if (statusInfo != null)
+        {
+            loader
+    = false;
     <!-- Info Alert -->
     <div class="alert alert-info d-flex justify-content-between align-items-center" role="alert">
         <div class="d-flex align-items-center">
@@ -94,11 +99,14 @@
             <div  class="mx-3">Informação - @statusInfo</div>
         </div>
         <a  class="btn btn-outline-info btn-sm">Avançar</a>
+                
     </div>
     }
 
     @if (statusAlert != null)
-    {
+        {
+            loader
+        = false;
     <!-- Warning Alert -->
     <div class="alert alert-warning d-flex justify-content-between align-items-center" role="alert">
         <div class="d-flex align-items-center">
@@ -114,10 +122,13 @@
             <div  class="mx-3">Atênção - @statusAlert</div>
         </div>
                 <a class="btn btn-outline-warning btn-sm" @onclick="@(() => aHide("statusAlertHide"))">Entendido</a>
+                
     </div>
     }
 
     @if(statusError != null){
+            loader
+ = false;
     <!-- Error Alert -->
     <div class="alert alert-danger d-flex justify-content-between align-items-center" role="alert">
         <div class="d-flex align-items-center">
@@ -131,12 +142,35 @@
             <div class="mx-3">Erro - @statusError</div>
         </div>
         <a  class="btn btn-outline-danger btn-sm" @onclick="@(() => aHide("statusErrorHide"))">Entendido</a>
-         
+        
+                
 
     </div>
     }
+        @if (loader == true)
+        {
+
+        <div id="wifi-loader" >
+            <svg class="circle-outer" viewBox="0 0 86 86">
+                <circle class="back" cx="43" cy="43" r="40"></circle>
+                <circle class="front" cx="43" cy="43" r="40"></circle>
+                <circle class="new" cx="43" cy="43" r="40"></circle>
+            </svg>
+            <svg class="circle-middle" viewBox="0 0 60 60">
+                <circle class="back" cx="30" cy="30" r="27"></circle>
+                <circle class="front" cx="30" cy="30" r="27"></circle>
+            </svg>
+            <svg class="circle-inner" viewBox="0 0 34 34">
+                <circle class="back" cx="17" cy="17" r="14"></circle>
+                <circle class="front" cx="17" cy="17" r="14"></circle>
+            </svg>
+            <div class="text" data-text="Carregando"></div>
+        </div>
+        }
 </div>
 }
+
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
 
 
@@ -146,6 +180,7 @@
     private string? statusAlert;
     private string? statusError;
     private string? statusInfo;
+    private bool loader;
     private string ssid = "";
     private string gateway = "";
     private string localIP = "";
@@ -207,6 +242,16 @@
         return "";
     }
 
+
+    private string CleanInputs()
+    {
+        gateway = "";
+        localIP = "";
+        availableIP = "";
+        password = "";
+        subnetMask = "";
+        return "";
+    }
     public int ConvertSubnetMaskToCIDR(string subnetMask)
     {
 
@@ -227,6 +272,8 @@
 
     }
 
+
+
     private int CountBits(byte octet)
     {
         int count = 0;
@@ -240,7 +287,10 @@
 
     private async Task GetNetworkInfo()
     {
+        loader = true;
+        CallJavaScriptAfterRender();
         CleanStatus();
+        CleanInputs();
 
         Debug.WriteLine("Tentando obter informações da rede...");
         try
@@ -267,19 +317,34 @@
             {
                 Debug.WriteLine("Dados móveis estão desativados.");
             }
-            NetworkService.GetConnectedNetworkBSSIDs();
-            bool connected5g = NetworkService.IsConnectedTo5G();
-            if (connected5g == true)
+
+            List<(string BSSID, int Channel, string Frequency)> frequency = await NetworkService.GetConnectedNetworkBSSIDs();
+
+            bool has2_4GHz = frequency.Any(item => item.Frequency == "2.4 GHz");
+
+            if (has2_4GHz)
             {
-                Debug.WriteLine("Conectado no 5g");
-                statusError = "Não é possível configurar em redes Wi-Fi 5g, conecte em uma rede Wi-Fi 2.4g";
-                 CallJavaScriptAfterRender();
-                return;
+                Debug.WriteLine("A lista contém a frequência 2.4 GHz.");
             }
             else
             {
-                Debug.WriteLine("Conexão 2.4g");
+                bool connected5g = NetworkService.IsConnectedTo5G();
+                if (connected5g == true)
+                {
+                    Debug.WriteLine("Conectado no 5g");
+                    statusError = "Não é possível configurar em redes Wi-Fi 5g, conecte em uma rede Wi-Fi 2.4g";
+                    CallJavaScriptAfterRender();
+
+                    return;
+                }
+                else
+                {
+                    Debug.WriteLine("Conexão 2.4g");
+                }
             }
+
+
+
 
 
 
@@ -288,6 +353,12 @@
 
             // Obtém o SSID
             ssid = await NetworkService.GetCurrentSSID();
+            if (ssid == "")
+            {
+                statusError = "Nenhuma conexão Wi-Fi ativa, conecte no Wi-Fi do seu estabelecimento.";
+                StateHasChanged();
+                await CallJavaScriptAfterRender();
+            }
             Debug.WriteLine($"SSID: {ssid}");
 
             // Obtém o Gateway Padrão
@@ -319,6 +390,7 @@
 
     private async void SaveNetworkInfo()
     {
+        loader = true;
         statusAlert = null;
         statusError = null;
         statusSuccess = null;
@@ -382,7 +454,7 @@
         }
         
         statusSuccess = "Informações de rede salvas no banco de dados.";
-            await CallJavaScriptAfterRender();
+            CallJavaScriptAfterRender();
             StateHasChanged();
         Debug.WriteLine("Informações de rede salvas no banco de dados.");
         }
