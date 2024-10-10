@@ -1,7 +1,5 @@
 ﻿﻿html, body {
     font-family: "Poppins", sans-serif;
-    /*    justify-content: center;
-    height: 100vh*/
     background-color: whitesmoke;
     background: var(--clr);
 }
@@ -207,7 +205,6 @@ svg {
         --h: 212deg;
         --l: 43%;
         --brandColor: hsl(var(--h), 71%, var(--l));
-        font-family: Montserrat, sans-serif;
         margin: 0;
         background-color: whitesmoke;
     }
@@ -319,7 +316,6 @@ body {
 
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
     
 }
 

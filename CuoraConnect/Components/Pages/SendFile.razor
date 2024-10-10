@@ -36,7 +36,7 @@
 
 
 
-        <svg width="289" height="290" viewBox="0 0 289 290" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <svg width="100%" height="290" viewBox="0 0 289 290" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
             <path d="M248 169V156C248 156 256 156.836 256 162.783C256 168.73 248 169 248 169Z" fill="black" />
             <path d="M251.217 230.554C254.666 205.768 256.412 182.547 255.917 181.233C255.126 179.131 249.189 179 141.341 179C141.341 179 125.5 290 141.341 290C157.182 290 204.895 286.073 225.592 274.672C246.289 263.271 247.767 255.339 251.217 230.554Z" fill="black" />
             <path d="M31.7832 230.554C28.3337 205.768 26.5879 182.547 27.0827 181.233C27.8742 179.131 33.8108 179 141.659 179C141.659 179 159.5 290 141.659 290C123.818 290 78.1049 286.073 57.408 274.672C36.7111 263.271 35.2327 255.339 31.7832 230.554Z" fill="black" />
@@ -377,29 +377,18 @@
             Debug.WriteLine("Dados móveis estão desativados.");
         }
 
-        List<(string BSSID, int Channel, string Frequency)> frequency = await NetworkService.GetConnectedNetworkBSSIDs();
-
-        bool has2_4GHz = frequency.Any(item => item.Frequency == "2.4 GHz");
-
-        if (has2_4GHz)
+        bool connected5g = await NetworkService.IsConnectedTo5G();
+        if (connected5g == true)
         {
-            Debug.WriteLine("A lista contém a frequência 2.4 GHz.");
+            Debug.WriteLine("Conectado no 5g");
+            statusError = "Não é possível configurar em redes Wi-Fi 5g, conecte em uma rede Wi-Fi 2.4g";
+            CallJavaScriptAfterRender();
+
+            return;
         }
         else
         {
-            bool connected5g = NetworkService.IsConnectedTo5G();
-            if (connected5g == true)
-            {
-                Debug.WriteLine("Conectado no 5g");
-                statusError = "Conecte no Wi-Fi da balança Cuora Max.";
-                CallJavaScriptAfterRender();
-
-                return;
-            }
-            else
-            {
-                Debug.WriteLine("Conexão 2.4g");
-            }
+            Debug.WriteLine("Conexão 2.4g");
         }
 
         // Verifica se o arquivo existe

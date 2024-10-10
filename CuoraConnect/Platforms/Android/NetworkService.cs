@@ -313,216 +313,55 @@ namespace CuoraConnect.Platforms.Android
 
 
 
-
-        public bool IsConnectedTo5G()
+        public async Task<bool> IsConnectedTo5G()
         {
-            // Obtém o WifiManager usando o Context do Android
-            var wifiManager = (WifiManager)Application.Context.GetSystemService(Context.WifiService);
+            // Obtém o SSID da rede conectada
+            string connectedSsid = await GetCurrentSSID();
 
-            if (wifiManager != null && wifiManager.IsWifiEnabled)
+            // Verifica se não há conexão
+            if (string.IsNullOrEmpty(connectedSsid))
             {
-                // Obtém as informações da conexão Wi-Fi atual
-                var wifiInfo = wifiManager.ConnectionInfo;
-
-                if (wifiInfo != null)
-                {
-                    // Verifica a frequência da rede Wi-Fi
-                    var frequency = wifiInfo.Frequency;
-
-                    // As redes de 5GHz têm uma frequência entre 4900 e 5900 MHz
-                    if (frequency >= 4900 && frequency <= 5900)
-                    {
-                        return true; // Conectado a uma rede 5G
-                    }
-                }
-            }
-
-            return false; // Não conectado a uma rede 5G
-        }
-
-
-        private WifiManager wifiManager;
-
-        public string WifiHelper(Context context)
-        {
-            wifiManager = (WifiManager)context.GetSystemService(Context.WifiService);
-            return "";
-        }
-
-        private async Task<string> GetConnectedSSID()
-        {
-
-            // Verifica permissões de rede
-            if (!await CheckAndRequestPermissions())
-            {
-                return "Permissão não concedida para acessar informações de rede.";
+                return false; // Nenhuma rede conectada
             }
 
             // Obtém o contexto da aplicação
             var context = Application.Context;
-            if (context == null)
-            {
-                return "Não foi possível obter o contexto da aplicação.";
-            }
 
             // Obtém o WifiManager
             var wifiManager = (WifiManager)context.GetSystemService(Context.WifiService);
+
+            // Verifica se o WifiManager foi obtido corretamente
             if (wifiManager == null)
             {
-                return "Não foi possível obter o WifiManager.";
+                return false; // Não foi possível obter o WifiManager.
             }
 
-            // Obtém o ConnectivityManager para verificar a conexão ativa
-            var connectivityManager = (ConnectivityManager)context.GetSystemService(Context.ConnectivityService);
-            var activeNetwork = connectivityManager.ActiveNetworkInfo;
-
-            // Verifica se há uma conexão Wi-Fi ativa
-            if (activeNetwork == null || !activeNetwork.IsConnected || activeNetwork.Type != ConnectivityType.Wifi)
-            {
-                //Nenhuma conexão Wi-Fi ativa
-                return "";
-            }
-
-            // Obtém informações sobre a conexão
-            var info = wifiManager.ConnectionInfo;
-            Debug.WriteLine($"SSID INFO:{info}");
-            if (info == null || info.NetworkId == -1)
-            {
-                return "Wi-Fi Desconectado ou Informação Indisponível.";
-            }
-          
-            return info.SSID?.Trim('"'); // Remove aspas se estiverem presentes
-        }
-
-        public async Task<Dictionary<string, List<(string BSSID, string Channel)>>> GetAllNetworksBSSIDs()
-        {
-            // Verifica se as permissões estão concedidas
-            var status = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
-            if (status != PermissionStatus.Granted)
-            {
-                status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
-                if (status != PermissionStatus.Granted)
-                {
-                    // Permissão não concedida
-                    throw new UnauthorizedAccessException("Permissão de localização não concedida.");
-                }
-            }
-
-            // Obtém o contexto da aplicação
-            var context = Application.Context;
-            if (context == null)
-            {
-                throw new InvalidOperationException("Não foi possível obter o contexto da aplicação.");
-            }
-
-            // Obtém o WifiManager
-            var wifiManager = (WifiManager)context.GetSystemService(Context.WifiService);
-            if (wifiManager == null)
-            {
-                throw new InvalidOperationException("Não foi possível obter o WifiManager.");
-            }
-
-            // Inicia a varredura das redes Wi-Fi
+            // Inicia a varredura das redes
             wifiManager.StartScan();
+            await Task.Delay(1000); // Aguarda o scan
 
-            // Aguardar um pequeno intervalo para a varredura ser concluída
-            await Task.Delay(2000); // Aguarda 2 segundos
-
-            // Obtém os resultados da varredura
-            var scanResults = wifiManager.ScanResults;
-
-            Dictionary<string, List<(string BSSID, string Channel)>> ssidData = new Dictionary<string, List<(string, string)>>();
-
-            foreach (var result in scanResults)
+            // Verifica as redes escaneadas
+            bool is5G = true; // Assume que a rede é 5G até que se prove o contrário
+            foreach (var network in wifiManager.ScanResults)
             {
-                string ssid = result.Ssid;
-                string bssid = result.Bssid;
-                int frequency = result.Frequency;
-
-                // Obtém o canal a partir da frequência
-                string channel = GetChannelFromFrequency(frequency).ToString(); // Converte para string
-
-                // Adiciona ao dicionário
-                if (!ssidData.ContainsKey(ssid))
+                // Verifica se o SSID da rede escaneada é igual ao SSID conectado
+                if (network.Ssid.Equals(connectedSsid))
                 {
-                    ssidData[ssid] = new List<(string, string)>();
-                }
-
-                ssidData[ssid].Add((bssid, channel));
-            }
-
-            return ssidData;
-        }
-
-
-        private int GetChannelFromFrequency(int frequency)
-        {
-            // Mapeia a frequência para o canal correspondente
-            if (frequency >= 2400 && frequency < 2500) // 2.4 GHz
-            {
-                return (frequency - 2400) / 5 + 1; // Canais 1-11
-            }
-            else if (frequency >= 4900 && frequency < 5900) // 5 GHz
-            {
-                return (frequency - 4900) / 5 + 36; // Canais 36-165
-            }
-            return -1; // Frequência fora do intervalo conhecido
-        }
-
-        public string GetFrequencyFromChannel(int channel)
-        {
-            if (channel >= 1 && channel <= 11)
-            {
-                return "2.4 GHz";
-            }
-            else if ((channel >= 36 && channel <= 64) || (channel >= 100 && channel <= 144))
-            {
-                return "5 GHz";
-            }
-            return "Frequência desconhecida";
-        }
-
-        public async Task<List<(string BSSID, int Channel, string Frequency)>> GetConnectedNetworkBSSIDs()
-        {
-            var bssidList = new List<(string BSSID, int Channel, string Frequency)>();
-
-            string connectedSSID = await GetConnectedSSID(); // Use 'await' para obter o SSID
-            if (string.IsNullOrEmpty(connectedSSID))
-            {
-                Debug.WriteLine("WifiHelper", "Não está conectado a nenhuma rede.");
-                return bssidList; // Retorna uma lista vazia se não estiver conectado
-            }
-
-            Debug.WriteLine("WifiHelper", $"Conectado à rede: {connectedSSID}");
-
-            var allNetworksData = await GetAllNetworksBSSIDs(); // Aguarda a tarefa
-
-            // Verifica se a SSID está no dicionário
-            if (allNetworksData.TryGetValue(connectedSSID, out var bssidWithChannel))
-            {
-                Debug.WriteLine("WifiHelper", "BSSIDs disponíveis para a rede:");
-                foreach (var (bssid, channelStr) in bssidWithChannel)
-                {
-                    if (int.TryParse(channelStr, out int channel))
+                    // Verifica se a rede está na frequência de 2.4 GHz (bandas 2400-2500 MHz)
+                    if (network.Frequency >= 2400 && network.Frequency <= 2500)
                     {
-                        string frequency = GetFrequencyFromChannel(channel);
-                        Debug.WriteLine("WifiHelper", $"BSSID: {bssid}, Canal: {channel}, Frequência: {frequency}");
-
-                        bssidList.Add((BSSID: bssid, Channel: channel, Frequency: frequency));
-                    }
-                    else
-                    {
-                        Debug.WriteLine("WifiHelper", $"Canal inválido para BSSID: {bssid}");
+                        is5G = false; // A rede está em 2.4 GHz
+                        break; // Não precisamos continuar verificando
                     }
                 }
             }
-            else
-            {
-                Debug.WriteLine("WifiHelper", "Nenhum BSSID encontrado para a rede.");
-            }
 
-            return bssidList;
+            return is5G; // Retorna se estamos conectados a uma rede 5G
         }
+
+
+
+
 
 
 

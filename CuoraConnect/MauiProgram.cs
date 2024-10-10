@@ -13,6 +13,10 @@ namespace CuoraConnect
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+                    fonts.AddFont("Poppins-ExtraBold.ttf", "Poppins-ExtraBold");
+                    fonts.AddFont("Poppins-Medium.ttf", "Poppins-Medium");
+                    fonts.AddFont("Poppins-Bold.ttf", "Poppins-Bold");
+                    fonts.AddFont("fontello.ttf", "IconsFont");
                 });
 
             builder.Services.AddScoped<DigestAuthService>();

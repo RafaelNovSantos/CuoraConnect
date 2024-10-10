@@ -25,7 +25,59 @@
 
 <ol style="--length: 5;">
     <li id="pop-up" style="--i: 3; counter-reset: list 2;">
-  
+
+        <div class="href-target" id="icons"></div>
+        <h3>
+            Informações da rede Wi-Fi do seu Comércio
+        </h3>
+<form action="/action_page.php" class="was-validated">
+    <div class="nice-form-group">
+        <label for="ssidInput" class="form-label">Sua Rede (SSID):</label>
+        <input type="text" class="form-control" id="ssidInput" placeholder="Wi-Fi do seu comércio" @bind="ssid" pattern=".*\S+.*" required>
+        <div class="valid-feedback">Valid.</div>
+        <div class="invalid-feedback">Por favor, preencha o nome da rede (SSID).</div>
+    </div>
+
+    <div class="nice-form-group">
+        <label for="pwd" class="form-label">Senha do Wi-Fi:</label>
+        <input type="password" class="form-control" id="pwd" placeholder="Senha do Wi-Fi do seu comércio" @bind="password" required>
+        <div class="valid-feedback">Valid.</div>
+        <div class="invalid-feedback">Por favor, preencha o campo de senha.</div>
+    </div>
+
+    <div class="nice-form-group">
+        <label for="gatewayInput" class="form-label">Gateway Padrão:</label>
+        <input type="text" class="form-control" id="gatewayInput" placeholder="Ex: 192.168.0.1" @bind="gateway" pattern="^([0-9]{1,3}\.){3}[0-9]{1,3}$" required>
+        <div class="valid-feedback">Valid.</div>
+        <div class="invalid-feedback">Por favor, insira um IP válido (formato: 192.168.0.1).</div>
+    </div>
+
+    <div class="nice-form-group">
+        <label for="subnetMask" class="form-label">Máscara de Rede:</label>
+        <input type="text" class="form-control" id="subnetMask" placeholder="Ex: 255.255.255.0" @bind="subnetMask" pattern="^([0-9]{1,3}\.){3}[0-9]{1,3}$" required>
+        <div class="valid-feedback">Valid.</div>
+        <div class="invalid-feedback">Por favor, insira uma máscara de rede válida (formato: 255.255.255.0).</div>
+    </div>
+
+    <div class="nice-form-group">
+        <label for="availableIPInput" class="form-label">IP Disponível:</label>
+        <input type="text" class="form-control" id="availableIPInput" placeholder="Ex: 192.168.0.10" @bind="availableIP" pattern="^([0-9]{1,3}\.){3}[0-9]{1,3}$" required>
+        <div class="valid-feedback">Valid.</div>
+        <div class="invalid-feedback">Por favor, insira um IP válido (formato: 192.168.0.10).</div>
+    </div>
+
+
+    <a class="btn btn-primary mt-2" @onclick="GetNetworkInfo">Obter Informações da Rede</a>
+    <a class="btn btn-success mt-2" @onclick="() => SaveNetworkInfo()">Salvar Alterações</a>
+</form>
+    </li>
+</ol>
+
+
+<!--
+<ol style="--length: 5;">
+    <li id="pop-up" style="--i: 3; counter-reset: list 2;">
+
         <div class="href-target" id="icons"></div>
         <h3>
            Informações da rede Wi-Fi do seu Comércio
@@ -50,15 +102,14 @@
             <label>IP Disponível</label>
             <input type="email" placeholder="IP disponível em seu Wi-Fi" id="availableIPInput" @bind="availableIP" class="icon-right" />
         </div>
-       
 
         <a class="btn btn-primary mt-2" @onclick="GetNetworkInfo">Obter Informações da Rede</a>
         <a class="btn btn-success mt-2" @onclick="() => SaveNetworkInfo()">Salvar Alterações</a>
 
-        
     </li>
 </ol>
-    @if (!string.IsNullOrEmpty(statusAlert) || !string.IsNullOrEmpty(statusSuccess) || !string.IsNullOrEmpty(statusInfo) || statusError != null || loader == true){
+-->
+@if (!string.IsNullOrEmpty(statusAlert) || !string.IsNullOrEmpty(statusSuccess) || !string.IsNullOrEmpty(statusInfo) || statusError != null || loader == true){
 <div id="container" class="container ">
 
     <div class="text-center">
@@ -318,29 +369,18 @@
                 Debug.WriteLine("Dados móveis estão desativados.");
             }
 
-            List<(string BSSID, int Channel, string Frequency)> frequency = await NetworkService.GetConnectedNetworkBSSIDs();
-
-            bool has2_4GHz = frequency.Any(item => item.Frequency == "2.4 GHz");
-
-            if (has2_4GHz)
+            bool connected5g = await NetworkService.IsConnectedTo5G();
+            if (connected5g == true)
             {
-                Debug.WriteLine("A lista contém a frequência 2.4 GHz.");
+                Debug.WriteLine("Conectado no 5g");
+                statusError = "Não é possível configurar em redes Wi-Fi 5g, conecte em uma rede Wi-Fi 2.4g";
+                CallJavaScriptAfterRender();
+
+                return;
             }
             else
             {
-                bool connected5g = NetworkService.IsConnectedTo5G();
-                if (connected5g == true)
-                {
-                    Debug.WriteLine("Conectado no 5g");
-                    statusError = "Não é possível configurar em redes Wi-Fi 5g, conecte em uma rede Wi-Fi 2.4g";
-                    CallJavaScriptAfterRender();
-
-                    return;
-                }
-                else
-                {
-                    Debug.WriteLine("Conexão 2.4g");
-                }
+                Debug.WriteLine("Conexão 2.4g");
             }
 
 

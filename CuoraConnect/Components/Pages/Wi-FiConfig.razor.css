@@ -29,8 +29,8 @@ table {
     --nf-input-size: 1rem;
     --nf-input-font-size: calc(var(--nf-input-size)*0.875);
     --nf-small-font-size: calc(var(--nf-input-size)*0.875);
-    --nf-input-font-family: inherit;
-    --nf-label-font-family: inherit;
+/*    --nf-input-font-family: inherit;
+    --nf-label-font-family: inherit;*/
     --nf-input-color: #20242f;
     --nf-input-border-radius: 0.25rem;
     --nf-input-placeholder-color: #929292;
@@ -74,7 +74,6 @@ table {
         display: block;
         color: var(--nf-label-color);
         font-size: var(--nf-label-font-size);
-        font-family: var(--nf-label-font-family);
         margin-bottom: calc(var(--nf-input-size)/2);
         white-space: normal
     }
@@ -84,7 +83,6 @@ table {
         }
 
     .nice-form-group small {
-        font-family: var(--nf-input-font-family);
         display: block;
         font-weight: 400;
         opacity: .75;
@@ -101,7 +99,6 @@ table {
         display: block;
         color: var(--nf-label-color);
         font-size: var(--nf-label-font-size);
-        font-family: var(--nf-label-font-family);
         margin-bottom: calc(var(--nf-input-size)/5)
     }
 
@@ -114,7 +111,6 @@ table {
         font-family: inherit;
         font-size: var(--nf-input-font-size);
         border-bottom-width: var(--nf-input-border-width);
-        font-family: var(--nf-input-font-family);
         box-shadow: none;
         border-radius: var(--nf-input-border-radius);
         border: var(--nf-input-border-width) var(--nf-input-border-style) var(--nf-input-border-color);
@@ -480,7 +476,6 @@ table {
         color: #fff;
         margin-right: 1rem;
         outline: none;
-        font-family: var(--nf-input-font-family);
         cursor: pointer
     }
 
@@ -494,7 +489,6 @@ table {
         color: #fff;
         margin-right: 1rem;
         outline: none;
-        font-family: var(--nf-input-font-family);
         cursor: pointer
     }
 
@@ -819,7 +813,6 @@ section {
 
     section code {
         font-weight: 500;
-        font-family: Consolas,monaco,monospace;
         position: relative;
         z-index: 1;
         margin: 0 2px;
