@@ -363,226 +363,230 @@
         }
 
         if (ssid.StartsWith("XpicoWIFI") || ssid.StartsWith("CUORA_MAX"))
-{
-   
-}
+        {
 
 
-        string filePath = FileUploadService.SaveXmlToFile();
 
-        bool isMobileDataEnabled = NetworkService.IsMobileDataEnabled();
-        if (isMobileDataEnabled)
-        {
-            Debug.WriteLine("Dados móveis estão ativados.");
-            statusInfo = "Desative sua conexão com os dados móveis.";
-            await CallJavaScriptAfterRender();
-            return;
-        }
-        else
-        {
-            Debug.WriteLine("Dados móveis estão desativados.");
-        }
 
-        bool connected5g = await NetworkService.IsConnectedTo5G();
-        if (connected5g == true)
-        {
-            Debug.WriteLine("Conectado no 5g");
-            statusError = "Não é possível configurar em redes Wi-Fi 5g, conecte em uma rede Wi-Fi 2.4g";
-            CallJavaScriptAfterRender();
+            string filePath = FileUploadService.SaveXmlToFile();
 
-            return;
-        }
-        else
-        {
-            Debug.WriteLine("Conexão 2.4g");
-        }
-
-        // Verifica se o arquivo existe
-        if (!File.Exists(filePath))
-        {
-            statusMessage = "Arquivo não encontrado.";
-            StateHasChanged();
-            return;
-        }
-
-        bool sendReq = false;
-
-        try
-        {
-            var response = await BasicAuthWithFile();
-        }
-        catch (TaskCanceledException tex) when (tex.InnerException is TimeoutException)
-        {
-            statusError = "Conexão falhou por tempo estendido (timeout). Verifique sua rede e tente novamente.";
-            StateHasChanged();
-        }
-        catch (HttpRequestException httpEx)
-        {
-            // Verificar se foi timeout ou falha de conexão
-            if (httpEx.InnerException is SocketException socketEx)
+            bool isMobileDataEnabled = NetworkService.IsMobileDataEnabled();
+            if (isMobileDataEnabled)
             {
-                if (socketEx.SocketErrorCode == SocketError.TimedOut)
-                {
-                    statusError = "A conexão com a balança falhou por timeout. Verifique sua rede ou tente novamente mais tarde.";
-                }
-                else if (socketEx.SocketErrorCode == SocketError.ConnectionRefused)
-                {
-                    statusError = "Conexão recusada pela balança. Verifique se ela está ligada e conectada à rede correta.";
-                }
-                else
-                {
-                    statusError = $"Erro de rede: {socketEx.Message}";
-                }
+                Debug.WriteLine("Dados móveis estão ativados.");
+                statusInfo = "Desative sua conexão com os dados móveis.";
+                await CallJavaScriptAfterRender();
+                return;
             }
             else
             {
-                statusError = "Erro ao enviar configuração. Verifique a conexão.";
+                Debug.WriteLine("Dados móveis estão desativados.");
             }
-            StateHasChanged();
-        }
-        catch (Exception ex) // Captura qualquer outra exceção
-        {
-            // Verifica se a mensagem de exceção contém a string específica
-            if (ex.Message.Contains("An error occurred while sending the request"))
+
+            bool connected5g = await NetworkService.IsConnectedTo5G();
+            if (connected5g == true)
             {
-                statusSuccess = "Cuora Max configurada com sucesso, reinicie sua balança!";
-                StateHasChanged();
-            }
-            else if (ex.Message.Contains("Object reference not set to an instance of an object.") && sendReq == true)
-            {
-                // Para outros tipos de exceções
-                statusSuccess = "Configuração enviada para a balança com sucesso! Reinicie sua balança para atualizar a configuração.";
-                StateHasChanged();
-            }
-            else if (ex.Message.Contains("Object reference not set to an instance of an object."))
-            {
-                statusError = "Conecte no Wi-Fi da balança Cuora Max!";
-                StateHasChanged();
+                Debug.WriteLine("Conectado no 5g");
+                statusError = "Não é possível configurar em redes Wi-Fi 5g, conecte em uma rede Wi-Fi 2.4g";
+                CallJavaScriptAfterRender();
+
+                return;
             }
             else
             {
-                Debug.WriteLine($"Erro ao enviar configuração: {ex.Message}");
-                StateHasChanged();
+                Debug.WriteLine("Conexão 2.4g");
             }
 
-            // Aqui você pode adicionar lógica adicional para registrar o erro ou exibi-lo ao usuário
-        }
+            // Verifica se o arquivo existe
+            if (!File.Exists(filePath))
+            {
+                statusMessage = "Arquivo não encontrado.";
+                StateHasChanged();
+                return;
+            }
 
-
-
-        async Task<HttpWebResponse> BasicAuthWithFile()
-        {
-            var url = new Uri("http://192.168.0.1/import/config");
-            var request = (HttpWebRequest)WebRequest.Create(url);
-            request.Method = "POST";
-            var authValue = Convert.ToBase64String(Encoding.ASCII.GetBytes("admin:admin"));
-            request.Headers["Authorization"] = "Basic " + authValue;
-
-            var boundary = "===" + DateTime.Now.Ticks.ToString("x") + "===";
-            request.ContentType = $"multipart/form-data; boundary={boundary}";
+            bool sendReq = false;
 
             try
             {
-                // Obtendo o requestStream (a requisição já foi enviada ao servidor)
-                using (var requestStream = await request.GetRequestStreamAsync())
-                {
-
-                    using (var writer = new StreamWriter(requestStream, Encoding.UTF8))
-                    {
-
-
-                        var fileName = Path.GetFileName(filePath);
-                        writer.Write($"--{boundary}\r\n");
-                        writer.Write($"Content-Disposition: form-data; name=\"configrecord\"; filename=\"{fileName}\"\r\n");
-                        writer.Write($"Content-Type: application/xml\r\n\r\n");
-                        writer.Flush();
-
-                        using (var fileStream = File.OpenRead(filePath))
-                        {
-                            await fileStream.CopyToAsync(requestStream);
-                        }
-
-                        writer.Write($"\r\n--{boundary}--\r\n");
-                        writer.Flush();
-                    }
-
-
-                }
-
-                // Obtendo a resposta do servidor
-                var response = (HttpWebResponse)await request.GetResponseAsync();
-                // Lê o corpo da resposta
-                using (var streamReader = new StreamReader(response.GetResponseStream()))
-                {
-                    // sendReq = true; é para identificar o sucesso do envio de requisição
-                    sendReq = true;
-                    Debug.WriteLine("Requisição enviada com sucesso.");  // Log para indicar que foi enviada
-                    string responseBody = streamReader.ReadToEnd();
-                    if (response.StatusCode == HttpStatusCode.OK)  // Verifica se o status da resposta é 200 (OK)
-                    {
-
-                        statusSuccess = "Cuora Max configurada com sucesso, reinicie sua balança!";
-
-                    }
-                }
-
-                return response;
+                var response = await BasicAuthWithFile();
             }
-            catch (WebException ex)
+            catch (TaskCanceledException tex) when (tex.InnerException is TimeoutException)
             {
-                if (ex.Response != null)
+                statusError = "Conexão falhou por tempo estendido (timeout). Verifique sua rede e tente novamente.";
+                StateHasChanged();
+            }
+            catch (HttpRequestException httpEx)
+            {
+                // Verificar se foi timeout ou falha de conexão
+                if (httpEx.InnerException is SocketException socketEx)
                 {
-                    using (var responseStream = ex.Response.GetResponseStream())
+                    if (socketEx.SocketErrorCode == SocketError.TimedOut)
                     {
-                        if (responseStream != null)
-                        {
-                            using (var reader = new StreamReader(responseStream))
-                            {
-                                string errorResponse = await reader.ReadToEndAsync();
-                                if (ex.Response is HttpWebResponse httpResponse)
-                                {
-                                    if (httpResponse.StatusCode == HttpStatusCode.Unauthorized)
-                                    {
-                                        // Implementar lógica para erro 401
-                                        SendConfigBasicAuth();
-                                    }
-                                    else if (httpResponse.StatusCode == HttpStatusCode.NotFound)
-                                    {
-                                        statusError = "Conecte no Wi-Fi da balança Cuora Max!";
-                                        CallJavaScriptAfterRender();
-                                    }
-                                }
-                                else
-                                {
-                                    statusMessage = $"Erro: {ex.Message}, Resposta: {errorResponse}";
-                                }
-                            }
-                        }
+                        statusError = "A conexão com a balança falhou por timeout. Verifique sua rede ou tente novamente mais tarde.";
+                    }
+                    else if (socketEx.SocketErrorCode == SocketError.ConnectionRefused)
+                    {
+                        statusError = "Conexão recusada pela balança. Verifique se ela está ligada e conectada à rede correta.";
+                    }
+                    else
+                    {
+                        statusError = $"Erro de rede: {socketEx.Message}";
                     }
                 }
-                else if (ex.Message.Contains("The operation has timed out."))
+                else
                 {
-                    statusSuccess = "Cuora Max configurada com sucesso, reinicie sua balança!";
-StateHasChanged();
+                    statusError = "Erro ao enviar configuração. Verifique a conexão.";
                 }
-                else if (ex.Message.Contains("An error occurred while sending the request"))
+                StateHasChanged();
+            }
+            catch (Exception ex) // Captura qualquer outra exceção
+            {
+                // Verifica se a mensagem de exceção contém a string específica
+                if (ex.Message.Contains("An error occurred while sending the request"))
                 {
                     statusSuccess = "Cuora Max configurada com sucesso, reinicie sua balança!";
                     StateHasChanged();
                 }
+                else if (ex.Message.Contains("Object reference not set to an instance of an object.") && sendReq == true)
+                {
+                    // Para outros tipos de exceções
+                    statusSuccess = "Configuração enviada para a balança com sucesso! Reinicie sua balança para atualizar a configuração.";
+                    StateHasChanged();
+                }
+                else if (ex.Message.Contains("Object reference not set to an instance of an object."))
+                {
+                    statusError = "Conecte no Wi-Fi da balança Cuora Max!";
+                    StateHasChanged();
+                }
                 else
                 {
-                   
-                        // statusSuccess = "Cuora Max configurada com sucesso, reinicie sua balança!";
-                    
-                    Debug.WriteLine($"Erro de rede: {ex.Message}");
+                    Debug.WriteLine($"Erro ao enviar configuração: {ex.Message}");
+                    StateHasChanged();
                 }
 
-                StateHasChanged();
-                return null;
+                // Aqui você pode adicionar lógica adicional para registrar o erro ou exibi-lo ao usuário
+            }
+
+
+
+            async Task<HttpWebResponse> BasicAuthWithFile()
+            {
+                var url = new Uri("http://192.168.0.1/import/config");
+                var request = (HttpWebRequest)WebRequest.Create(url);
+                request.Method = "POST";
+                var authValue = Convert.ToBase64String(Encoding.ASCII.GetBytes("admin:admin"));
+                request.Headers["Authorization"] = "Basic " + authValue;
+
+                var boundary = "===" + DateTime.Now.Ticks.ToString("x") + "===";
+                request.ContentType = $"multipart/form-data; boundary={boundary}";
+
+                try
+                {
+                    // Obtendo o requestStream (a requisição já foi enviada ao servidor)
+                    using (var requestStream = await request.GetRequestStreamAsync())
+                    {
+
+                        using (var writer = new StreamWriter(requestStream, Encoding.UTF8))
+                        {
+
+
+                            var fileName = Path.GetFileName(filePath);
+                            writer.Write($"--{boundary}\r\n");
+                            writer.Write($"Content-Disposition: form-data; name=\"configrecord\"; filename=\"{fileName}\"\r\n");
+                            writer.Write($"Content-Type: application/xml\r\n\r\n");
+                            writer.Flush();
+
+                            using (var fileStream = File.OpenRead(filePath))
+                            {
+                                await fileStream.CopyToAsync(requestStream);
+                            }
+
+                            writer.Write($"\r\n--{boundary}--\r\n");
+                            writer.Flush();
+                        }
+
+
+                    }
+
+                    // Obtendo a resposta do servidor
+                    var response = (HttpWebResponse)await request.GetResponseAsync();
+                    // Lê o corpo da resposta
+                    using (var streamReader = new StreamReader(response.GetResponseStream()))
+                    {
+                        // sendReq = true; é para identificar o sucesso do envio de requisição
+                        sendReq = true;
+                        Debug.WriteLine("Requisição enviada com sucesso.");  // Log para indicar que foi enviada
+                        string responseBody = streamReader.ReadToEnd();
+                        if (response.StatusCode == HttpStatusCode.OK)  // Verifica se o status da resposta é 200 (OK)
+                        {
+
+                            statusSuccess = "Cuora Max configurada com sucesso, reinicie sua balança!";
+
+                        }
+                    }
+
+                    return response;
+                }
+                catch (WebException ex)
+                {
+                    if (ex.Response != null)
+                    {
+                        using (var responseStream = ex.Response.GetResponseStream())
+                        {
+                            if (responseStream != null)
+                            {
+                                using (var reader = new StreamReader(responseStream))
+                                {
+                                    string errorResponse = await reader.ReadToEndAsync();
+                                    if (ex.Response is HttpWebResponse httpResponse)
+                                    {
+                                        if (httpResponse.StatusCode == HttpStatusCode.Unauthorized)
+                                        {
+                                            // Implementar lógica para erro 401
+                                            SendConfigBasicAuth();
+                                        }
+                                        else if (httpResponse.StatusCode == HttpStatusCode.NotFound)
+                                        {
+                                            statusError = "Conecte no Wi-Fi da balança Cuora Max!";
+                                            CallJavaScriptAfterRender();
+                                        }
+                                    }
+                                    else
+                                    {
+                                        statusMessage = $"Erro: {ex.Message}, Resposta: {errorResponse}";
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else if (ex.Message.Contains("The operation has timed out."))
+                    {
+                        statusSuccess = "Cuora Max configurada com sucesso, reinicie sua balança!";
+                        StateHasChanged();
+                    }
+                    else if (ex.Message.Contains("An error occurred while sending the request"))
+                    {
+                        statusSuccess = "Cuora Max configurada com sucesso, reinicie sua balança!";
+                        StateHasChanged();
+                    }
+                    else
+                    {
+
+                        // statusSuccess = "Cuora Max configurada com sucesso, reinicie sua balança!";
+
+                        Debug.WriteLine($"Erro de rede: {ex.Message}");
+                    }
+
+                    StateHasChanged();
+                    return null;
+                }
             }
         }
-
+        else{
+            statusError = "Conecte no Wi-Fi da balança Cuora Max!";
+            return;
+        }
 
     }
     

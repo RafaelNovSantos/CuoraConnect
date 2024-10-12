@@ -56,20 +56,26 @@
         <div class="valid-feedback"></div>
         <div class="invalid-feedback">Por favor, preencha o nome da rede (SSID).</div>
     </div>
-
-            <div class="nice-form-group">
+    <!--
+             <div class="nice-form-group">
+                 <label for="pwd" class="form-label">Senha do Wi-Fi:</label>
+                 <div class="input-group">
+                     <input type="@PasswordInputType" class="form-control" id="pwd" placeholder="Senha do Wi-Fi do seu comércio" @bind="password" minlength="8" required>
+                     <button class="btn btn-outline-secondary" type="button" @onclick="TogglePasswordVisibility">
+                         <i class="@PasswordIconClass"></i>
+                     </button>
+                 </div>
+                 <div class="valid-feedback"></div>
+                 <div class="invalid-feedback">Por favor, preencha o campo de senha com pelo menos 8 caracteres.</div>
+             </div>
+                     -->
+            <div  class="nice-form-group" style="/* display: flex; *//* align-items: center; */">
                 <label for="pwd" class="form-label">Senha do Wi-Fi:</label>
-                <div class="input-group">
-                    <input type="@PasswordInputType" class="form-control" id="pwd" placeholder="Senha do Wi-Fi do seu comércio" @bind="password" minlength="8" required>
-                    <button class="btn btn-outline-secondary" type="button" @onclick="TogglePasswordVisibility">
-                        <i class="@PasswordIconClass"></i>
-                    </button>
-                </div>
-                <div class="valid-feedback"></div>
-                <div class="invalid-feedback">Por favor, preencha o campo de senha com pelo menos 8 caracteres.</div>
+                <input type="@PasswordInputType" class="" id="pwd" placeholder="Senha do Wi-Fi do seu comércio" @bind="password" minlength="8" required="">
+                <button type="button" style="background-color: transparent;border: transparent;width: 50px;height: 44px;right: 4%;position: absolute;" @onclick="TogglePasswordVisibility"><i class="@PasswordIconClass"></i></button>
+                <div class="valid-feedback" ></div>
+               <div class="invalid-feedback" >Por favor, preencha o campo de senha com pelo menos 8 caracteres.</div>
             </div>
-
-
 
 
     <div class="nice-form-group">
