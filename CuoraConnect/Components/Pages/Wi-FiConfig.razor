@@ -54,7 +54,7 @@
         <label for="ssidInput" class="form-label">Sua Rede (SSID):</label>
         <input type="text"  id="ssidInput" placeholder="Wi-Fi do seu comércio" @bind="ssid" pattern=".*\S+.*" required>
         <div class="valid-feedback"></div>
-        <div class="invalid-feedback">Por favor, preencha o nome da rede (SSID).</div>
+        <div class="invalid-feedback">Preencha o nome da rede (SSID).</div>
     </div>
     <!--
              <div class="nice-form-group">
@@ -74,7 +74,7 @@
                 <input type="@PasswordInputType" class="" id="pwd" placeholder="Senha do Wi-Fi do seu comércio" @bind="password" minlength="8" required="">
                 <button type="button" style="background-color: transparent;border: transparent;width: 50px;height: 44px;right: 4%;position: absolute;" @onclick="TogglePasswordVisibility"><i class="@PasswordIconClass"></i></button>
                 <div class="valid-feedback" ></div>
-               <div class="invalid-feedback" >Por favor, preencha o campo de senha com pelo menos 8 caracteres.</div>
+               <div class="invalid-feedback" >Preencha o campo de senha com pelo menos 8 caracteres.</div>
             </div>
 
 
@@ -82,21 +82,21 @@
         <label for="gatewayInput" class="form-label">Gateway Padrão:</label>
         <input type="text"  id="gatewayInput" placeholder="Ex: 192.168.0.1" @bind="gateway" pattern="^([0-9]{1,3}\.){3}[0-9]{1,3}$" required>
         <div class="valid-feedback"></div>
-        <div class="invalid-feedback">Por favor, insira um IP válido (formato: 192.168.0.1).</div>
+        <div class="invalid-feedback">Insira um IP válido.</div>
     </div>
 
     <div class="nice-form-group">
         <label for="subnetMask" class="form-label">Máscara de Rede:</label>
         <input type="text"  id="subnetMask" placeholder="Ex: 255.255.255.0" @bind="subnetMask" pattern="^([0-9]{1,3}\.){3}[0-9]{1,3}$" required>
         <div class="valid-feedback"></div>
-        <div class="invalid-feedback">Por favor, insira uma máscara de rede válida (formato: 255.255.255.0).</div>
+        <div class="invalid-feedback">Insira uma máscara de rede válida.</div>
     </div>
 
     <div class="nice-form-group">
         <label for="availableIPInput" class="form-label">IP Disponível:</label>
         <input type="text"  id="availableIPInput" placeholder="Ex: 192.168.0.10" @bind="availableIP" pattern="^([0-9]{1,3}\.){3}[0-9]{1,3}$" required>
         <div class="valid-feedback"></div>
-        <div class="invalid-feedback">Por favor, insira um IP válido (formato: 192.168.0.10).</div>
+        <div class="invalid-feedback">Insira um IP válido.</div>
     </div>
 
 
@@ -399,12 +399,20 @@
         CallJavaScriptAfterRender();
         CleanStatus();
         CleanInputs();
+        StateHasChanged();
 
         Debug.WriteLine("Tentando obter informações da rede...");
         try
         {
             ssid = await NetworkService.GetCurrentSSID();
             Debug.WriteLine($"SSID: {ssid}");
+
+            if (ssid == "")
+            {
+                statusError = "Nenhuma conexão Wi-Fi ativa, conecte no Wi-Fi do seu estabelecimento.";
+                StateHasChanged();
+                CallJavaScriptAfterRender();
+            }
 
             if (ssid.StartsWith("CUORA_MAX"))
             {
@@ -449,13 +457,8 @@
             Debug.WriteLine("Serviço de rede obtido.");
 
             // Obtém o SSID
-            ssid = await NetworkService.GetCurrentSSID();
-            if (ssid == "")
-            {
-                statusError = "Nenhuma conexão Wi-Fi ativa, conecte no Wi-Fi do seu estabelecimento.";
-                StateHasChanged();
-                await CallJavaScriptAfterRender();
-            }
+        
+
             Debug.WriteLine($"SSID: {ssid}");
 
             // Obtém o Gateway Padrão
