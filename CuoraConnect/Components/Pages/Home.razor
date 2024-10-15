@@ -154,6 +154,7 @@
     private string? statusAlert;
     private string? statusError;
     private string? statusInfo;
+    private string ssidMinusculo;
     private bool loader;
 
 
@@ -200,7 +201,7 @@
         return "";
     }
 
-    private async Task<string> DataMobileInfo(){
+    private async Task<string> DataMobileInfo() {
         loader
     = true;
         CallJavaScriptAfterRender();
@@ -222,26 +223,27 @@
 
 
         bool connected5g = await NetworkService.IsConnectedTo5G();
-            if (connected5g == true)
-            {
-                Debug.WriteLine("Conectado no 5g");
-                statusError = "Não é possível configurar em redes Wi-Fi 5g, conecte em uma rede Wi-Fi 2.4g";
-                CallJavaScriptAfterRender();
+        if (connected5g == true)
+        {
+            Debug.WriteLine("Conectado no 5g");
+            statusError = "Não é possível configurar em redes Wi-Fi 5g, conecte em uma rede Wi-Fi 2.4g";
+            CallJavaScriptAfterRender();
 
-                return "";
-            }
-            else
-            {
-                Debug.WriteLine("Conexão 2.4g");
-            }
-     
+            return "";
+        }
+        else
+        {
+            Debug.WriteLine("Conexão 2.4g");
+        }
+
 
         // Obtém o SSID
         string ssid = await NetworkService.GetCurrentSSID();
         Debug.WriteLine($"SSID: {ssid}");
 
-        if (ssid.StartsWith("CUORA_MAX"))
-        {
+        ssidMinusculo = ssid.ToLower();
+
+        if (ssidMinusculo.StartsWith("xpicowifi") || ssidMinusculo.StartsWith("cuora")){
             statusError = "Desconecte da rede Cuora Max e conecte na rede do seu estabelecimento.";
             await CallJavaScriptAfterRender();
         }

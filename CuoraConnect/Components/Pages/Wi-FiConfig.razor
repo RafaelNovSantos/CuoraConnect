@@ -79,7 +79,7 @@
 
 
     <div class="nice-form-group">
-        <label for="gatewayInput" class="form-label">Gateway Padrão:</label>
+        <label for="gatewayInput" class="form-label">IP do roteador:</label>
         <input type="text"  id="gatewayInput" placeholder="Ex: 192.168.0.1" @bind="gateway" pattern="^([0-9]{1,3}\.){3}[0-9]{1,3}$" required>
         <div class="valid-feedback"></div>
         <div class="invalid-feedback">Insira um IP válido.</div>
@@ -189,6 +189,7 @@
 
     @if (statusAlert != null)
         {
+           
             loader
         = false;
     <!-- Warning Alert -->
@@ -211,6 +212,7 @@
     }
 
     @if(statusError != null){
+           
             loader
  = false;
     <!-- Error Alert -->
@@ -226,10 +228,11 @@
             <div class="mx-3">Erro - @statusError</div>
         </div>
         <a  class="btn btn-outline-danger btn-sm" @onclick="@(() => aHide("statusErrorHide"))">Entendido</a>
-        
+
                 
 
     </div>
+            
     }
         @if (loader == true)
         {
@@ -265,6 +268,7 @@
     private string? statusError;
     private string? statusInfo;
     private bool loader;
+    private string ssidMinusculo;
     private string ssid = "";
     private string gateway = "";
     private string localIP = "";
@@ -285,16 +289,16 @@
 
         using var db = new SQLiteConnection(dbPath);
         db.CreateTable<NetworkInfo>();
-      
-        
+
+
     }
 
 
 
     protected override async Task OnInitializedAsync()
-{
-   await GetNetworkInfo();
-}
+    {
+        await GetNetworkInfo();
+    }
 
 
     // Variável para controlar a visibilidade da senha
@@ -347,12 +351,14 @@
         statusError = null;
         statusSuccess = null;
         statusInfo = null;
+        StateHasChanged();
         return "";
     }
 
 
     private string CleanInputs()
     {
+
         gateway = "";
         localIP = "";
         availableIP = "";
@@ -414,10 +420,15 @@
                 CallJavaScriptAfterRender();
             }
 
-            if (ssid.StartsWith("CUORA_MAX"))
-            {
+            ssidMinusculo = ssid.ToLower();
+
+            if (ssidMinusculo.StartsWith("xpicowifi") || ssidMinusculo.StartsWith("cuora")){
+
                 statusError = "Desconecte da rede Cuora Max e conecte na rede do seu estabelecimento";
+                CleanInputs();
+                StateHasChanged();
                 await CallJavaScriptAfterRender();
+                return;
             }
 
 
