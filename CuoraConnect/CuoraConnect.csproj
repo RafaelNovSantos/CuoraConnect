@@ -41,6 +41,7 @@
 	
 	<PropertyGroup>
   <AndroidLinkMode>None</AndroidLinkMode>
+	<WindowsPackageType>None</WindowsPackageType>
 </PropertyGroup>
 
 
@@ -61,6 +62,14 @@
 
 	<PropertyGroup>
 		<EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
+		<GenerateAppInstallerFile>False</GenerateAppInstallerFile>
+		<AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
+		<PackageCertificateKeyFile>CuoraConnect_TemporaryKey.pfx</PackageCertificateKeyFile>
+		<AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
+		<AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
+		<AppxSymbolPackageEnabled>False</AppxSymbolPackageEnabled>
+		<GenerateTestArtifacts>True</GenerateTestArtifacts>
+		<HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
 	</PropertyGroup>
 
 

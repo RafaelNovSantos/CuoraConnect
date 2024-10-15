@@ -241,6 +241,8 @@
     private string? statusInfo;
     private string? statusError;
     private string? statusSuccess;
+    private string ssidMinusculo;
+
     private string? statusMessage { get; set; }
     private string? fileXMLPath;
     private bool loader;
@@ -287,6 +289,7 @@
 
     private async Task EnviarConfig()
     {
+        int contadorExecucoes = 0;
         loader
      = true;
         CallJavaScriptAfterRender();
@@ -298,6 +301,7 @@
         // Função GenerateXml() para gerar o XML e verificar dados
         string GenerateXml()
         {
+
             var _pathDB = FileUploadService.pathDB();
 
             // Conecta ao banco de dados
@@ -362,7 +366,9 @@
             return;
         }
 
-        if (ssid.StartsWith("XpicoWIFI") || ssid.StartsWith("CUORA_MAX"))
+        ssidMinusculo = ssid.ToLower();
+
+        if (ssidMinusculo.StartsWith("xpicowifi") || ssidMinusculo.StartsWith("cuora"))
         {
 
 
@@ -409,7 +415,7 @@
 
             try
             {
-                var response = await BasicAuthWithFile();
+                var response = await BasicAuthWithFile("admin","admin");
             }
             catch (TaskCanceledException tex) when (tex.InnerException is TimeoutException)
             {
@@ -446,12 +452,14 @@
                 if (ex.Message.Contains("An error occurred while sending the request"))
                 {
                     statusSuccess = "Cuora Max configurada com sucesso, reinicie sua balança!";
+                    Debug.WriteLine($"Resposta do servidor (An error occurred while sending the request): {ex.Message}");
                     StateHasChanged();
                 }
                 else if (ex.Message.Contains("Object reference not set to an instance of an object.") && sendReq == true)
                 {
                     // Para outros tipos de exceções
                     statusSuccess = "Configuração enviada para a balança com sucesso! Reinicie sua balança para atualizar a configuração.";
+                    Debug.WriteLine($"Resposta do servidor (Object reference not set to an instance of an object.): {ex.Message}");
                     StateHasChanged();
                 }
                 else if (ex.Message.Contains("Object reference not set to an instance of an object."))
@@ -470,12 +478,13 @@
 
 
 
-            async Task<HttpWebResponse> BasicAuthWithFile()
+            async Task<HttpWebResponse> BasicAuthWithFile(string username, string password)
             {
                 var url = new Uri("http://192.168.0.1/import/config");
+
                 var request = (HttpWebRequest)WebRequest.Create(url);
                 request.Method = "POST";
-                var authValue = Convert.ToBase64String(Encoding.ASCII.GetBytes("admin:admin"));
+                var authValue = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{username}:{password}"));
                 request.Headers["Authorization"] = "Basic " + authValue;
 
                 var boundary = "===" + DateTime.Now.Ticks.ToString("x") + "===";
@@ -521,8 +530,15 @@
                         if (response.StatusCode == HttpStatusCode.OK)  // Verifica se o status da resposta é 200 (OK)
                         {
 
-                            statusSuccess = "Cuora Max configurada com sucesso, reinicie sua balança!";
+                            statusMessage = (responseBody);
+                            Debug.WriteLine($"Resposta do servidor (Status OK): {responseBody}");
 
+                        }
+                        if (responseBody.Contains("<result>Succeeded</result>"))
+                        {
+                            statusSuccess = "Cuora Max configurada com sucesso, reinicie sua balança!";
+                            Debug.WriteLine($"Resposta do servidor (Succeeded): {responseBody}");
+                            StateHasChanged();
                         }
                     }
 
@@ -541,10 +557,22 @@
                                     string errorResponse = await reader.ReadToEndAsync();
                                     if (ex.Response is HttpWebResponse httpResponse)
                                     {
+
+
                                         if (httpResponse.StatusCode == HttpStatusCode.Unauthorized)
                                         {
-                                            // Implementar lógica para erro 401
-                                            SendConfigBasicAuth();
+                                            // Incrementa o contador na primeira execução
+                                            contadorExecucoes++;
+
+                                            // Verifica se é a primeira ou segunda execução
+                                            if (contadorExecucoes == 1)
+                                            {
+                                                BasicAuthWithFile("admin", "PASSWORD");
+                                            }
+                                            else if (contadorExecucoes == 2)
+                                            {
+                                                SendConfigBasicAuth("admin","admin");
+                                            }
                                         }
                                         else if (httpResponse.StatusCode == HttpStatusCode.NotFound)
                                         {
@@ -563,17 +591,19 @@
                     else if (ex.Message.Contains("The operation has timed out."))
                     {
                         statusSuccess = "Cuora Max configurada com sucesso, reinicie sua balança!";
+                        Debug.WriteLine($"Resposta do servidor (The operation has timed out.): {ex.Message}");
                         StateHasChanged();
                     }
                     else if (ex.Message.Contains("An error occurred while sending the request"))
                     {
                         statusSuccess = "Cuora Max configurada com sucesso, reinicie sua balança!";
+                        Debug.WriteLine($"Resposta do servidor (An error occurred while sending the request): {ex.Message}");
                         StateHasChanged();
                     }
                     else
                     {
 
-                        // statusSuccess = "Cuora Max configurada com sucesso, reinicie sua balança!";
+                      
 
                         Debug.WriteLine($"Erro de rede: {ex.Message}");
                     }
@@ -589,15 +619,14 @@
         }
 
     }
-    
 
 
 
 
-    private async Task SendConfigBasicAuth()
+
+    private async Task SendConfigBasicAuth(string username, string password)
     {
 
-       
 
         Debug.WriteLine("Iniciando envio de configuração...");
 
@@ -760,15 +789,25 @@
                 {
                     string responseContent = await reader.ReadToEndAsync();
                     // Adiciona a resposta ao statusMessage
-                    statusMessage = $"Resposta do servidor: {response.StatusCode} - {responseContent}";
-                    // statusSuccess = "Cuora Max configurada com sucesso, reinicie sua balança!";
-                    StateHasChanged();
-                    Debug.WriteLine($"Resposta do servidor: {responseContent}");
+                    
 
+                    // Verifica se o código de status da resposta é 200 (OK)
+                    if (responseContent.Contains("<result>Succeeded</result>"))
+                    {
+                        statusSuccess = "Cuora Max configurada com sucesso, reinicie sua balança!";
+                        Debug.WriteLine($"Resposta do servidor: {responseContent}");
+                        StateHasChanged();
+                    }
+                    else{
+                        statusMessage = $"Resposta do servidor: {response.StatusCode} - {responseContent}";
+                        StateHasChanged();
+                        Debug.WriteLine($"Resposta do servidor: {responseContent}");
+                    }
 
                 }
                 return response;
             }
+
         }
 
         string GetMimeType(string filePath)
@@ -790,8 +829,6 @@
 
         // Executando a função de envio
         string url = "http://192.168.0.1/import/config";
-        string username = "admin";
-        string password = "admin";
         string _filePath = FileUploadService.SaveXmlToFile(); // Agora deve funcionar corretamente
 
         try
@@ -799,16 +836,63 @@
             Debug.WriteLine($"Tentando enviar arquivo para {url}...");
             var response = await DigestAuthWithFile(url, username, password, _filePath);
 
-            // A resposta do servidor já estará capturada dentro do método DigestAuthWithFile
+            // Verifica se o código de status da resposta é 401 (Unauthorized)
+            if (response.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                Debug.WriteLine("Erro 401 - Não autorizado. Tentando outra autenticação.");
+                // Chame a função que deseja para tratar erro 401
+                SendConfigBasicAuth("admin", "PASSWORD");
+            }
+            else
+            {
+                // Sucesso ou outro código de status
+                Debug.WriteLine("Arquivo enviado com sucesso!");
+            }
         }
-        catch (Exception ex)
+        catch (WebException webEx)
         {
-            Debug.WriteLine($"Erro ao enviar configuração: {ex.Message}");
-            statusMessage = $"Erro ao enviar configuração: {ex.Message}";
-            StateHasChanged();
-
-
+            // Verifica se existe uma resposta associada à exceção
+            if (webEx.Response is HttpWebResponse httpResponse)
+            {
+                string errorResponse = string.Empty; // Armazena a resposta
+                try
+                {
+                    // Verifica se o erro foi 401 (Unauthorized)
+                    if (httpResponse.StatusCode == HttpStatusCode.Unauthorized)
+                    {
+                        Debug.WriteLine("Erro 401 - Não autorizado. Tentando outra autenticação.");
+                        SendConfigBasicAuth("admin", "PASSWORD");
+                    }
+                    else
+                    {
+                        // Trata outros erros e captura a resposta do servidor
+                        using (var responseStream = httpResponse.GetResponseStream())
+                        {
+                            if (responseStream != null)
+                            {
+                                using (var reader = new StreamReader(responseStream))
+                                {
+                                    errorResponse = await reader.ReadToEndAsync();
+                                }
+                            }
+                        }
+                        Debug.WriteLine($"Erro ao enviar configuração: {webEx.Message}, Resposta: {errorResponse}");
+                        statusMessage = $"Erro ao enviar configuração: {webEx.Message}, Resposta: {errorResponse}";
+                    }
+                }
+                finally
+                {
+                    // Certifique-se de liberar o objeto httpResponse no final
+                    httpResponse.Dispose();
+                }
+            }
+            else
+            {
+                Debug.WriteLine($"Erro ao enviar configuração: {webEx.Message}");
+                statusMessage = $"Erro ao enviar configuração: {webEx.Message}";
+            }
         }
+
     }
 
     private async Task SetActiveMenu(string menuId)

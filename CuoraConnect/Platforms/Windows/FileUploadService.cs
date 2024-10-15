@@ -41,16 +41,26 @@ namespace CuoraConnect.Platforms.Windows
 
             return _filePath;
         }
-
         public string pathDB()
         {
-            // Obter o caminho para o diretório de armazenamento local
-            var localFolder = ApplicationData.Current.LocalFolder;
+            // Obter a unidade do disco local a partir do caminho do perfil do usuário
+            string localDisk = Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
+
+            // Definir o caminho fixo para o diretório do banco de dados
+            string fixedPath = Path.Combine(localDisk, "SYSTEL", "CuoraConnect");
+
+            // Criar o diretório se não existir
+            if (!Directory.Exists(fixedPath))
+            {
+                Directory.CreateDirectory(fixedPath);
+            }
 
             // Definir o caminho do banco de dados
-            var dbPath = Path.Combine(localFolder.Path, "networkinfo.db");
+            var dbPath = Path.Combine(fixedPath, "networkinfo.db");
             return dbPath;
         }
+
+
         public string GenerateXml()
         {
 

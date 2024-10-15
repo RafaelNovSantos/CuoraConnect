@@ -74,7 +74,7 @@
                 <input type="@PasswordInputType" class="" id="pwd" placeholder="Senha do Wi-Fi do seu comércio" @bind="password" minlength="8" required="">
                 <button type="button" style="background-color: transparent;border: transparent;width: 50px;height: 44px;right: 4%;position: absolute;" @onclick="TogglePasswordVisibility"><i class="@PasswordIconClass"></i></button>
                 <div class="valid-feedback" ></div>
-               <div class="invalid-feedback" >Preencha o campo de senha com pelo menos 8 caracteres.</div>
+               <div class="invalid-feedback" >A senha deve conter pelo menos 8 caracteres.</div>
             </div>
 
 
@@ -495,7 +495,7 @@
         statusSuccess = null;
         statusInfo = null;
 
-        if (string.IsNullOrEmpty(ssid) || string.IsNullOrEmpty(gateway) || string.IsNullOrEmpty(localIP) || string.IsNullOrEmpty(availableIP) || string.IsNullOrEmpty(subnetMask) || string.IsNullOrEmpty(password))
+        if (string.IsNullOrEmpty(ssid) || string.IsNullOrEmpty(gateway) ||  string.IsNullOrEmpty(availableIP) || string.IsNullOrEmpty(subnetMask) || string.IsNullOrEmpty(password))
         {
             statusAlert = "Preencha todos os campos";
             StateHasChanged();
