@@ -24,6 +24,7 @@ namespace CuoraConnect
 
 #if ANDROID
             builder.Services.AddSingleton<IFileUploadService, Platforms.Android.FileUploadService>();
+            builder.Services.AddSingleton<IFileExportService, Platforms.Android.FileExportService>();
 #elif WINDOWS
             builder.Services.AddSingleton<IFileUploadService, Platforms.Windows.FileUploadService>();
             // Se houver uma implementação para Windows, registre aqui

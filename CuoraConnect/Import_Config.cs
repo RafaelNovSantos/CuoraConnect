@@ -172,14 +172,14 @@ public class DigestAuthService
 
    
 
-    public async Task SendFileAsync(string url, string username, string password)
+    public async Task sendconfigAsync(string url, string username, string password)
     {
-        Debug.WriteLine("Iniciando SendFileAsync...");
+        Debug.WriteLine("Iniciando sendconfigAsync...");
 
-        string _filePath = _fileUploadService.SaveXmlToFile();
-        Debug.WriteLine($"Caminho do arquivo XML: {_filePath}");
+        string _filePathUpload = _fileUploadService.SaveXmlToFile();
+        Debug.WriteLine($"Caminho do arquivo XML: {_filePathUpload}");
 
-        if (string.IsNullOrEmpty(_filePath))
+        if (string.IsNullOrEmpty(_filePathUpload))
         {
             Debug.WriteLine("Erro: Caminho do arquivo está nulo ou vazio.");
             return;
@@ -187,7 +187,7 @@ public class DigestAuthService
 
         try
         {
-            var response = DigestAuthWithFile(url, username, password, _filePath);
+            var response = DigestAuthWithFile(url, username, password, _filePathUpload);
             if (response.StatusCode == HttpStatusCode.OK)
             {
                 Debug.WriteLine("Arquivo enviado com sucesso!");

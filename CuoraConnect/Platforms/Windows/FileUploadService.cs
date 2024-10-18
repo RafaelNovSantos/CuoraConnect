@@ -9,37 +9,37 @@ namespace CuoraConnect.Platforms.Windows
 {
     public class FileUploadService : IFileUploadService
     {
-        private string _filePath;
+        private string _filePathUpload;
 
         public FileUploadService()
         {
             // Inicializa o caminho do arquivo
-            _filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "config_default.xml");
+            _filePathUpload = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "config_default.xml");
         }
 
         public string SaveXmlToFile()
         {
-            if (string.IsNullOrEmpty(_filePath))
+            if (string.IsNullOrEmpty(_filePathUpload))
             {
-                _filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "config_default.xml");
+                _filePathUpload = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "config_default.xml");
             }
 
 
             // Verifica se o arquivo já existe
-            if (File.Exists(_filePath))
+            if (File.Exists(_filePathUpload))
             {
                 // Apaga o arquivo existente
-                File.Delete(_filePath);
-                System.Diagnostics.Debug.WriteLine($"Arquivo existente apagado: {_filePath}");
+                File.Delete(_filePathUpload);
+                System.Diagnostics.Debug.WriteLine($"Arquivo existente apagado: {_filePathUpload}");
             }
 
             // Gera o novo conteúdo XML com os dados do banco de dados
             var xmlContent = GenerateXml();
 
-            File.WriteAllText(_filePath, xmlContent);
-            System.Diagnostics.Debug.WriteLine($"Novo XML gerado e salvo em: {_filePath}");
+            File.WriteAllText(_filePathUpload, xmlContent);
+            System.Diagnostics.Debug.WriteLine($"Novo XML gerado e salvo em: {_filePathUpload}");
 
-            return _filePath;
+            return _filePathUpload;
         }
         public string pathDB()
         {
