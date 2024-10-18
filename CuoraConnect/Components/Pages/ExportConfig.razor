@@ -9,8 +9,9 @@
 @using CuoraConnect.Services
 @using Microsoft.AspNetCore.Components
 @using SQLite
-@using CuoraConnect.Models;
+@using CuoraConnect.Models.ExportInfo;
 @using System.Net.Sockets
+@using System.Xml.Linq;
 @inject IFileUploadService FileUploadService
 @inject INetworkService NetworkService
 @inject IJSRuntime JSRuntime
@@ -242,11 +243,23 @@
     private string? statusError;
     private string? statusSuccess;
     private string ssidMinusculo;
-
+    private string ssid;
+    private string networkName;
+    private string defaultGateway;
+    private string ipAddress;
     private string? statusMessage { get; set; }
     private string? fileXMLPath;
     private bool loader;
     private static readonly HttpClient client = new HttpClient();
+
+    protected override void OnInitialized()
+    {
+
+        string dbPath = FileUploadService.pathDB();
+
+        using var db = new SQLiteConnection(dbPath);
+        db.CreateTable<ExportInfo>();
+    }
 
 
     private async Task CallJavaScriptAfterRender()
@@ -301,7 +314,7 @@
 
 
 
-        string ssid = await NetworkService.GetCurrentSSID();
+        ssid = await NetworkService.GetCurrentSSID();
         Debug.WriteLine($"SSID: {ssid}");
 
         if (ssid == "SSID Indisponível." || ssid == "")
@@ -314,11 +327,7 @@
 
         if (ssidMinusculo.StartsWith("xpicowifi") || ssidMinusculo.StartsWith("cuora"))
         {
-
-
-
-
-            string filePath = FileUploadService.SaveXmlToFile();
+            
 
             bool isMobileDataEnabled = NetworkService.IsMobileDataEnabled();
             if (isMobileDataEnabled)
@@ -333,9 +342,7 @@
                 Debug.WriteLine("Dados móveis estão desativados.");
             }
 
-          
 
-       
             bool sendReq = false;
 
             try
@@ -426,7 +433,7 @@
                         {
 
 
-                           
+
                             writer.Write($"--{boundary}\r\n");
                             writer.Write($"Content-Disposition: form-data; name=\"configrecord\";\"\r\n");
                             writer.Write($"Content-Type: application/xml\r\n\r\n");
@@ -446,18 +453,57 @@
                         // sendReq = true; é para identificar o sucesso do envio de requisição
                         sendReq = true;
                         Debug.WriteLine("Requisição enviada com sucesso.");  // Log para indicar que foi enviada
+
                         string responseBody = streamReader.ReadToEnd();
                         if (response.StatusCode == HttpStatusCode.OK)  // Verifica se o status da resposta é 200 (OK)
                         {
                             statusMessage = (responseBody);
                             Debug.WriteLine($"Resposta do servidor (Status OK): {responseBody}");
 
-                        }
-                        if (responseBody.Contains("<result>Succeeded</result>"))
-                        {
-                            statusSuccess = "Cuora Max configurada com sucesso, reinicie sua balança!";
-                            Debug.WriteLine($"Resposta do servidor (Succeeded): {responseBody}");
-                            StateHasChanged();
+                            // Carregando o conteúdo XML recebido
+                            XElement xmlContent = XElement.Parse(responseBody);
+
+                            // Função para obter o valor de um configitem específico dentro do grupo
+                            string GetConfigValue(XElement xml, string itemName)
+                            {
+                                foreach (XElement item in xml.Elements("configitem"))
+                                {
+                                    if (item.Attribute("name")?.Value == itemName)
+                                    {
+                                        return item.Element("value")?.Value;
+                                    }
+                                }
+                                return null;
+                            }
+
+                            // Percorrendo todos os grupos <configgroup>
+                            foreach (XElement configGroup in xmlContent.Elements("configgroup"))
+                            {
+                                // Verificando se o grupo é da Interface "wlan0"
+                                if (configGroup.Attribute("name")?.Value == "Interface" && configGroup.Attribute("instance")?.Value == "wlan0")
+                                {
+                                    // Extraindo os valores desejados apenas do grupo "wlan0"
+                                    ipAddress = GetConfigValue(configGroup, "IP Address");
+                                    defaultGateway = GetConfigValue(configGroup, "Default Gateway");
+
+                                    // Exibindo os resultados
+                                    Debug.WriteLine($"IP Address: {ipAddress}");
+                                    Debug.WriteLine($"Default Gateway: {defaultGateway}");
+
+                                }
+                                if (configGroup.Attribute("name")?.Value == "WLAN Profile")
+                                {
+                                    // Procurando o valor do "Network Name" dentro do configGroup "Basic"
+                                    var networkNameElement = configGroup.Descendants("value")
+                                                                        .FirstOrDefault(v => v.Attribute("name")?.Value == "Network Name");
+
+                                    networkName = networkNameElement?.Value;
+
+                                    // Exibindo os resultados no Debug
+                                    Debug.WriteLine($"Network Name: {networkName}");
+                                }
+                            }
+                            saveExportInfoSQL(ipAddress, defaultGateway, networkName);
                         }
                     }
 
@@ -522,7 +568,7 @@
                     else
                     {
 
-                      
+
 
                         Debug.WriteLine($"Erro de rede: {ex.Message}");
                     }
@@ -708,7 +754,7 @@
                 {
                     string responseContent = await reader.ReadToEndAsync();
                     // Adiciona a resposta ao statusMessage
-                    
+
 
                     // Verifica se o código de status da resposta é 200 (OK)
                     if (response.StatusCode == HttpStatusCode.OK)
@@ -716,13 +762,58 @@
                         statusSuccess = "Cuora Max configurada com sucesso, reinicie sua balança!";
                         Debug.WriteLine($"Resposta do servidor: {responseContent}");
                         StateHasChanged();
+
+                        // Carregando o conteúdo XML recebido
+                        XElement xmlContent = XElement.Parse(responseContent);
+
+                        // Função para obter o valor de um configitem específico dentro do grupo
+                        string GetConfigValue(XElement xml, string itemName)
+                        {
+                            foreach (XElement item in xml.Elements("configitem"))
+                            {
+                                if (item.Attribute("name")?.Value == itemName)
+                                {
+                                    return item.Element("value")?.Value;
+                                }
+                            }
+                            return null;
+                        }
+
+                        // Percorrendo todos os grupos <configgroup>
+                        foreach (XElement configGroup in xmlContent.Elements("configgroup"))
+                        {
+                            // Verificando se o grupo é da Interface "wlan0"
+                            if (configGroup.Attribute("name")?.Value == "Interface" && configGroup.Attribute("instance")?.Value == "wlan0")
+                            {
+                                // Extraindo os valores desejados apenas do grupo "wlan0"
+                                 ipAddress = GetConfigValue(configGroup, "IP Address");
+                                 defaultGateway = GetConfigValue(configGroup, "Default Gateway");
+
+                                // Exibindo os resultados
+                                Debug.WriteLine($"IP Address: {ipAddress}");
+                                Debug.WriteLine($"Default Gateway: {defaultGateway}");
+
+                            }
+                            if (configGroup.Attribute("name")?.Value == "WLAN Profile")
+                            {
+                                // Procurando o valor do "Network Name" dentro do configGroup "Basic"
+                                var networkNameElement = configGroup.Descendants("value")
+                                                                    .FirstOrDefault(v => v.Attribute("name")?.Value == "Network Name");
+
+                                networkName = networkNameElement?.Value;
+                                
+
+                                // Exibindo os resultados no Debug
+                                Debug.WriteLine($"Network Name: {networkName}");
+                            }
+                        }
+                        saveExportInfoSQL(ipAddress, defaultGateway, networkName);
                     }
                     else{
                         statusMessage = $"Resposta do servidor: {response.StatusCode} - {responseContent}";
                         StateHasChanged();
                         Debug.WriteLine($"Resposta do servidor: {responseContent}");
                     }
-
                 }
                 return response;
             }
@@ -821,9 +912,45 @@
 
     }
 
+
+
     private async Task SetActiveMenu(string menuId)
     {
         // Chama a função JavaScript passando o ID do menu ativo
         await JSRuntime.InvokeVoidAsync("setActiveClass", menuId);
     }
+
+    private string saveExportInfoSQL(string ipAddress, string defaultGateway, string networkName)
+    {
+        // Salvando no SQLite
+        using var db = new SQLiteConnection(FileUploadService.pathDB());
+
+        var table = db.Table<ExportInfo>().FirstOrDefault(c => c.Id == ssid);
+        if (table is null)
+        {
+            var exportInfo = new ExportInfo
+                {
+                    Id = ssid,
+                    IP_Address = ipAddress,
+                    Default_Gateway = defaultGateway,
+                    Network_Name = networkName
+                };
+
+            db.Insert(exportInfo);
+        }
+        else
+        {
+            table.IP_Address = ipAddress;
+            table.Default_Gateway = defaultGateway;
+            table.Network_Name = networkName;
+            db.Update(table);
+        }
+
+        statusSuccess = "Informações de rede salvas.";
+        CallJavaScriptAfterRender();
+        StateHasChanged();
+        Debug.WriteLine("Informações de rede salvas.");
+        return "";
+    }
 }
+

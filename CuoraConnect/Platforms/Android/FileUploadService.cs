@@ -1,5 +1,5 @@
 ﻿using SQLite;
-using CuoraConnect.Models;
+using CuoraConnect.Models.NetworkInfo;
 using CuoraConnect.Platforms.Android;
 using CuoraConnect.Services;
 using Application = Android.App.Application;

@@ -1,5 +1,5 @@
 ﻿using SQLite;
-namespace CuoraConnect.Models;
+namespace CuoraConnect.Models.NetworkInfo;
 public class NetworkInfo
 {
     [PrimaryKey]

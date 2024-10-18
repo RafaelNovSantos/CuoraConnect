@@ -1,7 +1,8 @@
 ﻿@page "/Wi-FiConfig"
 @using CuoraConnect.Services
 @using System.Diagnostics;
-@using CuoraConnect.Models;
+@using CuoraConnect.Models.NetworkInfo;
+@using CuoraConnect.Models.ExportInfo;
 @using SQLite
 @using System.ComponentModel
 @inject INetworkService NetworkService
@@ -253,8 +254,6 @@
 
         using var db = new SQLiteConnection(dbPath);
         db.CreateTable<NetworkInfo>();
-
-
     }
 
 
@@ -381,7 +380,7 @@
 
     private async Task GetNetworkInfo()
     {
-        
+        int countErrorNetwork = 0;
         loader = true;
         CallJavaScriptAfterRender();
         CleanStatus();
@@ -452,8 +451,6 @@
             Debug.WriteLine("Serviço de rede obtido.");
 
             // Obtém o SSID
-        
-
             Debug.WriteLine($"SSID: {ssid}");
 
             // Obtém o Gateway Padrão
@@ -476,7 +473,13 @@
         }
         catch (Exception ex)
         {
-            ssid = $"Erro: {ex.Message}";
+            while (countErrorNetwork <= 3)
+            {
+            countErrorNetwork++;
+            GetNetworkInfo();
+            Debug.WriteLine($"Erro: {ex.Message}");
+            }
+            statusError = $"Erro: {ex.Message}";
             Debug.WriteLine($"Erro: {ex.Message}");
         }
         isValid(true);
@@ -508,8 +511,8 @@
             }
             else
             {
-                Debug.WriteLine("Verifique se a senha do Wi-Fi está correta.");
-                statusError = "Verifique se a senha do Wi-Fi está correta.";
+                Debug.WriteLine("Verifique se a senha do Wi-Fi está correta ou se o nome do Wi-Fi está correto.");
+                statusError = "Verifique se a senha do Wi-Fi está correta ou se o nome do Wi-Fi está correto.";
                 StateHasChanged();
                 await CallJavaScriptAfterRender();
                 return;
@@ -548,10 +551,10 @@
             db.Update(table);
         }
         
-        statusSuccess = "Informações de rede salvas no banco de dados.";
+        statusSuccess = "Informações de rede salvas.";
             CallJavaScriptAfterRender();
             StateHasChanged();
-        Debug.WriteLine("Informações de rede salvas no banco de dados.");
+        Debug.WriteLine("Informações de rede salvas.");
         }
     }
 

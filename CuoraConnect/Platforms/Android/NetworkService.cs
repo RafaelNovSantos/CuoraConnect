@@ -342,21 +342,29 @@ namespace CuoraConnect.Platforms.Android
 
             // Verifica as redes escaneadas
             bool is5G = true; // Assume que a rede é 5G até que se prove o contrário
-            foreach (var network in wifiManager.ScanResults)
+            int countVerific5g = 0;
+
+            while (countVerific5g <= 3)
             {
-                // Verifica se o SSID da rede escaneada é igual ao SSID conectado
-                if (network.Ssid.Equals(connectedSsid))
+                countVerific5g++;
+                foreach (var network in wifiManager.ScanResults)
                 {
-                    // Verifica se a rede está na frequência de 2.4 GHz (bandas 2400-2500 MHz)
-                    if (network.Frequency >= 2400 && network.Frequency <= 2500)
+                    Debug.WriteLine($"Tentativa {countVerific5g} de verificar conexão 2.4g ");
+                    // Verifica se o SSID da rede escaneada é igual ao SSID conectado
+                    if (network.Ssid.Equals(connectedSsid))
                     {
-                        is5G = false; // A rede está em 2.4 GHz
-                        break; // Não precisamos continuar verificando
+                        Debug.WriteLine($"Rede:{network.Ssid} Frequência:{network.Frequency}");
+                        // Verifica se a rede está na frequência de 2.4 GHz (bandas 2400-2500 MHz)
+                        if (network.Frequency >= 2400 && network.Frequency <= 2500)
+                        {
+                            is5G = false; // A rede está em 2.4 GHz
+                            break; // Não precisamos continuar verificando
+                        }
                     }
                 }
             }
 
-            return is5G; // Retorna se estamos conectados a uma rede 5G
+                return is5G; // Retorna se estamos conectados a uma rede 5G
         }
 
 

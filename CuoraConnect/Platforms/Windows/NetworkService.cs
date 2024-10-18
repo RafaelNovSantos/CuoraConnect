@@ -7,6 +7,7 @@ using CuoraConnect.Services;
 using Microsoft.Maui.Controls;
 using Windows.Devices.Enumeration;
 using Windows.Devices.WiFi;
+using Windows.Media.Devices;
 using Windows.Networking.Connectivity;
 using Windows.Security.Credentials;
 
@@ -202,14 +203,20 @@ namespace CuoraConnect.Platforms.Windows
 
             // Obtém os adaptadores Wi-Fi disponíveis no dispositivo
             var wifiAdapters = await WiFiAdapter.FindAllAdaptersAsync();
+            int countVerific5g = 0;
 
-            foreach (var adapter in wifiAdapters)
+            while (countVerific5g <= 3)
+            {
+                countVerific5g++;
+                foreach (var adapter in wifiAdapters)
                 {
+                    Debug.WriteLine($"Tentativa {countVerific5g} de verificar conexão 2.4g ");
                     // Escaneia todas as redes visíveis
                     await adapter.ScanAsync();
 
                     foreach (var network in adapter.NetworkReport.AvailableNetworks)
                     {
+                        Debug.WriteLine($"Rede:{network.Ssid} Frequência:{network.ChannelCenterFrequencyInKilohertz}");
                         // Verifica se o SSID da rede escaneada é igual ao SSID conectado
                         if (network.Ssid == connectedSsid)
                         {
@@ -221,8 +228,7 @@ namespace CuoraConnect.Platforms.Windows
                         }
                     }
                 }
-            
-
+            }
             return true; // Nenhuma rede 2.4 GHz encontrada na conexão ativa
         }
 

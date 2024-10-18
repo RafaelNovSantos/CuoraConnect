@@ -3,7 +3,7 @@ using System.IO;
 using CuoraConnect.Services;
 using Windows.Storage;
 using SQLite;
-using CuoraConnect.Models;
+using CuoraConnect.Models.NetworkInfo;
 
 namespace CuoraConnect.Platforms.Windows
 {
@@ -47,7 +47,7 @@ namespace CuoraConnect.Platforms.Windows
             string localDisk = Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
 
             // Definir o caminho fixo para o diretório do banco de dados
-            string fixedPath = Path.Combine(localDisk, "SYSTEL", "CuoraConnect");
+            string fixedPath = Path.Combine(localDisk, "SYSTEL", "Cuora Connect Files");
 
             // Criar o diretório se não existir
             if (!Directory.Exists(fixedPath))
