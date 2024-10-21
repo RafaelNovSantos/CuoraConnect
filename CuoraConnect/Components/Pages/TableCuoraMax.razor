@@ -1,0 +1,219 @@
+﻿@page "/"
+@using MudBlazor
+@using CuoraConnect.Models.ExportInfo;
+@using CuoraConnect.Services
+@using SQLite
+@inject IFileUploadService FileUploadService
+
+<MudDataGrid T="ExportInfo" Items="@(ExportInfos?.Take(4) ?? Enumerable.Empty<ExportInfo>())" ReadOnly="@_readOnly" 
+             EditMode="@(_isCellEditMode ? DataGridEditMode.Cell : DataGridEditMode.Form)"
+             StartedEditingItem="@StartedEditingItem" CanceledEditingItem="@CanceledEditingItem" 
+             CommittedItemChanges="@CommittedItemChanges"
+             Bordered="true" Dense="true" EditTrigger="@(_editTriggerRowClick ? DataGridEditTrigger.OnRowClick : DataGridEditTrigger.Manual)"
+             Class="tableEdit" Style="">
+    <Columns>
+        <PropertyColumn T="ExportInfo" TProperty="string" Property="x => x.Id" Title="ID" Editable="false" />
+        <PropertyColumn T="ExportInfo" TProperty="Image" Title="Imagem" ReadOnly="true" Editable="false">
+            <CellTemplate>
+                <img src="/Images/producto-cuora-max-05.jpg" class="product-image" />
+            </CellTemplate>
+        </PropertyColumn>
+        <PropertyColumn T="ExportInfo" TProperty="string" Property="x => x.IP_Address" Editable="true" Title="IP">
+            <EditTemplate>
+                <MudTextField Mask="@ipv4Mask"  
+                              @bind-Value="@context.Item.IP_Address" />
+            </EditTemplate>
+            <CellTemplate>
+                @if (!string.IsNullOrEmpty(context.Item.IP_Address))
+                {
+                    @context.Item.IP_Address
+                }
+            </CellTemplate>
+        </PropertyColumn>
+        <TemplateColumn>
+            <CellTemplate>
+                <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" 
+                               OnClick="@context.Actions.StartEditingItemAsync" 
+                               Color="Color.Secondary" 
+                               Class="action-btn" />
+            </CellTemplate>
+        </TemplateColumn>
+    </Columns>
+</MudDataGrid>
+
+
+
+
+
+
+
+
+
+<style>
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: #f7f9fc;
+        margin: 0;
+    }
+
+    h1 {
+        color: #333;
+        font-size: 24px;
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .tableEdit{
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        margin: 20px;
+        background-color: #fff;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+
+    .product-image {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+    }
+
+    .product-image:hover {
+        transform: scale(1.05);
+    }
+
+    .action-btn {
+        cursor: pointer;
+        font-size: 18px;
+        border-radius: 50%;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+
+    .action-btn:hover {
+        transform: scale(1.15);
+    }
+
+    th {
+        background-color: #4e73df;
+        color: #fff;
+        text-align: center !important;
+        font-weight: 600;
+    }
+
+
+
+    td {
+        color: #555;
+        text-align: center !important;
+        font-weight: 500;
+        vertical-align: middle;
+        padding: 16px 24px;
+        transition: background-color 0.3s ease;
+    }
+
+    tbody tr:nth-child(odd) {
+        background-color: #fff;
+    }
+
+    tbody tr:nth-child(even) {
+        background-color: #f7f9fc;
+    }
+
+    tr:hover {
+        background-color: #f8f9fc;
+    }
+
+
+
+
+    /* Estilo de input bonito */
+    input[type="text"] {
+
+      padding: 8px 12px;
+      font-size: 16px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: #4e73df;
+      box-shadow: 0 0 5px rgba(78, 115, 223, 0.3);
+    }
+
+      
+    
+  </style>
+
+
+
+
+@code {
+
+    public IMask ipv4Mask = RegexMask.IPv4();
+    private List<ExportInfo> ExportInfos = new List<ExportInfo>(); // Inicialização
+
+
+
+    private bool _readOnly;
+    private bool _isCellEditMode;
+    private List<string> _events = new();
+    private bool _editTriggerRowClick;
+
+    protected override void OnInitialized()
+    {
+
+        string dbPath = FileUploadService.pathDB();
+
+        using var db = new SQLiteConnection(dbPath);
+        db.CreateTable<ExportInfo>();
+
+        connectionBD();
+
+    }
+
+    public string connectionBD() // construtor
+    {
+
+        using var db = new SQLiteConnection(FileUploadService.pathDB());
+        // Busca todos os dados da tabela ExportInfo
+        var netConfigs = db.Table<ExportInfo>().ToList(); // Coleta todos os registros
+
+        ExportInfos = new List<ExportInfo>(); // Inicializa a lista
+
+        // Preenche a lista ExportInfos com os dados do banco
+        foreach (var netConfig in netConfigs)
+        {
+            ExportInfos.Add(new ExportInfo
+                {
+                    Id = netConfig.Id,
+                    IP_Address = netConfig.IP_Address,
+                    Default_Gateway = netConfig.Default_Gateway,
+                    Network_Name = netConfig.Network_Name
+                });
+        }
+        return "";
+    }
+
+
+    // events
+    void StartedEditingItem(ExportInfo item)
+    {
+        _events.Insert(0, $"Event = StartedEditingItem, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
+    }
+
+    void CanceledEditingItem(ExportInfo item)
+    {
+        _events.Insert(0, $"Event = CanceledEditingItem, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
+    }
+
+    void CommittedItemChanges(ExportInfo item)
+    {
+        _events.Insert(0, $"Event = CommittedItemChanges, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
+    }
+}
