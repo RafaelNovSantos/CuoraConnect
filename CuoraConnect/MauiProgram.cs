@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using CuoraConnect.Services;
+using MudBlazor.Services;
 
 namespace CuoraConnect
 {
@@ -19,6 +20,8 @@ namespace CuoraConnect
                     fonts.AddFont("fontello.ttf", "IconsFont");
                 });
 
+
+            builder.Services.AddMudServices();
             builder.Services.AddScoped<DigestAuthService>();
 
 

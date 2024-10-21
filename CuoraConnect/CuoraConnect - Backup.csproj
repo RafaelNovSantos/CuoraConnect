@@ -99,12 +99,14 @@
 	<ItemGroup>
 	  <Content Remove="Components\Pages\Weather.razor" />
 	  <Content Remove="wwwroot\Images\dotnet_bot.svg" />
+		<Content Remove="wwwroot\Images\cuora_max.svg" />
 	  <Content Remove="wwwroot\Images\home.svg" />
 	</ItemGroup>
 
     <ItemGroup>
       <None Remove="Components\Pages\Counter.razor.css" />
       <None Remove="Resources\Images\home.svg" />
+		<None Remove="Resources\Images\cuora_max.svg" />
       <None Remove="Resources\Images\logocuoraconnect.png" />
       <None Remove="Resources\Raw\config_default.xml" />
     </ItemGroup>
@@ -113,6 +115,7 @@
       <MauiImage Include="wwwroot\Images\dotnet_bot.svg">
         <BaseSize>168,208</BaseSize>
       </MauiImage>
+		<MauiImage Include="wwwroot\Images\cuora_max.svg" />
       <MauiImage Include="wwwroot\Images\home.svg" />
     </ItemGroup>
 

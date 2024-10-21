@@ -1,0 +1,364 @@
+﻿@page "/"
+@using MudBlazor
+@using MudBlazor.Examples.Data.Models
+
+<MudDataGrid T="Element" Items="@Elements.Take(4)" ReadOnly="@_readOnly" 
+             EditMode="@(_isCellEditMode ? DataGridEditMode.Cell : DataGridEditMode.Form)"
+             StartedEditingItem="@StartedEditingItem" CanceledEditingItem="@CanceledEditingItem" 
+             CommittedItemChanges="@CommittedItemChanges"
+             Bordered="true" Dense="true" EditTrigger="@(_editTriggerRowClick ? DataGridEditTrigger.OnRowClick : DataGridEditTrigger.Manual)"
+            Class="tableEdit" Style="">
+    <Columns>
+        <PropertyColumn T="Element" TProperty="int" Property="x => x.Number" Title="ID" Editable="false" />
+        <PropertyColumn T="Element" TProperty="Image" Title="Imagem" ReadOnly="true" Editable="false">
+            <CellTemplate>
+                <img src="@context.Item.ImageUrl" alt="@context.Item.Name" class="product-image" />
+            </CellTemplate>
+        </PropertyColumn>
+        <PropertyColumn T="Element" TProperty="string" Property="x => FormatIPAddress(x.IP_Address)" Editable="true" Title="IP">
+        </PropertyColumn>
+
+        <PropertyColumn T="Element" TProperty="string" Property="x => x.Name" Title="Nome do Produto" />
+        <TemplateColumn>
+            <CellTemplate>
+                <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" 
+                               OnClick="@context.Actions.StartEditingItemAsync" 
+                               Color="Color.Secondary" 
+                               Class="action-btn" />
+            </CellTemplate>
+        </TemplateColumn>
+    </Columns>
+</MudDataGrid>
+
+
+
+
+
+
+<style>
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: #f7f9fc;
+        margin: 0;
+    }
+
+    h1 {
+        color: #333;
+        font-size: 24px;
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .tableEdit{
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        margin: 20px;
+        background-color: #fff;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+
+    .product-image {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+    }
+
+    .product-image:hover {
+        transform: scale(1.05);
+    }
+
+    .action-btn {
+        cursor: pointer;
+        font-size: 18px;
+        border-radius: 50%;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+
+    .action-btn:hover {
+        transform: scale(1.15);
+    }
+
+    th {
+        background-color: #4e73df;
+        color: #fff;
+        text-align: center !important;
+        font-weight: 600;
+    }
+
+
+
+    td {
+        color: #555;
+        text-align: center !important;
+        font-weight: 500;
+        vertical-align: middle;
+        padding: 16px 24px;
+        transition: background-color 0.3s ease;
+    }
+
+    tbody tr:nth-child(odd) {
+        background-color: #fff;
+    }
+
+    tbody tr:nth-child(even) {
+        background-color: #f7f9fc;
+    }
+
+    tr:hover {
+        background-color: #f8f9fc;
+    }
+
+    body {
+      font-weight: 400;
+      text-align: center;
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background-color: #f7f9fc;
+    }
+
+    h1 {
+      color: #333;
+      font-size: 24px;
+      margin-bottom: 30px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      background-color: #fff;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    }
+
+    th, td {
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      padding: 16px 24px;
+      font-size: 16px;
+      transition: background-color 0.3s ease;
+    }
+
+    th {
+      background-color: #4e73df;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    td {
+      color: #555;
+      font-weight: 500;
+      vertical-align: middle;
+    }
+
+    /* Alternância de cores para as linhas da tabela */
+    tbody tr:nth-child(odd) {
+      background-color: #fff;
+    }
+
+    tbody tr:nth-child(even) {
+      background-color: #f7f9fc;
+    }
+
+    tr:hover {
+      background-color: #f8f9fc;
+      transition: background-color 0.3s ease;
+    }
+
+    /* Estilo moderno para imagens */
+    .product-image {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease;
+    }
+
+    .product-image:hover {
+      transform: scale(1.05);
+    }
+
+    /* Botões de ação modernos */
+    .action-btn {
+      cursor: pointer;
+      font-size: 18px;
+      border: none;
+      background: none;
+      padding: 10px;
+      border-radius: 50%;
+      transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+
+    .action-btn:hover {
+      transform: scale(1.15);
+    }
+
+    .action-btn:focus {
+      outline: none;
+    }
+
+    /* Ícones minimalistas */
+    .icon {
+      font-size: 18px;
+      color: #4e73df;
+    }
+
+    .save-icon {
+      color: #1cc88a;
+    }
+
+    /* Modo salvar */
+    .save-mode {
+      color: #1cc88a;
+    }
+
+    /* Estilo de input bonito */
+    input[type="text"] {
+
+      padding: 8px 12px;
+      font-size: 16px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: #4e73df;
+      box-shadow: 0 0 5px rgba(78, 115, 223, 0.3);
+    }
+
+      
+    }
+  </style>
+
+
+
+<h1>Tabela de Produtos Editável com Imagens</h1>
+
+<table id="productTable">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Imagem</th>
+      <th>Nome do Produto</th>
+      <th>Preço (R$)</th>
+      <th>Ação</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td><img src="cuora-max-ticket-900x900.jpg" alt="Produto A" class="product-image"></td>
+      <td contenteditable="false">Produto A</td>
+      <td contenteditable="false">10.00</td>
+      <td><button class="action-btn" onclick="editRow(this)"><span class="icon edit-icon">&#9998;</span></button></td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td><img src="Group 27.png" alt="Produto B" class="product-image"></td>
+      <td contenteditable="false">Produto B</td>
+      <td contenteditable="false">20.00</td>
+      <td><button class="action-btn" onclick="editRow(this)"><span class="icon edit-icon">&#9998;</span></button></td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td><img src="producto-cuora-max-05.jpg" alt="Produto C" class="product-image"></td>
+      <td contenteditable="false">Produto C</td>
+      <td contenteditable="false">30.00</td>
+      <td><button class="action-btn" onclick="editRow(this)"><span class="icon edit-icon">&#9998;</span></button></td>
+    </tr>
+  </tbody>
+</table>
+
+<script>
+  function editRow(button) {
+    const row = button.parentNode.parentNode;
+    const isEditMode = button.classList.contains("save-mode");
+
+    // Alterna entre modo de edição e modo de visualização
+    if (!isEditMode) {
+      row.querySelectorAll('td').forEach((cell, index) => {
+        if (index > 1 && index < 4) { // Ignorar primeira coluna e imagem
+          const currentText = cell.innerText;
+          cell.innerHTML = `<input type="text" value="${currentText}" >`;
+        }
+      });
+      button.innerHTML = '<span class="icon save-icon">&#10004;</span>';
+      button.classList.add("save-mode");
+    } else {
+      row.querySelectorAll('td').forEach((cell, index) => {
+        if (index > 1 && index < 4) { // Ignorar primeira coluna e imagem
+          const input = cell.querySelector('input');
+          if (input) {
+            const newValue = input.value;
+            cell.innerHTML = newValue;
+          }
+        }
+      });
+      button.innerHTML = '<span class="icon edit-icon">&#9998;</span>';
+      button.classList.remove("save-mode");
+    }
+  }
+</script>
+
+
+@code {
+
+    public IMask ipv4Mask = RegexMask.IPv4();
+    private string FixedImageUrl { get; } = "/Images/producto-cuora-max-05.jpg";
+    private List<Element> Elements;
+     private Element _element = new Element(); // Your instance of Element
+
+    private string FormatIPAddress(string ipAddress)
+    {
+        // Se o IP não for válido, você pode retornar um valor padrão
+        if (string.IsNullOrWhiteSpace(ipAddress))
+        {
+            return "IP Inválido"; // Retorna uma mensagem padrão se o IP for inválido
+        }
+
+        // Retorna o IP como está se for válido
+        return ipAddress;
+    }
+
+   
+
+    public Component1() // construtor
+    {
+        Elements = new List<Element>
+        {
+            new Element { Number = 1, Sign = "H", Name = "Hydrogen", Position = 0, Molar = 1.008, IP_Address = "192.168.1.3", ImageUrl = FixedImageUrl },
+            new Element { Number = 2, Sign = "He", Name = "Helium", Position = 1, Molar = 4.0026, IP_Address = "192.168.1.3",  ImageUrl = FixedImageUrl },
+            new Element { Number = 3, Sign = "Li", Name = "Lithium", Position = 17, Molar = 6.94, IP_Address = "192.168.1.3", ImageUrl = FixedImageUrl },
+            // Adicione mais elementos se necessário
+        };
+    }
+
+    private bool _readOnly;
+    private bool _isCellEditMode;
+    private List<string> _events = new();
+    private bool _editTriggerRowClick;
+
+    // events
+    void StartedEditingItem(Element item)
+    {
+        _events.Insert(0, $"Event = StartedEditingItem, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
+    }
+
+    void CanceledEditingItem(Element item)
+    {
+        _events.Insert(0, $"Event = CanceledEditingItem, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
+    }
+
+    void CommittedItemChanges(Element item)
+    {
+        _events.Insert(0, $"Event = CommittedItemChanges, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
+    }
+}

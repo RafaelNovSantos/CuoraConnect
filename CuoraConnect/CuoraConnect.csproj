@@ -112,9 +112,14 @@
 	</ItemGroup>
 
     <ItemGroup>
+      <None Remove="Components\Pages\Component1.razor.css" />
       <None Remove="Components\Pages\Counter.razor.css" />
       <None Remove="Resources\Images\logocuoraconnect.png" />
       <None Remove="Resources\Raw\config_default.xml" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="Components\Pages\Component1.razor.css" />
     </ItemGroup>
 
     <ItemGroup>
@@ -122,6 +127,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="BlazorInputMask" Version="1.0.24" />
         <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.8" />
         <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="8.0.8" />
         <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
@@ -129,6 +135,7 @@
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)" />
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
         <PackageReference Include="Microsoft.Maui.Essentials" Version="8.0.90" />
+        <PackageReference Include="MudBlazor" Version="7.13.0" />
         <PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
         <PackageReference Include="System.Management" Version="8.0.0" />
     </ItemGroup>
