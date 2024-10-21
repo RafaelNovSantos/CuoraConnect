@@ -687,7 +687,7 @@
             var method = "POST";
             var uri = urlString;
 
-            // HA1: md5(username:realm:password)
+            // HA1: md5(username:realm:password)    
             var ha1 = Md5Hash($"{username}:{realm}:{password}");
 
             // HA2: md5(method:uri)

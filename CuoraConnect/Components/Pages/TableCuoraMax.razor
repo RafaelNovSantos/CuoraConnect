@@ -2,34 +2,57 @@
 @using MudBlazor
 @using CuoraConnect.Models.ExportInfo;
 @using CuoraConnect.Services
+@using System.Text.RegularExpressions
+
 @using SQLite
 @inject IFileUploadService FileUploadService
 
+
+
 <MudDataGrid T="ExportInfo" Items="@(ExportInfos?.Take(4) ?? Enumerable.Empty<ExportInfo>())" ReadOnly="@_readOnly" 
-             EditMode="@(_isCellEditMode ? DataGridEditMode.Cell : DataGridEditMode.Form)"
+             EditMode="DataGridEditMode.Cell"
              StartedEditingItem="@StartedEditingItem" CanceledEditingItem="@CanceledEditingItem" 
              CommittedItemChanges="@CommittedItemChanges"
              Bordered="true" Dense="true" EditTrigger="@(_editTriggerRowClick ? DataGridEditTrigger.OnRowClick : DataGridEditTrigger.Manual)"
              Class="tableEdit" Style="">
     <Columns>
-        <PropertyColumn T="ExportInfo" TProperty="string" Property="x => x.Id" Title="ID" Editable="false" />
-        <PropertyColumn T="ExportInfo" TProperty="Image" Title="Imagem" ReadOnly="true" Editable="false">
+        <PropertyColumn T="ExportInfo" TProperty="string" Property="x => x.Id" Title="Nome do equipamento" Editable="false" />
+        <PropertyColumn T="ExportInfo" TProperty="Image"  ReadOnly="true" Editable="false">
             <CellTemplate>
                 <img src="/Images/producto-cuora-max-05.jpg" class="product-image" />
             </CellTemplate>
         </PropertyColumn>
-        <PropertyColumn T="ExportInfo" TProperty="string" Property="x => x.IP_Address" Editable="true" Title="IP">
+        <PropertyColumn T="ExportInfo" Validation="@ValidateIPAddress" TProperty="string" Property="x => x.IP_Address" Editable="true" Title="IP configurado no equipamento">
             <EditTemplate>
-                <MudTextField Mask="@ipv4Mask"  
-                              @bind-Value="@context.Item.IP_Address" />
+        
+               
+                        <MudTextField Validation="@ValidateIPAddress" OnBlur="@((args) => SaveIP(context.Item))" @bind-Value="@context.Item.IP_Address" />
+                 
             </EditTemplate>
-            <CellTemplate>
-                @if (!string.IsNullOrEmpty(context.Item.IP_Address))
-                {
-                    @context.Item.IP_Address
-                }
-            </CellTemplate>
         </PropertyColumn>
+      
+        <PropertyColumn T="ExportInfo" Validation="@ValidateIPAddress" TProperty="string" Property="x => x.Default_Gateway" Editable="true" Title="IP do Roteador">
+            <EditTemplate>
+               
+                    <MudTextField @bind-Value="@context.Item.Default_Gateway" 
+                                  
+                                  Validation="@ValidateIPAddress" />
+               
+            </EditTemplate>
+        </PropertyColumn>
+        <PropertyColumn T="ExportInfo" TProperty="string"  Property="x => x.Network_Name" Editable="true" Title="Nome da rede conectada">
+            <EditTemplate>
+              
+                   
+                    <MudTextField @bind-Value="@context.Item.Network_Name" For="@(() => context.Item.Network_Name)"
+                                  Immediate="true"
+                                  OnBlur="@((args) => SaveIP(context.Item))"
+                                   />
+                                   
+                
+            </EditTemplate>
+        </PropertyColumn>
+
         <TemplateColumn>
             <CellTemplate>
                 <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" 
@@ -44,9 +67,7 @@
 
 
 
-
-
-
+           
 
 
 <style>
@@ -131,7 +152,8 @@
 
     /* Estilo de input bonito */
     input[type="text"] {
-
+        max-width: 170px;
+        text-align: center;
       padding: 8px 12px;
       font-size: 16px;
       border: 1px solid #ddd;
@@ -142,11 +164,13 @@
 
     input[type="text"]:focus {
       outline: none;
-      border-color: #4e73df;
-      box-shadow: 0 0 5px rgba(78, 115, 223, 0.3);
+       border-color: #4e73df;
+      box-shadow: 0 0 5px rgba(78, 115, 223, 0.3);Edi
     }
 
-      
+    .mud-input-control > .mud-input-control-input-container {
+        display: unset !important;
+    }
     
   </style>
 
@@ -158,24 +182,86 @@
     public IMask ipv4Mask = RegexMask.IPv4();
     private List<ExportInfo> ExportInfos = new List<ExportInfo>(); // Inicialização
 
-
+    private bool activeSave;
 
     private bool _readOnly;
     private bool _isCellEditMode;
     private List<string> _events = new();
     private bool _editTriggerRowClick;
 
+    private MudForm form;
+
+     private ExportInfo originalItem;
+
     protected override void OnInitialized()
     {
-
         string dbPath = FileUploadService.pathDB();
 
         using var db = new SQLiteConnection(dbPath);
         db.CreateTable<ExportInfo>();
-
-        connectionBD();
-
+        connectionBD(); // Presumindo que isso carrega os dados na interface
     }
+
+
+    // Método para iniciar a edição e salvar o estado original do item
+    private void StartEdit(ExportInfo item)
+    {
+        originalItem = new ExportInfo
+            {
+                IP_Address = item.IP_Address,
+                // Salve outras propriedades conforme necessário
+            };
+    }
+
+    private void OnCancel(ExportInfo item)
+    {
+        // Restaura os dados originais se o usuário clicar em cancelar
+        item.IP_Address = originalItem.IP_Address;
+        // Restaure outras propriedades conforme necessário
+    }
+
+    // Método de validação do IP
+    private string ValidateIPAddress(string ipAddress)
+    {
+
+        var ipPattern = @"^([0-9]{1,3}\.){3}[0-9]{1,3}$";
+        activeSave = false;
+        // Verifica se o IP está vazio
+        if (string.IsNullOrWhiteSpace(ipAddress))
+            
+            return "IP Precisa ser preenchido.";
+
+        // Verifica se o IP está no formato correto
+        if (!Regex.IsMatch(ipAddress, ipPattern))
+            
+            return "IP no formato errado, exemplo (192.168.1.1)";
+
+        activeSave = true;
+        return null; // Retorna "OK" se não houver erro
+    }
+
+
+
+    private void SaveIP(ExportInfo item)
+    {
+
+
+        if (activeSave == true)
+        {
+            using var db = new SQLiteConnection(FileUploadService.pathDB());
+
+            // Atualiza o registro no banco de dados
+            db.Update(item);
+
+            // Opcional: Recarregar os dados para garantir que a interface esteja atualizada
+            connectionBD();
+        }
+        else
+        {
+            return;
+        }
+    }
+
 
     public string connectionBD() // construtor
     {
@@ -187,12 +273,24 @@
         ExportInfos = new List<ExportInfo>(); // Inicializa a lista
 
         // Preenche a lista ExportInfos com os dados do banco
+
+        
+
         foreach (var netConfig in netConfigs)
         {
+            var IP = netConfig.IP_Address;
+
+            // Verifica se a string contém a barra "/"
+            if (IP.Contains("/"))
+            {
+                // Pega a parte antes da barra "/"
+                IP = IP.Substring(0, IP.IndexOf("/"));
+            }
+
             ExportInfos.Add(new ExportInfo
                 {
                     Id = netConfig.Id,
-                    IP_Address = netConfig.IP_Address,
+                    IP_Address = IP,
                     Default_Gateway = netConfig.Default_Gateway,
                     Network_Name = netConfig.Network_Name
                 });

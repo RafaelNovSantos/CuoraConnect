@@ -8,7 +8,6 @@ public class ExportInfo
     public string IP_Address { get; set; }
     public string Default_Gateway { get; set; }
     public string Network_Name { get; set; }
-
 }
 
 public class ExportInfoDatabase

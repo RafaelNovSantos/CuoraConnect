@@ -118,10 +118,14 @@
 	</ItemGroup>
 
     <ItemGroup>
-      <None Remove="Components\Pages\Component1.razor.css" />
       <None Remove="Components\Pages\Counter.razor.css" />
+      <None Remove="Components\Pages\TableCuoraMax.razor.css" />
       <None Remove="Resources\Images\logocuoraconnect.png" />
       <None Remove="Resources\Raw\config_default.xml" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="Components\Pages\TableCuoraMax.razor.css" />
     </ItemGroup>
 
     <ItemGroup>
