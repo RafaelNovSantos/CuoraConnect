@@ -40,11 +40,11 @@
                
             </EditTemplate>
         </PropertyColumn>
-        <PropertyColumn T="ExportInfo" TProperty="string"  Property="x => x.Network_Name" Editable="true" Title="Nome da rede conectada">
+        <PropertyColumn T="ExportInfo"   TProperty="string" Property="x => x.Network_Name" Editable="true" Title="Nome da rede conectada">
             <EditTemplate>
-              
-                   
-                    <MudTextField @bind-Value="@context.Item.Network_Name" For="@(() => context.Item.Network_Name)"
+
+
+                <MudTextField AdornmentIcon="@Icons.Material.Filled.Router" @bind-Value="@context.Item.Network_Name" For="@(() => context.Item.Network_Name)"
                                   Immediate="true"
                                   OnBlur="@((args) => SaveIP(context.Item))"
                                    />
@@ -65,7 +65,7 @@
 </MudDataGrid>
 
 
-
+<MudIconButton Icon="@Icons.Material.Filled.Build" Color="Color.Primary" OnClick="createDataBaseTest"  />
 
            
 
@@ -147,31 +147,36 @@
         background-color: #f8f9fc;
     }
 
+input {
+  border: 2px solid transparent !important;
+  width: 15em !important;
+  height: 2em !important;
+  outline: none !important;
+  overflow: hidden !important;
+  background-color: #F3F3F3 !important;
+  border-radius: 10px !important;
+  transition: all 0.5s !important;
+  text-align: center !important;
+}
+
+input:hover,
+input:focus{
+  border: 2px solid #4A9DEC !important;
+  box-shadow: 0px 0px 0px 7px rgb(74, 157, 236, 20%) !important;
+            background-color: white !important;
+}
 
 
 
-    /* Estilo de input bonito */
-    input[type="text"] {
-        max-width: 170px;
-        text-align: center;
-      padding: 8px 12px;
-      font-size: 16px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
-      transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    input[type="text"]:focus {
-      outline: none;
-       border-color: #4e73df;
-      box-shadow: 0 0 5px rgba(78, 115, 223, 0.3);Edi
-    }
-
+  
     .mud-input-control > .mud-input-control-input-container {
         display: unset !important;
+        
     }
-    
+
+    .mud-input-control {
+        flex: none !important;
+    }
   </style>
 
 
@@ -191,7 +196,7 @@
 
     private MudForm form;
 
-     private ExportInfo originalItem;
+    private ExportInfo originalItem;
 
     protected override void OnInitialized()
     {
@@ -203,23 +208,28 @@
     }
 
 
-    // Método para iniciar a edição e salvar o estado original do item
-    private void StartEdit(ExportInfo item)
+    private async Task createDataBaseTest()
     {
-        originalItem = new ExportInfo
+        using var db = new SQLiteConnection(FileUploadService.pathDB());
+        // Busca todos os dados da tabela ExportInfo
+        // Crie um novo objeto ExportInfo
+        var novoRegistro = new ExportInfo
             {
-                IP_Address = item.IP_Address,
-                // Salve outras propriedades conforme necessário
+                // Aqui você define os valores das colunas da tabela
+                Id = "Cuora_MAX",
+                IP_Address = "1.1.1.1", 
+                Default_Gateway = "192.142.1.1",
+                Network_Name = "Teste Wifi"
+                // Outros campos conforme necessário
             };
-    }
 
-    private void OnCancel(ExportInfo item)
-    {
-        // Restaura os dados originais se o usuário clicar em cancelar
-        item.IP_Address = originalItem.IP_Address;
-        // Restaure outras propriedades conforme necessário
-    }
+        // Insere o novo registro na tabela ExportInfo
+        db.Insert(novoRegistro);
 
+        // Opcionalmente, você pode buscar todos os registros novamente para confirmar
+        var netConfigs = db.Table<ExportInfo>().ToList();
+       
+    }
     // Método de validação do IP
     private string ValidateIPAddress(string ipAddress)
     {
