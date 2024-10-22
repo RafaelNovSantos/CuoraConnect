@@ -1,0 +1,116 @@
+﻿@using CuoraConnect.Models.ExportInfo;
+@using CuoraConnect.Components.Pages;
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+
+<MudDialog>
+    <TitleContent>
+        Configuração do Equipamento
+    </TitleContent>
+    <DialogContent>
+        <MudTextField   @bind-Value="EditedItem.Id" Label="ID" Disabled="true" />
+        <MudTextField Required="true" Validation="@ValidateIPAddress" @bind-Value="EditedItem.IP_Address" Label="IP Address" />
+        <MudTextField Required="true" Validation="@ValidateDefaultGateway" @bind-Value="EditedItem.Default_Gateway" Label="Default Gateway" />
+        <MudTextField Required="true" Error="string.IsNullOrWhiteSpace(EditedItem.Network_Name)"
+                      ErrorText="Network Name é obrigatório." @bind-Value="EditedItem.Network_Name" Label="Network Name" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancelar</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Salvar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private bool activeSave;
+    // Define a propriedade que receberá o item editado
+    [Parameter]
+    public ExportInfo EditedItem { get; set; }
+
+    [Inject]
+    private ISnackbar snackBar { get; set; }
+
+    [CascadingParameter]
+    private MudDialogInstance MudDialog { get; set; }
+
+    private TableCuoraMax tableCuoraMax = new TableCuoraMax();
+
+    private bool showNetworkNameError = false;
+
+    // Método de validação do IP
+    private string ValidateIPAddress(string ipAddress)
+    {
+        var ipPattern = @"^([0-9]{1,3}\.){3}[0-9]{1,3}$";
+
+        // Verifica se o IP está vazio
+        if (string.IsNullOrWhiteSpace(ipAddress))
+            return "IP precisa ser preenchido.";
+
+        // Verifica se o IP está no formato correto
+        if (!Regex.IsMatch(ipAddress, ipPattern))
+            return "IP no formato errado, exemplo (192.168.1.1)";
+
+        return null; // Retorna null se não houver erro
+    }
+
+    // Método de validação do IP
+    private string ValidateDefaultGateway(string defaultGateway)
+    {
+        var ipPattern = @"^([0-9]{1,3}\.){3}[0-9]{1,3}$";
+
+        // Verifica se o IP está vazio
+        if (string.IsNullOrWhiteSpace(defaultGateway))
+            return "IP precisa ser preenchido.";
+
+        // Verifica se o IP está no formato correto
+        if (!Regex.IsMatch(defaultGateway, ipPattern))
+            return "IP no formato errado, exemplo (192.168.1.1)";
+
+        return null; // Retorna null se não houver erro
+    }
+
+    private void Submit()
+    {
+        // Verifica se o campo "Network Name" está vazio
+        showNetworkNameError = string.IsNullOrWhiteSpace(EditedItem.Network_Name);
+
+        // Validação do endereço IP
+        var validationIP_Address = ValidateIPAddress(EditedItem.IP_Address);
+        var validationDefaultGateway = ValidateDefaultGateway(EditedItem.Default_Gateway);
+
+        // Verifica se qualquer validação retornou uma mensagem de erro
+        if (showNetworkNameError || validationIP_Address != null || validationDefaultGateway != null)
+        {
+            // Exibe a mensagem de erro ao usuário. Exibe a primeira mensagem de erro encontrada
+            var validationMessage = validationIP_Address ?? validationDefaultGateway ?? "Preencha todos os campos obrigatórios.";
+
+            ShowErrorMessage(validationMessage);
+
+            return; // Retorna e não prossegue com a submissão se houver erro
+        }
+
+        // Lógica para salvar as edições no banco de dados
+        using var db = new SQLiteConnection(FileUploadService.pathDB());
+        db.Update(EditedItem); // Atualiza o banco de dados
+        ShowSuccessMessage();
+        MudDialog.Close(DialogResult.Ok(true)); // Fecha o diálogo com resultado de sucesso
+    }
+
+
+    // Método para exibir mensagens de erro ao usuário
+    private void ShowErrorMessage(string message)
+    {
+        // Implemente a lógica para mostrar a mensagem de erro, pode ser um MudSnackbar, dialog, etc.
+        snackBar.Add(message, Severity.Error);
+    }
+
+    private void ShowSuccessMessage()
+    {
+        Snackbar.Add("Configuração Salva com sucesso no banco de dados", Severity.Success);
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel(); // Fecha o diálogo sem fazer nada
+    }
+}

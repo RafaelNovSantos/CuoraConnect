@@ -11858,7 +11858,7 @@ tr.mud-table-row-group-indented-5 td:first-child {
         left: 0;
         right: 0;
         bottom: 0;
-        content: " ";
+/*        content: " ";*/
         position: absolute;
         transition: border-bottom .2s,background-color .2s;
         border-bottom: 1px solid var(--mud-palette-lines-inputs);
@@ -12031,7 +12031,8 @@ tr.mud-table-row-group-indented-5 td:first-child {
     height: 1lh;
     margin: 0;
     display: block;
-    padding: 6px 0 7px;
+    padding: 2px 0 7px;
+    margin: 5px;
     min-width: 0;
     background: none;
     position: relative;

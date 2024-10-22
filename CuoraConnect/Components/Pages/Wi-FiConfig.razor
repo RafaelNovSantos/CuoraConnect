@@ -244,6 +244,7 @@
     private List<string> networks = new List<string>();
     private string ssidSave = "";
     private string dbPath;
+    private bool isNavigatingAway;
 
 
     // Inicializa o caminho do banco de dados e cria a tabela
@@ -260,7 +261,23 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await SetActiveMenu("Wi-FiConfig");
         await GetNetworkInfo();
+        // Registra o evento para monitorar as alterações de navegação
+        
+    }
+
+    public void Dispose()
+    {
+        // Certifique-se de remover o evento para evitar vazamentos de memória
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object sender, LocationChangedEventArgs e)
+    {
+        // Aqui você pode definir uma lógica para quando a navegação acontece
+        // Exemplo: se quiser cancelar algum processamento quando a página for trocada
+        isNavigatingAway = true; // ou outra lógica para cancelar ações
     }
 
 
@@ -380,6 +397,10 @@
 
     private async Task GetNetworkInfo()
     {
+        // Verifica se a navegação ocorreu antes de iniciar a lógica do método
+        NavigationManager.LocationChanged += OnLocationChanged;
+        if (isNavigatingAway) return;
+
         int countErrorNetwork = 0;
         loader = true;
         CallJavaScriptAfterRender();
@@ -391,6 +412,10 @@
         try
         {
             ssid = await NetworkService.GetCurrentSSID();
+            // Verifica se a navegação ocorreu após a chamada assíncrona
+            NavigationManager.LocationChanged += OnLocationChanged;
+            if (isNavigatingAway) return;
+
             Debug.WriteLine($"SSID: {ssid}");
             ssidSave = ssid;
             if (ssid == "")
@@ -427,6 +452,10 @@
                 Debug.WriteLine("Dados móveis estão desativados.");
             }
 
+            // Verifica se a navegação ocorreu após a chamada assíncrona
+            NavigationManager.LocationChanged += OnLocationChanged;
+            if (isNavigatingAway) return;
+
             bool connected5g = await NetworkService.IsConnectedTo5G();
             if (connected5g == true)
             {
@@ -447,6 +476,9 @@
                 Debug.WriteLine("Conexão 2.4g");
             }
 
+            // Verifica se a navegação ocorreu após a chamada assíncrona
+            NavigationManager.LocationChanged += OnLocationChanged;
+            if (isNavigatingAway) return;
 
             Debug.WriteLine("Serviço de rede obtido.");
 
@@ -470,17 +502,24 @@
             Debug.WriteLine($"Máscara disponível: {subnetMask}");
 
             loader = false;
+            // Verifica se a navegação ocorreu após a chamada assíncrona
+            NavigationManager.LocationChanged += OnLocationChanged;
+            if (isNavigatingAway) return;
         }
         catch (Exception ex)
         {
             while (countErrorNetwork <= 3)
             {
-            countErrorNetwork++;
-            GetNetworkInfo();
-            Debug.WriteLine($"Erro: {ex.Message}");
+                countErrorNetwork++;
+                GetNetworkInfo();
+                Debug.WriteLine($"Erro: {ex.Message}");
             }
             statusError = $"Erro: {ex.Message}";
             Debug.WriteLine($"Erro: {ex.Message}");
+            StateHasChanged();
+            // Verifica se a navegação ocorreu após a chamada assíncrona
+            NavigationManager.LocationChanged += OnLocationChanged;
+            if (isNavigatingAway) return;
         }
         isValid(true);
     }

@@ -1,4 +1,10 @@
 ﻿@inherits LayoutComponentBase
+@using MudBlazor
+
+
+<MudThemeProvider Theme="MyCustomTheme" />
+
+
 <MudThemeProvider />
 <MudPopoverProvider />
 <MudDialogProvider />
@@ -16,3 +22,27 @@
         </article>
     </main>
 </div>
+
+
+@code {
+    MudTheme MyCustomTheme = new MudTheme()
+        {
+            PaletteLight = new PaletteLight()
+            {
+                Primary = "#4980bb",
+                Secondary = Colors.Green.Accent4,
+                AppbarBackground = Colors.Red.Default,
+            },
+            PaletteDark = new PaletteDark()
+            {
+                Primary = Colors.Blue.Lighten1
+            },
+            Typography = new Typography()
+            {
+                Default = new Default()
+                {
+                    FontFamily = new[] { "Poppins", "Roboto" }
+                }
+            }
+        };
+}

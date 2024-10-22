@@ -1,5 +1,5 @@
 ﻿﻿html, body {
-    font-family: "Poppins", sans-serif;
+    font-family: Poppins !important;
     background-color: whitesmoke;
     background: var(--clr);
 }
@@ -113,11 +113,11 @@ svg {
         }
 
         h4 {
-            font-size: 24px;
+            font-size: 20px;
         }
 
         p {
-            font-size: 24px;
+            font-size: 20px;
         }
 
         svg {
@@ -282,7 +282,7 @@ svg {
         }
 
         h3 {
-            font-size: 2.25rem;
+            
             margin: 0 0 2rem;
         }
 

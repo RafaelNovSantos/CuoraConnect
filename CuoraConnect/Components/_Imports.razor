@@ -8,3 +8,15 @@
 @using CuoraConnect
 @using CuoraConnect.Components
 @using MudBlazor
+@using CuoraConnect.Models.ExportInfo;
+@using CuoraConnect.Services
+@using SQLite
+@using System.Text.RegularExpressions
+@using System.Diagnostics
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+@inject IDialogService DialogService
+@inject IFileUploadService FileUploadService
+
+
+

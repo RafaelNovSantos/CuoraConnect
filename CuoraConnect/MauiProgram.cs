@@ -13,23 +13,27 @@ namespace CuoraConnect
                 .UseMauiApp<App>()
                 .ConfigureFonts(fonts =>
                 {
-                    fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                     fonts.AddFont("Poppins-ExtraBold.ttf", "Poppins-ExtraBold");
                     fonts.AddFont("Poppins-Medium.ttf", "Poppins-Medium");
                     fonts.AddFont("Poppins-Bold.ttf", "Poppins-Bold");
                     fonts.AddFont("fontello.ttf", "IconsFont");
                 });
 
+            builder.Services.AddSingleton<NavigationInterceptor>();
 
             builder.Services.AddMudServices();
             builder.Services.AddScoped<DigestAuthService>();
+            builder.Services.AddScoped<IExportInfoService, ExportInfoService>();
+
 
 
 #if ANDROID
             builder.Services.AddSingleton<IFileUploadService, Platforms.Android.FileUploadService>();
             builder.Services.AddSingleton<IFileExportService, Platforms.Android.FileExportService>();
+             builder.Services.AddSingleton<INetworkService, Platforms.Android.NetworkService>();
 #elif WINDOWS
             builder.Services.AddSingleton<IFileUploadService, Platforms.Windows.FileUploadService>();
+              builder.Services.AddSingleton<INetworkService, Platforms.Windows.NetworkService>();
             // Se houver uma implementação para Windows, registre aqui
 #endif
             builder.Services.AddMauiBlazorWebView();
@@ -38,17 +42,6 @@ namespace CuoraConnect
             builder.Services.AddBlazorWebViewDeveloperTools();
             builder.Logging.AddDebug();
 #endif
-
-#if ANDROID
-            builder.Services.AddSingleton<INetworkService, Platforms.Android.NetworkService>();
-#elif IOS
-            // Se houver uma implementação para iOS, registre aqui
-            // builder.Services.AddSingleton<INetworkService, Platforms.iOS.NetworkService>();
-#elif WINDOWS
-            builder.Services.AddSingleton<INetworkService, Platforms.Windows.NetworkService>();
-            // Se houver uma implementação para Windows, registre aqui
-#endif
-
             return builder.Build();
         }
     }

@@ -10,7 +10,7 @@
 @using Microsoft.AspNetCore.Components
 @inject IFileUploadService FileUploadService
 @inject INetworkService NetworkService
-@inject IJSRuntime JSRuntime
+
 
 
 
@@ -158,8 +158,9 @@
     private bool loader;
 
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
+        await SetActiveMenu("home");
 
     }
 

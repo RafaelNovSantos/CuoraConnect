@@ -1,17 +1,10 @@
 ﻿@page "/"
-@using MudBlazor
-@using CuoraConnect.Models.ExportInfo;
-@using CuoraConnect.Services
-@using System.Text.RegularExpressions
-
-@using SQLite
-@inject IFileUploadService FileUploadService
 
 
 
-<MudDataGrid T="ExportInfo" Items="@(ExportInfos?.Take(4) ?? Enumerable.Empty<ExportInfo>())" ReadOnly="@_readOnly" 
-             EditMode="DataGridEditMode.Cell"
-             StartedEditingItem="@StartedEditingItem" CanceledEditingItem="@CanceledEditingItem" 
+<MudDataGrid T="ExportInfo" Items="@(ExportInfos?.Take(4) ?? Enumerable.Empty<ExportInfo>())" ReadOnly="@_readOnly"
+             EditMode="@(_isCellEditMode ? DataGridEditMode.Cell : DataGridEditMode.Form)"
+             StartedEditingItem="@StartedEditingItem" CanceledEditingItem="@CanceledEditingItem"
              CommittedItemChanges="@CommittedItemChanges"
              Bordered="true" Dense="true" EditTrigger="@(_editTriggerRowClick ? DataGridEditTrigger.OnRowClick : DataGridEditTrigger.Manual)"
              Class="tableEdit" Style="">
@@ -22,42 +15,26 @@
                 <img src="/Images/producto-cuora-max-05.jpg" class="product-image" />
             </CellTemplate>
         </PropertyColumn>
-        <PropertyColumn T="ExportInfo" Validation="@ValidateIPAddress" TProperty="string" Property="x => x.IP_Address" Editable="true" Title="IP configurado no equipamento">
+        <PropertyColumn T="ExportInfo" TProperty="string" Property="x => x.IP_Address" Editable="true" Title="IP configurado no equipamento">
             <EditTemplate>
-        
-               
-                        <MudTextField Validation="@ValidateIPAddress" OnBlur="@((args) => SaveIP(context.Item))" @bind-Value="@context.Item.IP_Address" />
-                 
+                <MudTextField @bind-Value="@context.Item.IP_Address" />
             </EditTemplate>
         </PropertyColumn>
-      
-        <PropertyColumn T="ExportInfo" Validation="@ValidateIPAddress" TProperty="string" Property="x => x.Default_Gateway" Editable="true" Title="IP do Roteador">
+        <PropertyColumn T="ExportInfo"  TProperty="string" Property="x => x.Default_Gateway" Editable="true" Title="IP do Roteador">
             <EditTemplate>
-               
-                    <MudTextField @bind-Value="@context.Item.Default_Gateway" 
-                                  
-                                  Validation="@ValidateIPAddress" />
-               
+                <MudTextField @bind-Value="@context.Item.Default_Gateway"  />
             </EditTemplate>
         </PropertyColumn>
-        <PropertyColumn T="ExportInfo"   TProperty="string" Property="x => x.Network_Name" Editable="true" Title="Nome da rede conectada">
+        <PropertyColumn T="ExportInfo" TProperty="string" Property="x => x.Network_Name" Editable="true" Title="Nome da rede conectada">
             <EditTemplate>
-
-
-                <MudTextField AdornmentIcon="@Icons.Material.Filled.Router" @bind-Value="@context.Item.Network_Name" For="@(() => context.Item.Network_Name)"
-                                  Immediate="true"
-                                  OnBlur="@((args) => SaveIP(context.Item))"
-                                   />
-                                   
-                
+                <MudTextField @bind-Value="@context.Item.Network_Name" />
             </EditTemplate>
         </PropertyColumn>
-
         <TemplateColumn>
             <CellTemplate>
-                <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" 
-                               OnClick="@context.Actions.StartEditingItemAsync" 
-                               Color="Color.Secondary" 
+                <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit"
+                               OnClick="@(() => StartEditingItemAsync(context.Item))"
+                               Color="Color.Secondary"
                                Class="action-btn" />
             </CellTemplate>
         </TemplateColumn>
@@ -65,14 +42,12 @@
 </MudDataGrid>
 
 
-<MudIconButton Icon="@Icons.Material.Filled.Build" Color="Color.Primary" OnClick="createDataBaseTest"  />
 
-           
 
+<MudIconButton Icon="fas fa-database" Color="Color.Primary" OnClick="createDataBaseTest" />
 
 <style>
     body {
-        font-family: 'Poppins', sans-serif;
         background-color: #f7f9fc;
         margin: 0;
     }
@@ -84,7 +59,7 @@
         margin-bottom: 30px;
     }
 
-    .tableEdit{
+    .tableEdit {
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
         text-align: center;
         margin: 20px;
@@ -102,9 +77,9 @@
         transition: transform 0.3s ease;
     }
 
-    .product-image:hover {
-        transform: scale(1.05);
-    }
+        .product-image:hover {
+            transform: scale(1.05);
+        }
 
     .action-btn {
         cursor: pointer;
@@ -113,9 +88,9 @@
         transition: background-color 0.3s ease, transform 0.3s ease;
     }
 
-    .action-btn:hover {
-        transform: scale(1.15);
-    }
+        .action-btn:hover {
+            transform: scale(1.15);
+        }
 
     th {
         background-color: #4e73df;
@@ -147,37 +122,37 @@
         background-color: #f8f9fc;
     }
 
-input {
-  border: 2px solid transparent !important;
-  width: 15em !important;
-  height: 2em !important;
-  outline: none !important;
-  overflow: hidden !important;
-  background-color: #F3F3F3 !important;
-  border-radius: 10px !important;
-  transition: all 0.5s !important;
-  text-align: center !important;
-}
+    input {
+        border: 2px solid transparent !important;
+        width: 15em !important;
+        height: 2em !important;
+        outline: none !important;
+        overflow: hidden !important;
+        background-color: #F3F3F3 !important;
+        border-radius: 10px !important;
+        transition: all 0.5s !important;
+        text-align: center !important;
+    }
 
-input:hover,
-input:focus{
-  border: 2px solid #4A9DEC !important;
-  box-shadow: 0px 0px 0px 7px rgb(74, 157, 236, 20%) !important;
+        input:hover,
+        input:focus {
+            border: 2px solid #4A9DEC !important;
+            box-shadow: 0px 0px 0px 7px rgb(74, 157, 236, 20%) !important;
             background-color: white !important;
-}
+        }
 
 
 
-  
+
     .mud-input-control > .mud-input-control-input-container {
         display: unset !important;
-        
     }
 
     .mud-input-control {
         flex: none !important;
     }
-  </style>
+</style>
+
 
 
 
@@ -186,92 +161,100 @@ input:focus{
 
     public IMask ipv4Mask = RegexMask.IPv4();
     private List<ExportInfo> ExportInfos = new List<ExportInfo>(); // Inicialização
-
     private bool activeSave;
-
+    private string IP_Address = "";
+    private bool _dialogOpen;
     private bool _readOnly;
     private bool _isCellEditMode;
     private List<string> _events = new();
     private bool _editTriggerRowClick;
-
-    private MudForm form;
-
-    private ExportInfo originalItem;
+    private string currentPage; // Declare a variável
 
     protected override void OnInitialized()
     {
+
         string dbPath = FileUploadService.pathDB();
 
         using var db = new SQLiteConnection(dbPath);
         db.CreateTable<ExportInfo>();
-        connectionBD(); // Presumindo que isso carrega os dados na interface
+
+        connectionBD();
+        currentPage = NavigationManager.Uri;
+        Debug.WriteLine($"Página atual: {currentPage}");
+
+
+        SetActiveMenu("home");
+
+
+
     }
+
+     MudTheme MyCustomTheme = new MudTheme()
+        {
+            PaletteLight = new PaletteLight()
+            {
+                Primary = "#4980bb",
+                Secondary = Colors.Green.Accent4,
+                AppbarBackground = Colors.Red.Default,
+            },
+            PaletteDark = new PaletteDark()
+            {
+                Primary = Colors.Blue.Lighten1
+            },
+
+        };
+
+    private bool isEditDialogOpen = false;
+
+
+    // Método para abrir o diálogo de edição
+    private async Task StartEditingItemAsync(ExportInfo item)
+    {
+        var parameters = new DialogParameters();
+        parameters.Add("EditedItem", item); // Adiciona o item que será editado
+
+        var options = new DialogOptions { CloseOnEscapeKey = true };
+
+        // Exibe o diálogo e aguarda o resultado
+        var dialogReference = await DialogService.ShowAsync<EditDialog>("Edit Item Dialog", parameters, options);
+
+        // Aguarda o fechamento do diálogo e captura o resultado
+        var dialogResult = await dialogReference.Result;
+
+        connectionBD();
+
+    }
+
+
+
+
 
 
     private async Task createDataBaseTest()
     {
         using var db = new SQLiteConnection(FileUploadService.pathDB());
-        // Busca todos os dados da tabela ExportInfo
+
         // Crie um novo objeto ExportInfo
         var novoRegistro = new ExportInfo
             {
                 // Aqui você define os valores das colunas da tabela
                 Id = "Cuora_MAX",
-                IP_Address = "1.1.1.1", 
+                IP_Address = "1.1.1.1",
                 Default_Gateway = "192.142.1.1",
                 Network_Name = "Teste Wifi"
                 // Outros campos conforme necessário
             };
 
-        // Insere o novo registro na tabela ExportInfo
-        db.Insert(novoRegistro);
+        // Usa o método InsertOrReplace para inserir ou substituir os dados se já existir
+        db.InsertOrReplace(novoRegistro);
+        connectionBD();
 
         // Opcionalmente, você pode buscar todos os registros novamente para confirmar
         var netConfigs = db.Table<ExportInfo>().ToList();
-       
-    }
-    // Método de validação do IP
-    private string ValidateIPAddress(string ipAddress)
-    {
-
-        var ipPattern = @"^([0-9]{1,3}\.){3}[0-9]{1,3}$";
-        activeSave = false;
-        // Verifica se o IP está vazio
-        if (string.IsNullOrWhiteSpace(ipAddress))
-            
-            return "IP Precisa ser preenchido.";
-
-        // Verifica se o IP está no formato correto
-        if (!Regex.IsMatch(ipAddress, ipPattern))
-            
-            return "IP no formato errado, exemplo (192.168.1.1)";
-
-        activeSave = true;
-        return null; // Retorna "OK" se não houver erro
     }
 
 
-
-    private void SaveIP(ExportInfo item)
-    {
-
-
-        if (activeSave == true)
-        {
-            using var db = new SQLiteConnection(FileUploadService.pathDB());
-
-            // Atualiza o registro no banco de dados
-            db.Update(item);
-
-            // Opcional: Recarregar os dados para garantir que a interface esteja atualizada
-            connectionBD();
-        }
-        else
-        {
-            return;
-        }
-    }
-
+   
 
     public string connectionBD() // construtor
     {
@@ -283,24 +266,12 @@ input:focus{
         ExportInfos = new List<ExportInfo>(); // Inicializa a lista
 
         // Preenche a lista ExportInfos com os dados do banco
-
-        
-
         foreach (var netConfig in netConfigs)
         {
-            var IP = netConfig.IP_Address;
-
-            // Verifica se a string contém a barra "/"
-            if (IP.Contains("/"))
-            {
-                // Pega a parte antes da barra "/"
-                IP = IP.Substring(0, IP.IndexOf("/"));
-            }
-
             ExportInfos.Add(new ExportInfo
                 {
                     Id = netConfig.Id,
-                    IP_Address = IP,
+                    IP_Address = netConfig.IP_Address,
                     Default_Gateway = netConfig.Default_Gateway,
                     Network_Name = netConfig.Network_Name
                 });
@@ -323,5 +294,11 @@ input:focus{
     void CommittedItemChanges(ExportInfo item)
     {
         _events.Insert(0, $"Event = CommittedItemChanges, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
+    }
+
+    private async Task SetActiveMenu(string menuId)
+    {
+        // Chama a função JavaScript passando o ID do menu ativo
+        await JSRuntime.InvokeVoidAsync("setActiveClass", menuId);
     }
 }

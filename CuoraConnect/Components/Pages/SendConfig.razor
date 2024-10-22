@@ -243,12 +243,19 @@
     private string? statusError;
     private string? statusSuccess;
     private string ssidMinusculo;
-
+    private string currentPage; // Declare a variável
     private string? statusMessage { get; set; }
     private string? fileXMLPath;
     private bool loader;
     private static readonly HttpClient client = new HttpClient();
 
+
+
+        protected override async Task OnInitializedAsync()
+    {
+        await SetActiveMenu("sendconfig");
+       
+    }
 
     private async Task CallJavaScriptAfterRender()
     {
@@ -290,6 +297,8 @@
 
     private async Task EnviarConfig()
     {
+        currentPage = NavigationManager.Uri;
+        Debug.WriteLine($"Página atual: {currentPage}");
         int contadorExecucoes = 0;
         loader
      = true;
