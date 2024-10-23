@@ -247,6 +247,8 @@
     private bool isNavigatingAway;
 
 
+
+
     // Inicializa o caminho do banco de dados e cria a tabela
     protected override void OnInitialized()
     {
@@ -257,15 +259,26 @@
         db.CreateTable<NetworkInfo>();
     }
 
-
-
     protected override async Task OnInitializedAsync()
     {
-        await SetActiveMenu("Wi-FiConfig");
-        await GetNetworkInfo();
-        // Registra o evento para monitorar as alterações de navegação
-        
+       
+            await SetActiveMenu("Wi-FiConfig");
+            
     }
+
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await SetActiveMenu("Wi-FiConfig");
+            await GetNetworkInfo();
+
+            // Aqui você pode registrar eventos de navegação, por exemplo
+        }
+    }
+
 
     public void Dispose()
     {
