@@ -9,8 +9,8 @@
         Configuração do Equipamento
     </TitleContent>
     <DialogContent>
-        <MudTextField   @bind-Value="EditedItem.Id" Label="ID" Disabled="true" />
-        <MudTextField Required="true" Validation="@ValidateIPAddress" @bind-Value="EditedItem.IP_Address" Label="IP Address" />
+        <MudTextField @bind-Value="EditedItem.Id" Label="ID" Disabled="true" />
+        <MudTextField Required="true" Class="cursor-not-allowed" Validation="@ValidateIPAddress" @bind-Value="EditedItem.IP_Address" Label="IP Address" />
         <MudTextField Required="true" Validation="@ValidateDefaultGateway" @bind-Value="EditedItem.Default_Gateway" Label="Default Gateway" />
         <MudTextField Required="true" Error="string.IsNullOrWhiteSpace(EditedItem.Network_Name)"
                       ErrorText="Network Name é obrigatório." @bind-Value="EditedItem.Network_Name" Label="Network Name" />
