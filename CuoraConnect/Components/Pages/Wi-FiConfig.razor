@@ -245,6 +245,7 @@
     private string ssidSave = "";
     private string dbPath;
     private bool isNavigatingAway;
+    private int countErrorNetwork = 0;
 
 
 
@@ -414,7 +415,7 @@
         NavigationManager.LocationChanged += OnLocationChanged;
         if (isNavigatingAway) return;
 
-        int countErrorNetwork = 0;
+        
         loader = true;
         CallJavaScriptAfterRender();
         CleanStatus();
@@ -524,8 +525,12 @@
             while (countErrorNetwork <= 3)
             {
                 countErrorNetwork++;
-                GetNetworkInfo();
+                
                 Debug.WriteLine($"Erro: {ex.Message}");
+                            // Verifica se a navegação ocorreu após a chamada assíncrona
+            NavigationManager.LocationChanged += OnLocationChanged;
+            if (isNavigatingAway) return;
+            GetNetworkInfo();
             }
             statusError = $"Erro: {ex.Message}";
             Debug.WriteLine($"Erro: {ex.Message}");
@@ -533,7 +538,9 @@
             // Verifica se a navegação ocorreu após a chamada assíncrona
             NavigationManager.LocationChanged += OnLocationChanged;
             if (isNavigatingAway) return;
+            
         }
+        
         isValid(true);
     }
 

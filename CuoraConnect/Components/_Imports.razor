@@ -7,6 +7,8 @@
 @using Microsoft.JSInterop
 @using CuoraConnect
 @using CuoraConnect.Components
+@using CuoraConnect.Components.Pages
+@using CuoraConnect.Components.DialogMudBlazor
 @using MudBlazor
 @using CuoraConnect.Models.ExportInfo;
 @using CuoraConnect.Services
@@ -16,6 +18,7 @@
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
 @inject IDialogService DialogService
+@inject ISnackbar Snackbar
 @inject IFileUploadService FileUploadService
 
 

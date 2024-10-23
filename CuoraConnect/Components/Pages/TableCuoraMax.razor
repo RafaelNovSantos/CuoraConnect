@@ -1,8 +1,8 @@
-﻿@page "/"
+﻿@page "/tablecuoramax"
 
 
 
-<MudTable T="ExportInfo" Items="@(ExportInfos?.Take(4) ?? Enumerable.Empty<ExportInfo>())"
+<MudTable T="ExportInfo" Items="@ExportInfos"
           Filter="new Func<ExportInfo, bool>(Procurar)"
           Bordered="true" Dense="true" Class="tableEdit" ReadOnly="@_readOnly">
 
@@ -19,11 +19,39 @@
                  
     <HeaderContent >
         <MudTh Style="@($"color:{MyCustomTheme.PaletteLight.TextSecondary};")">Equipamento</MudTh>
-        <MudTh Style="@($"color:{MyCustomTheme.PaletteLight.TextSecondary};")">Nome</MudTh>
-        <MudTh Style="@($"color:{MyCustomTheme.PaletteLight.TextSecondary};")">IP Configurado</MudTh>
-        <MudTh Style="@($"color:{MyCustomTheme.PaletteLight.TextSecondary};")">IP do Roteador</MudTh>
-        <MudTh Style="@($"color:{MyCustomTheme.PaletteLight.TextSecondary};")">Rede Wi-Fi Configurada</MudTh>
+
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<ExportInfo, object>(e => e.Id)" Style="@($"color:{MyCustomTheme.PaletteLight.TextSecondary};")">
+                Nome
+            </MudTableSortLabel>
+        </MudTh>
+
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<ExportInfo, object>(e => e.IP_Address)" Style="@($"color:{MyCustomTheme.PaletteLight.TextSecondary};")">
+                IP Configurado
+            </MudTableSortLabel>
+        </MudTh>
+
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<ExportInfo, object>(e => e.Default_Gateway)" Style="@($"color:{MyCustomTheme.PaletteLight.TextSecondary};")">
+                IP do Roteador
+            </MudTableSortLabel>
+        </MudTh>
+
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<ExportInfo, object>(e => e.SubnetMask)" Style="@($"color:{MyCustomTheme.PaletteLight.TextSecondary};")">
+                Mascara de rede
+            </MudTableSortLabel>
+        </MudTh>
+
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<ExportInfo, object>(e => e.Network_Name)" Style="@($"color:{MyCustomTheme.PaletteLight.TextSecondary};")">
+                Rede Wi-Fi Configurada
+            </MudTableSortLabel>
+        </MudTh>
+
         <MudTh Style="@($"color:{MyCustomTheme.PaletteLight.TextSecondary};")">Editar</MudTh>
+
     </HeaderContent>
 
     <RowTemplate>
@@ -39,27 +67,51 @@
 
         <MudTd DataLabel="IP do Roteador">
             @context.Default_Gateway
+
+      
           
+        </MudTd>
+        <MudTd DataLabel="Mascara de rede">
+            @context.SubnetMask
+
         </MudTd>
         <MudTd DataLabel="Rede Wi-FI Configurada">
             @context.Network_Name
 
         </MudTd>
-
         <MudTd DataLabel="Editar">
-            <MudIconButton  Icon="@Icons.Material.Outlined.Edit"
-                           OnClick="@(() => StartEditingItemAsync(context))"
-                           Color="Color.Secondary"
-                           Class="action-btn" />
+            <MudMenu AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Dense="true" Icon="@Icons.Material.Filled.MoreVert"
+                     AriaLabel="Abrir menu" >
+
+                <MudMenuItem IconSize="Size.Small" IconColor="Color.Dark" Icon="@Icons.Material.Outlined.Edit" OnClick="@(() => StartEditingItemAsync(context))"
+                             >
+                     Editar
+                    </MudMenuItem>
+                <MudMenuItem IconSize="Size.Small" IconColor="Color.Success" Icon="@Icons.Material.Filled.Send">
+                    Enviar configuração
+                </MudMenuItem>
+                <MudMenuItem IconSize="Size.Small" IconColor="Color.Info" Icon="@Icons.Material.Filled.Autorenew">
+                    Recuperar configuração
+                </MudMenuItem>
+                <MudMenuItem IconSize="Size.Small" IconColor="Color.Error" Icon="@Icons.Material.Filled.DeleteOutline" OnClick="@(() => StartDeletingItemAsync(context))">Apagar</MudMenuItem>
+
+            </MudMenu>
+        
         </MudTd>
     </RowTemplate>
 
-    <FooterContent>
-        <MudTd colspan="5">
-            <MudText Typo="Typo.subtitle1" Align="Align.Center">Equipamentos @ExportInfos?.Take(4).Count() de @ExportInfos?.Count()</MudText>
-        </MudTd>
-    </FooterContent>
+
+    <PagerContent >
+        <MudTablePager PageSizeOptions="[5, 15, 25, 50, 100]"
+                       
+           
+         RowsPerPageString="Equipamentos"
+         
+        />
+    </PagerContent>
 </MudTable>
+
+
 
 
 
@@ -194,6 +246,9 @@ flex: unset;
     private bool _editTriggerRowClick;
     private string currentPage; // Declare a variável
     private string criterio = "";
+    int cidr;
+    public Origin TransformOrigin { get; set; } = Origin.TopCenter;
+    public Origin AnchorOrigin { get; set; } = Origin.BottomLeft;
 
     protected override void OnInitialized()
     {
@@ -208,13 +263,13 @@ flex: unset;
         Debug.WriteLine($"Página atual: {currentPage}");
 
 
-        SetActiveMenu("home");
+        SetActiveMenu("tablecuoramax");
 
 
 
     }
 
-     MudTheme MyCustomTheme = new MudTheme()
+    MudTheme MyCustomTheme = new MudTheme()
         {
             PaletteLight = new PaletteLight()
             {
@@ -235,6 +290,7 @@ flex: unset;
     private bool isEditDialogOpen = false;
 
 
+
     // Método para abrir o diálogo de edição
     private async Task StartEditingItemAsync(ExportInfo item)
     {
@@ -253,6 +309,24 @@ flex: unset;
 
     }
 
+    // Método para abrir o diálogo de edição
+    private async Task StartDeletingItemAsync(ExportInfo item)
+    {
+        var parameters = new DialogParameters();
+        parameters.Add("DeletedItem", item); // Adiciona o item que será editado
+
+        var options = new DialogOptions { CloseOnEscapeKey = true };
+
+        // Exibe o diálogo e aguarda o resultado
+        var dialogReference = await DialogService.ShowAsync<DeleteDialog>("Edit Item Dialog", parameters, options);
+
+        // Aguarda o fechamento do diálogo e captura o resultado
+        var dialogResult = await dialogReference.Result;
+
+        connectionBD();
+
+    }
+
 
     private bool Procurar(ExportInfo exportinfo)
     {
@@ -260,7 +334,7 @@ flex: unset;
             return true;
 
         return exportinfo.Id.ToString().Contains(criterio, StringComparison.OrdinalIgnoreCase)
-            || exportinfo.IP_Address.Contains(criterio, StringComparison.OrdinalIgnoreCase);
+            || exportinfo.IP_Address.Contains(criterio, StringComparison.OrdinalIgnoreCase) || exportinfo.Default_Gateway.Contains(criterio, StringComparison.OrdinalIgnoreCase) || exportinfo.Network_Name.Contains(criterio, StringComparison.OrdinalIgnoreCase);
     }
 
 
@@ -273,7 +347,7 @@ flex: unset;
         var novoRegistro = new ExportInfo
             {
                 // Aqui você define os valores das colunas da tabela
-                Id = "Cuora_MAX",
+                Id = Guid.NewGuid().ToString(),
                 IP_Address = "1.1.1.1",
                 Default_Gateway = "192.142.1.1",
                 Network_Name = "Teste Wifi"
@@ -289,7 +363,16 @@ flex: unset;
     }
 
 
-   
+    public static string CidrToSubnetMask(int cidr)
+    {
+        if (cidr < 0 || cidr > 32)
+        {
+            throw new ArgumentOutOfRangeException(nameof(cidr), "O valor CIDR deve estar entre 0 e 32.");
+        }
+
+        uint mask = uint.MaxValue << (32 - cidr);
+        return string.Join(".", BitConverter.GetBytes(mask).Reverse());
+    }
 
     public string connectionBD() // construtor
     {
@@ -301,12 +384,29 @@ flex: unset;
         ExportInfos = new List<ExportInfo>(); // Inicializa a lista
 
         // Preenche a lista ExportInfos com os dados do banco
+
+
+
         foreach (var netConfig in netConfigs)
         {
+            var IP = netConfig.IP_Address;
+            string subnetMask = null;
+
+            if (IP.Contains("/"))
+            {
+                int cidr = int.Parse(IP.Substring(IP.IndexOf("/") + 1));
+                IP = IP.Substring(0, IP.IndexOf("/"));
+
+                // Calcula a máscara de sub-rede com base no CIDR
+                subnetMask = CidrToSubnetMask(cidr);
+                Debug.WriteLine($"CIDR: {cidr}, Mascara de rede: {subnetMask}");
+            }
+
             ExportInfos.Add(new ExportInfo
                 {
                     Id = netConfig.Id,
-                    IP_Address = netConfig.IP_Address,
+                    IP_Address = IP,
+                    SubnetMask = subnetMask,
                     Default_Gateway = netConfig.Default_Gateway,
                     Network_Name = netConfig.Network_Name
                 });

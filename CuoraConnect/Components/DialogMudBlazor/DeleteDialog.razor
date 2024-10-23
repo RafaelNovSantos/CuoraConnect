@@ -1,0 +1,69 @@
+﻿<MudDialog>
+    <TitleContent>
+        Tem Certeza que deseja excluir este equipamento?
+    </TitleContent>
+    <DialogContent >
+        <MudPaPer Class="align-content-center, align-center" Style="display: grid; justify-content: center;">
+        <MudTextField @bind-Value="DeletedItem.Id" Label="Nome" Disabled="true" />
+        <MudTextField Disabled="true" Class="cursor-not-allowed" @bind-Value="DeletedItem.IP_Address" Label="IP Configurado" />
+        <MudTextField Disabled="true" @bind-Value="DeletedItem.Default_Gateway" Label="IP do Roteador" />
+        <MudTextField Disabled="true" @bind-Value="DeletedItem.SubnetMask" Label="Mascara de rede" />
+        <MudTextField Disabled="true" @bind-Value="DeletedItem.Network_Name" Label="Rede Wi-FI Configurada" />
+        </MudPaPer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancelar</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Apagar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private bool activeSave;
+
+    // Define a propriedade que receberá o item a ser excluído
+    [Parameter]
+    public ExportInfo DeletedItem { get; set; }
+
+    [Inject]
+    private ISnackbar snackBar { get; set; }
+
+    [CascadingParameter]
+    private MudDialogInstance MudDialog { get; set; }
+
+    private void Submit()
+    {
+        var validationMessage = "Não foi possível apagar este equipamento.";
+
+        // Lógica para apagar o item no banco de dados
+        using var db = new SQLiteConnection(FileUploadService.pathDB());
+
+        try
+        {
+            db.Delete(DeletedItem); // Apaga o item do banco de dados
+            ShowSuccessMessage(); // Mensagem de sucesso
+            MudDialog.Close(DialogResult.Ok(true)); // Fecha o diálogo com resultado de sucesso
+        }
+        catch (Exception ex)
+        {
+            // Se ocorrer um erro, exiba uma mensagem de erro
+            ShowErrorMessage(validationMessage);
+        }
+    }
+
+    // Método para exibir mensagens de erro ao usuário
+    private void ShowErrorMessage(string message)
+    {
+        // Implemente a lógica para mostrar a mensagem de erro, pode ser um MudSnackbar, dialog, etc.
+        snackBar.Add(message, Severity.Error);
+    }
+
+    private void ShowSuccessMessage()
+    {
+        snackBar.Add("Equipamento excluído com sucesso", Severity.Success);
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel(); // Fecha o diálogo sem fazer nada
+    }
+}

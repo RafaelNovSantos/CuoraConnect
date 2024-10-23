@@ -1,19 +1,14 @@
-﻿@using CuoraConnect.Models.ExportInfo;
-@using CuoraConnect.Components.Pages;
-@inject IDialogService DialogService
-@inject ISnackbar Snackbar
-
-
-<MudDialog>
+﻿<MudDialog>
     <TitleContent>
         Configuração do Equipamento
     </TitleContent>
     <DialogContent>
-        <MudTextField @bind-Value="EditedItem.Id" Label="ID" Disabled="true" />
-        <MudTextField Required="true" Class="cursor-not-allowed" Validation="@ValidateIPAddress" @bind-Value="EditedItem.IP_Address" Label="IP Address" />
-        <MudTextField Required="true" Validation="@ValidateDefaultGateway" @bind-Value="EditedItem.Default_Gateway" Label="Default Gateway" />
+        <MudTextField Class="blockInput" @bind-Value="EditedItem.Id" Label="Nome" Disabled="true" />
+        <MudTextField Required="true" Class="cursor-not-allowed" Validation="@ValidateIPAddress" @bind-Value="EditedItem.IP_Address" Label="IP Configurado" />
+        <MudTextField Required="true" Validation="@ValidateDefaultGateway" @bind-Value="EditedItem.Default_Gateway" Label="IP do Roteador" />
+        <MudTextField Required="true" Validation="@ValidateSubnetMask" @bind-Value="EditedItem.SubnetMask" Label="Mascara de rede" />
         <MudTextField Required="true" Error="string.IsNullOrWhiteSpace(EditedItem.Network_Name)"
-                      ErrorText="Network Name é obrigatório." @bind-Value="EditedItem.Network_Name" Label="Network Name" />
+                      ErrorText="Rede Wi-FI Configurada é obrigatório." @bind-Value="EditedItem.Network_Name" Label="Rede Wi-FI Configurada" />
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel">Cancelar</MudButton>
@@ -69,6 +64,22 @@
         return null; // Retorna null se não houver erro
     }
 
+    private string ValidateSubnetMask(string subnetMask)
+    {
+        var ipPattern = @"^([0-9]{1,3}\.){3}[0-9]{1,3}$";
+
+        // Verifica se o IP está vazio
+        if (string.IsNullOrWhiteSpace(subnetMask))
+            return "IP precisa ser preenchido.";
+
+        // Verifica se o IP está no formato correto
+        if (!Regex.IsMatch(subnetMask, ipPattern))
+            return "IP no formato errado, exemplo (192.168.1.1)";
+
+        return null; // Retorna null se não houver erro
+    }
+
+
     private void Submit()
     {
         // Verifica se o campo "Network Name" está vazio
@@ -77,12 +88,13 @@
         // Validação do endereço IP
         var validationIP_Address = ValidateIPAddress(EditedItem.IP_Address);
         var validationDefaultGateway = ValidateDefaultGateway(EditedItem.Default_Gateway);
+        var validateSubnetMask = ValidateSubnetMask(EditedItem.SubnetMask);
 
         // Verifica se qualquer validação retornou uma mensagem de erro
-        if (showNetworkNameError || validationIP_Address != null || validationDefaultGateway != null)
+        if (showNetworkNameError || validationIP_Address != null || validationDefaultGateway != null || validateSubnetMask != null)
         {
             // Exibe a mensagem de erro ao usuário. Exibe a primeira mensagem de erro encontrada
-            var validationMessage = validationIP_Address ?? validationDefaultGateway ?? "Preencha todos os campos obrigatórios.";
+            var validationMessage = validationIP_Address ?? validationDefaultGateway ?? validateSubnetMask ?? "Preencha todos os campos obrigatórios.";
 
             ShowErrorMessage(validationMessage);
 

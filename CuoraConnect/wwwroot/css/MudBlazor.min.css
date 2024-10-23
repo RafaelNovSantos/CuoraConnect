@@ -6041,6 +6041,7 @@ ul {
 }
 
     .mud-list-item.mud-list-item-dense {
+        max-width: 140px !important;
         padding-top: 4px;
         padding-bottom: 4px
     }
@@ -6105,8 +6106,8 @@ ul {
 .mud-list-item-icon {
     color: var(--mud-palette-action-default);
     display: inline-flex;
-    min-width: 56px;
-    flex-shrink: 0
+    min-width: 30px;
+    flex-shrink: 0;
 }
 
 .mud-list-subheader {
@@ -10780,7 +10781,7 @@ ul {
     }
 
     .mud-table-smalldevices-sortselect {
-        display: none
+        display: none;
     }
 
     .mud-table-loading {
@@ -10859,8 +10860,8 @@ ul {
         }
 
         .mud-xs-table .mud-table-smalldevices-sortselect {
-            display: block;
-            padding: 4px 16px 8px
+/*            display: block;
+            padding: 4px 16px 8px*/
         }
 
         .mud-xs-table .mud-table-body {
@@ -12186,6 +12187,8 @@ ul {
     .mud-input > input::-ms-reveal, .mud-input > input::-ms-clear, div.mud-input-slot::-ms-reveal, div.mud-input-slot::-ms-clear {
         display: none !important
     }
+
+
 
     .mud-input > textarea.mud-input-root {
         font: inherit;
@@ -16947,9 +16950,11 @@ ul {
         cursor: help !important
     }
 
-    .cursor-not-allowed {
-        cursor: not-allowed !important
-    }
+.cursor-not-allowed {
+    cursor: not-allowed !important;
+}
+
+
 
     .cursor-none {
         cursor: none !important

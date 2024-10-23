@@ -7,6 +7,7 @@ public class ExportInfo
     public string Id { get; set; }
     public string IP_Address { get; set; }
     public string Default_Gateway { get; set; }
+    public string SubnetMask { get; set; }
     public string Network_Name { get; set; }
 }
 
