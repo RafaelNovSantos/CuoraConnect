@@ -313,7 +313,7 @@ namespace CuoraConnect.Platforms.Android
 
 
 
-        public async Task<bool> IsConnectedTo5G()
+        public async Task<string> IsConnectedTo5G()
         {
             // Obtém o SSID da rede conectada
             string connectedSsid = await GetCurrentSSID();
@@ -321,7 +321,7 @@ namespace CuoraConnect.Platforms.Android
             // Verifica se não há conexão
             if (string.IsNullOrEmpty(connectedSsid))
             {
-                return false; // Nenhuma rede conectada
+                return "Nenhuma rede conectada"; // Caso não esteja conectado a nenhuma rede
             }
 
             // Obtém o contexto da aplicação
@@ -333,7 +333,7 @@ namespace CuoraConnect.Platforms.Android
             // Verifica se o WifiManager foi obtido corretamente
             if (wifiManager == null)
             {
-                return false; // Não foi possível obter o WifiManager.
+                return "Não foi possível obter a interface de rede."; // Erro ao obter o WifiManager
             }
 
             // Inicia a varredura das redes
@@ -347,24 +347,28 @@ namespace CuoraConnect.Platforms.Android
             while (countVerific5g <= 3)
             {
                 countVerific5g++;
+                Debug.WriteLine($"Tentativa {countVerific5g} de verificar conexão 2.4g ");
+
                 foreach (var network in wifiManager.ScanResults)
                 {
-                    Debug.WriteLine($"Tentativa {countVerific5g} de verificar conexão 2.4g ");
+                    
+
                     // Verifica se o SSID da rede escaneada é igual ao SSID conectado
                     if (network.Ssid.Equals(connectedSsid))
                     {
-                        Debug.WriteLine($"Rede:{network.Ssid} Frequência:{network.Frequency}");
+                        Debug.WriteLine($"Rede: {network.Ssid} Frequência: {network.Frequency}");
+
                         // Verifica se a rede está na frequência de 2.4 GHz (bandas 2400-2500 MHz)
                         if (network.Frequency >= 2400 && network.Frequency <= 2500)
                         {
                             is5G = false; // A rede está em 2.4 GHz
-                            break; // Não precisamos continuar verificando
+                            return ""; // Não precisamos continuar verificando
                         }
                     }
                 }
             }
 
-                return is5G; // Retorna se estamos conectados a uma rede 5G
+            return is5G ? "Conectado a 5 GHz" : "Conectado a 2.4 GHz"; // Retorna o status da conexão
         }
 
 

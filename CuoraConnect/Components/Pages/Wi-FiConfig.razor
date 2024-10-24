@@ -432,11 +432,13 @@
 
             Debug.WriteLine($"SSID: {ssid}");
             ssidSave = ssid;
-            if (ssid == "")
+            if (ssid == "" || ssid == "SSID Indisponível.")
             {
+                ssid = "";
                 statusError = "Nenhuma conexão Wi-Fi ativa, conecte no Wi-Fi do seu estabelecimento.";
                 StateHasChanged();
                 CallJavaScriptAfterRender();
+                return;
             }
 
             ssidMinusculo = ssid.ToLower();
@@ -470,8 +472,8 @@
             NavigationManager.LocationChanged += OnLocationChanged;
             if (isNavigatingAway) return;
 
-            bool connected5g = await NetworkService.IsConnectedTo5G();
-            if (connected5g == true)
+            string connected5g = await NetworkService.IsConnectedTo5G();
+            if (connected5g == "Conectado a 5 GHz")
             {
                 Debug.WriteLine("Conectado no 5g");
                 // isValidSSID false mostra a mensagem de erro em caso de 5g habilitado no wi-fi
@@ -483,11 +485,15 @@
 
                 // return;
             }
-            else
+            else if (connected5g == "Conectado a 2.4 GHz")
             {
                 IsRequiredSSID = true;
                 isValidSSID = true;
                 Debug.WriteLine("Conexão 2.4g");
+            }
+            else
+            {
+                statusError = $"Interface de rede: {connected5g}";
             }
 
             // Verifica se a navegação ocorreu após a chamada assíncrona

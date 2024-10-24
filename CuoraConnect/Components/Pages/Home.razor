@@ -223,8 +223,8 @@
         }
 
 
-        bool connected5g = await NetworkService.IsConnectedTo5G();
-        if (connected5g == true)
+        string connected5g = await NetworkService.IsConnectedTo5G();
+        if (connected5g == "Conectado a 5 GHz")
         {
             Debug.WriteLine("Conectado no 5g");
             statusError = "Não é possível configurar em redes Wi-Fi 5g, conecte em uma rede Wi-Fi 2.4g";
@@ -232,9 +232,13 @@
 
             return "";
         }
-        else
+        else if (connected5g == "Conectado a 2.4 GHz")
         {
             Debug.WriteLine("Conexão 2.4g");
+        }
+        else
+        {
+            statusError = $"Interface de rede: {connected5g}";
         }
 
 
@@ -248,7 +252,7 @@
             statusError = "Desconecte da rede Cuora Max e conecte na rede do seu estabelecimento.";
             await CallJavaScriptAfterRender();
         }
-        else if (ssid == "Nenhuma conexão Wi-Fi ativa" || ssid == "")
+        else if (ssid == "Nenhuma conexão Wi-Fi ativa" || ssid == "" || ssid == "SSID Indisponível.")
         {
             statusError = "Nenhuma conexão Wi-Fi ativa, conecte na rede do seu estabelecimento.";
             await CallJavaScriptAfterRender();

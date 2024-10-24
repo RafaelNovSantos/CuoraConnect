@@ -1,4 +1,4 @@
-﻿@page "/exportconfig"
+﻿@page "/importconfig"
 @using System.Reflection
 @using System.IO
 @using System.Diagnostics
@@ -29,10 +29,10 @@
 
 </script>
 
-<ol style="--length: 5">
-    <li id="pop-up" style="--i: 5; text-align: center; counter-reset: list 3;">
-        <h3>Conecte no Wi-Fi da balança para enviar as configurações</h3>
-        <p>Logo após conectar no Wi-Fi clique no botão abaixo para enviar a configuração para a balança.</p>
+<ol >
+    <li id="pop-up" style="display: grid; align-items: center; justify-items: center; ">
+        <h3>Conecte no Wi-Fi da balança para importar as configurações</h3>
+        <p>Logo após conectar no Wi-Fi clique no botão abaixo para importar a configuração da balança.</p>
 
 
 
@@ -124,7 +124,7 @@
         </svg>
 
 
-        <a @onclick="EnviarConfig" class="btn btn-primary mt-3">Enviar configuração</a>
+        <a @onclick="ImportarConfig" class="btn btn-primary mt-3">Importar configuração</a>
         @if (statusMessage != null)
         {
             <p class="mt-3">@statusMessage</p>
@@ -300,7 +300,7 @@
         return Task.CompletedTask;
     }
 
-    private async Task EnviarConfig()
+    private async Task ImportarConfig()
     {
         int contadorExecucoes = 0;
         loader

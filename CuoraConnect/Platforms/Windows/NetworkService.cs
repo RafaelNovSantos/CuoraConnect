@@ -191,46 +191,75 @@ namespace CuoraConnect.Platforms.Windows
         }
 
 
-        public async Task<bool> IsConnectedTo5G()
-{
-            // Obtém o perfil de conexão atual
+        public async Task<string> IsConnectedTo5G()
+        {
+            // Obtém o SSID da rede atual
             var connectedSsid = GetConnectedSSID();
 
             if (connectedSsid == null)
             {
-                return false; // Nenhuma rede conectada
+                return "Nenhuma rede conectada"; // Caso não esteja conectado a nenhuma rede
             }
 
-            // Obtém os adaptadores Wi-Fi disponíveis no dispositivo
-            var wifiAdapters = await WiFiAdapter.FindAllAdaptersAsync();
-            int countVerific5g = 0;
+            int maxAttempts = 3; // Número máximo de tentativas
+            int attemptCount = 0;
+            int adpterErrorCount = 0;
 
-            while (countVerific5g <= 3)
+            while (attemptCount <= maxAttempts || adpterErrorCount <= 3)
             {
-                countVerific5g++;
-                foreach (var adapter in wifiAdapters)
+                attemptCount++;
+                try
                 {
-                    Debug.WriteLine($"Tentativa {countVerific5g} de verificar conexão 2.4g ");
-                    // Escaneia todas as redes visíveis
-                    await adapter.ScanAsync();
+                    Debug.WriteLine($"Tentativa {attemptCount} de verificar conexão 2.4g ou 5g");
+                    // Obtém os adaptadores Wi-Fi disponíveis no dispositivo
+                    var wifiAdapters = await WiFiAdapter.FindAllAdaptersAsync();
 
-                    foreach (var network in adapter.NetworkReport.AvailableNetworks)
+                    if (wifiAdapters == null || wifiAdapters.Count == 0)
                     {
-                        Debug.WriteLine($"Rede:{network.Ssid} Frequência:{network.ChannelCenterFrequencyInKilohertz}");
-                        // Verifica se o SSID da rede escaneada é igual ao SSID conectado
-                        if (network.Ssid == connectedSsid)
+                        Debug.WriteLine("Nenhum adaptador Wi-Fi encontrado. Tentando novamente...");
+                        adpterErrorCount++;
+                        await Task.Delay(1000); // Espera antes de tentar novamente
+                        continue;
+                    }
+
+                    foreach (var adapter in wifiAdapters)
+                    {                
+                        // Escaneia todas as redes visíveis
+                        await adapter.ScanAsync();
+
+                        foreach (var network in adapter.NetworkReport.AvailableNetworks)
                         {
-                            // Verifica se a rede está na frequência de 2.4 GHz (bandas 2400-2500 MHz)
-                            if (network.ChannelCenterFrequencyInKilohertz >= 2400000 && network.ChannelCenterFrequencyInKilohertz <= 2500000)
+                            Debug.WriteLine($"Rede: {network.Ssid} Frequência: {network.ChannelCenterFrequencyInKilohertz}");
+
+                            // Verifica se o SSID da rede escaneada é igual ao SSID conectado
+                            if (network.Ssid == connectedSsid)
                             {
-                                return false; // Pelo menos um BSSID está em 2.4 GHz
+                                adpterErrorCount++;
+                                // Verifica se a rede está na frequência de 2.4 GHz (bandas 2400-2500 MHz)
+                                if (network.ChannelCenterFrequencyInKilohertz >= 2400000 && network.ChannelCenterFrequencyInKilohertz <= 2500000)
+                                {
+                                    return "Conectado a 2.4 GHz"; // Rede está em 2.4 GHz
+                                }
                             }
                         }
                     }
+
+                  
                 }
+
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Erro ao buscar adaptadores em IsConnectedTo5G: {ex.Message}");
+                    adpterErrorCount++;
+                    await Task.Delay(1000); // Espera antes de tentar novamente
+                }
+                
             }
-            return true; // Nenhuma rede 2.4 GHz encontrada na conexão ativa
+
+            // Se não encontrou uma rede 2.4 GHz após escanear
+            return "Conectado a 5 GHz";
         }
+
 
 
 
