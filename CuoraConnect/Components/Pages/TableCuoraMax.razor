@@ -246,6 +246,7 @@ flex: unset;
     private bool _editTriggerRowClick;
     private string currentPage; // Declare a variável
     private string criterio = "";
+    private string subnetMask = "";
     int cidr;
     public Origin TransformOrigin { get; set; } = Origin.TopCenter;
     public Origin AnchorOrigin { get; set; } = Origin.BottomLeft;
@@ -350,6 +351,7 @@ flex: unset;
                 Id = Guid.NewGuid().ToString(),
                 IP_Address = "1.1.1.1",
                 Default_Gateway = "192.142.1.1",
+                SubnetMask = "255.255.255.0",
                 Network_Name = "Teste Wifi"
                 // Outros campos conforme necessário
             };
@@ -390,7 +392,8 @@ flex: unset;
         foreach (var netConfig in netConfigs)
         {
             var IP = netConfig.IP_Address;
-            string subnetMask = null;
+            var subnetMask = netConfig.SubnetMask;
+
 
             if (IP.Contains("/"))
             {
