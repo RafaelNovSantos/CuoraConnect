@@ -38,7 +38,7 @@
 
 
 
-        <svg width="100%" height="290" viewBox="0 0 289 290" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <svg class="product-image" width="100%" height="290" viewBox="0 0 289 290" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
             <path d="M248 169V156C248 156 256 156.836 256 162.783C256 168.73 248 169 248 169Z" fill="black" />
             <path d="M251.217 230.554C254.666 205.768 256.412 182.547 255.917 181.233C255.126 179.131 249.189 179 141.341 179C141.341 179 125.5 290 141.341 290C157.182 290 204.895 286.073 225.592 274.672C246.289 263.271 247.767 255.339 251.217 230.554Z" fill="black" />
             <path d="M31.7832 230.554C28.3337 205.768 26.5879 182.547 27.0827 181.233C27.8742 179.131 33.8108 179 141.659 179C141.659 179 159.5 290 141.659 290C123.818 290 78.1049 286.073 57.408 274.672C36.7111 263.271 35.2327 255.339 31.7832 230.554Z" fill="black" />
@@ -123,8 +123,22 @@
             </defs>
         </svg>
 
+        <a @onclick="ImportarConfig" class=" button">
 
-        <a @onclick="ImportarConfig" class="btn btn-primary mt-3">Importar configuração</a>
+
+            <svg height="30px" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M17 17H17.01M17.4 14H18C18.9319 14 19.3978 14 19.7654 14.1522C20.2554 14.3552 20.6448 14.7446 20.8478 15.2346C21 15.6022 21 16.0681 21 17C21 17.9319 21 18.3978 20.8478 18.7654C20.6448 19.2554 20.2554 19.6448 19.7654 19.8478C19.3978 20 18.9319 20 18 20H6C5.06812 20 4.60218 20 4.23463 19.8478C3.74458 19.6448 3.35523 19.2554 3.15224 18.7654C3 18.3978 3 17.9319 3 17C3 16.0681 3 15.6022 3.15224 15.2346C3.35523 14.7446 3.74458 14.3552 4.23463 14.1522C4.60218 14 5.06812 14 6 14H6.6M12 15V4M12 15L9 12M12 15L15 12" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+
+
+            <div class="textButton">
+                Importar configuração
+            </div>
+
+        </a>
+      
+
+   
         @if (statusMessage != null)
         {
             <p class="mt-3">@statusMessage</p>

@@ -224,6 +224,63 @@ svg {
         padding: 0 1rem;
     }
 
+
+.product-image {
+
+    object-fit: cover;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+    .product-image:hover {
+        transform: scale(1.05);
+    }
+
+
+/* From Uiverse.io by reshades */
+.button {
+    display: block;
+    background-color: #00357a;
+    color: #fff;
+    
+    height: 2.9em;
+    padding: 8px 0px;
+    text-align: center;
+    border: #00357a 0.2em solid;
+    text-decoration: none;
+    border-radius: 11px;
+    cursor: pointer;
+    text-align: right;
+    transition: all 0.6s ease;
+}
+
+    .button:hover {
+        
+        border: black 0.2em solid;
+        background-color: #1c6ec2;
+    }
+
+    .button svg {
+       
+        margin: -0.3em 0.3em 1em;
+        position: absolute;
+        display: flex;
+        transition: all 0.6s ease;
+    }
+
+    .button:hover svg {
+        transform: translateY(3px);
+
+    }
+
+.textButton {
+    margin: 0 1.5em 0rem 2.6rem;
+ 
+    color: #fff;
+}
+
+
 #pop-up {
     --stop: calc(100% / var(--length) * var(--i));
     --l: 52%;
@@ -237,7 +294,7 @@ svg {
     margin-bottom: 2rem;
     padding: 2rem 1rem 1rem;
     box-shadow: 0.1rem 0.1rem 1.5rem rgba(0, 0, 0, 0.3);
-    border-radius: 0.25rem;
+    border-radius: 1.5rem;
     overflow: hidden;
     background-color: white;
 }
@@ -630,3 +687,4 @@ body {
     }
 }
  
+
