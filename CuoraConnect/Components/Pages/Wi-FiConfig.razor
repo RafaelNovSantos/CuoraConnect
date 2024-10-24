@@ -262,9 +262,9 @@
 
     protected override async Task OnInitializedAsync()
     {
-       
-            await SetActiveMenu("Wi-FiConfig");
-            
+
+        await SetActiveMenu("Wi-FiConfig");
+
     }
 
 
@@ -415,7 +415,7 @@
         NavigationManager.LocationChanged += OnLocationChanged;
         if (isNavigatingAway) return;
 
-        
+
         loader = true;
         CallJavaScriptAfterRender();
         CleanStatus();
@@ -441,7 +441,7 @@
 
             ssidMinusculo = ssid.ToLower();
 
-            if (ssidMinusculo.StartsWith("xpicowifi") || ssidMinusculo.StartsWith("cuora")){
+            if (ssidMinusculo.Contains("xpicowifi") || ssidMinusculo.Contains("cuora")){
 
                 statusError = "Desconecte da rede Cuora Max e conecte na rede do seu estabelecimento";
                 CleanInputs();
@@ -525,20 +525,30 @@
             while (countErrorNetwork <= 3)
             {
                 countErrorNetwork++;
-                
+
                 Debug.WriteLine($"Erro: {ex.Message}");
-                            // Verifica se a navegação ocorreu após a chamada assíncrona
-            NavigationManager.LocationChanged += OnLocationChanged;
-            if (isNavigatingAway) return;
-            GetNetworkInfo();
+                // Verifica se a navegação ocorreu após a chamada assíncrona
+                NavigationManager.LocationChanged += OnLocationChanged;
+                if (isNavigatingAway) return;
+                GetNetworkInfo();
             }
-            statusError = $"Erro: {ex.Message}";
-            Debug.WriteLine($"Erro: {ex.Message}");
-            StateHasChanged();
+
+            if (ex.Message == null)
+            {
+                // Verifica se a navegação ocorreu após a chamada assíncrona
+                NavigationManager.LocationChanged += OnLocationChanged;
+                if (isNavigatingAway) return;
+                statusInfo = "Ocorreu algum conflito, tente obter informações da rede novamente.";
+                Debug.WriteLine($"Erro: {ex.Message}");
+                StateHasChanged();
+                return;
+            }
             // Verifica se a navegação ocorreu após a chamada assíncrona
             NavigationManager.LocationChanged += OnLocationChanged;
             if (isNavigatingAway) return;
-            
+            statusError = $"Erro: {ex.Message}";
+            Debug.WriteLine($"Erro: {ex.Message}");
+            StateHasChanged();
         }
         
         isValid(true);

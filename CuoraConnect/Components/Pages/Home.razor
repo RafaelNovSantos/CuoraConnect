@@ -244,7 +244,7 @@
 
         ssidMinusculo = ssid.ToLower();
 
-        if (ssidMinusculo.StartsWith("xpicowifi") || ssidMinusculo.StartsWith("cuora")){
+        if (ssidMinusculo.Contains("xpicowifi") || ssidMinusculo.Contains("cuora")){
             statusError = "Desconecte da rede Cuora Max e conecte na rede do seu estabelecimento.";
             await CallJavaScriptAfterRender();
         }

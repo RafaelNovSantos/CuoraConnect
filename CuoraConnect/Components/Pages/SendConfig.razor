@@ -124,8 +124,7 @@
 
 
         <a @onclick="EnviarConfig" class="btn btn-primary mt-3">Enviar configuração</a>
-        <a href="exportconfig" class="btn btn-outline-success btn-sm" @>Avançar</a>
-        @if (statusMessage != null)
+        <!-- <a href="exportconfig" class="btn btn-outline-success btn-sm">Avançar</a> -->        @if (statusMessage != null)
         {
             <p class="mt-3">@statusMessage</p>
         }
@@ -378,7 +377,7 @@
 
         ssidMinusculo = ssid.ToLower();
 
-        if (ssidMinusculo.StartsWith("xpicowifi") || ssidMinusculo.StartsWith("cuora"))
+        if (ssidMinusculo.Contains("xpicowifi") || ssidMinusculo.Contains("cuora"))
         {
 
 
@@ -399,19 +398,7 @@
                 Debug.WriteLine("Dados móveis estão desativados.");
             }
 
-            bool connected5g = await NetworkService.IsConnectedTo5G();
-            if (connected5g == true)
-            {
-                Debug.WriteLine("Conectado no 5g");
-                statusError = "Não é possível configurar em redes Wi-Fi 5g, conecte em uma rede Wi-Fi 2.4g";
-                CallJavaScriptAfterRender();
-
-                return;
-            }
-            else
-            {
-                Debug.WriteLine("Conexão 2.4g");
-            }
+         
 
             // Verifica se o arquivo existe
             if (!File.Exists(filePath))
@@ -901,7 +888,7 @@
             else if (webEx.Message == "An error occurred while sending the request.")
             {
                 Debug.WriteLine($"Erro ao enviar configuração: {webEx.Message}");
-                statusError = "Erro ao enviar a configuração para a balança, verifique se está conectado no Wi-Fi correto";
+                statusInfo = "Configuração enviada, verifique se o nome do Wi-Fi da balança foi modificado.";
                 StateHasChanged();
             }
             else{
