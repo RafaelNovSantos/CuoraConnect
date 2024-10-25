@@ -38,7 +38,7 @@ svg {
 
 @media (max-width: 640px) {
 
-    main {
+    body {
         padding-bottom: 4rem;
     }
 
