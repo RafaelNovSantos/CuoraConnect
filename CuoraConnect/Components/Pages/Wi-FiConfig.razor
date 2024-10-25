@@ -193,6 +193,8 @@
     </div>
             
     }
+
+      
         @if (loader == true)
         {
 
@@ -215,8 +217,6 @@
         }
 </div>
 }
-
-
 
 
 
@@ -410,20 +410,27 @@
 
     private async Task GetNetworkInfo()
     {
+        await Task.Delay(00);
         // Verifica se a navegação ocorreu antes de iniciar a lógica do método
         NavigationManager.LocationChanged += OnLocationChanged;
         if (isNavigatingAway) return;
 
 
         loader = true;
+    
+   
+      
         CallJavaScriptAfterRender();
         CleanStatus();
         CleanInputs();
-        StateHasChanged();
+        await InvokeAsync(StateHasChanged);
 
         Debug.WriteLine("Tentando obter informações da rede...");
+     
         try
         {
+            await Task.Run(async () =>
+   {
             ssid = await NetworkService.GetCurrentSSID();
             // Verifica se a navegação ocorreu após a chamada assíncrona
             NavigationManager.LocationChanged += OnLocationChanged;
@@ -435,7 +442,7 @@
             {
                 ssid = "";
                 statusError = "Nenhuma conexão Wi-Fi ativa, conecte no Wi-Fi do seu estabelecimento.";
-                StateHasChanged();
+                await InvokeAsync(StateHasChanged);
                 CallJavaScriptAfterRender();
                 return;
             }
@@ -446,7 +453,7 @@
 
                 statusError = "Desconecte da rede Cuora Max e conecte na rede do seu estabelecimento";
                 CleanInputs();
-                StateHasChanged();
+                await InvokeAsync(StateHasChanged);
                 await CallJavaScriptAfterRender();
                 isValid(true);
                 return;
@@ -494,7 +501,7 @@
             {
                 statusError = $"Interface de rede: {connected5g}";
             }
-
+   
             // Verifica se a navegação ocorreu após a chamada assíncrona
             NavigationManager.LocationChanged += OnLocationChanged;
             if (isNavigatingAway) return;
@@ -507,42 +514,45 @@
             // Obtém o Gateway Padrão
             gateway = NetworkService.GetDefaultGateway();
             Debug.WriteLine($"Gateway Padrão: {gateway}");
-            StateHasChanged();
-            await Task.Delay(300);
+            await InvokeAsync(StateHasChanged);
+          
             
             // Obtém o IP Local
             localIP = NetworkService.GetLocalIPAddress();
             Debug.WriteLine($"IP Local: {localIP}");
-            StateHasChanged();
-            await Task.Delay(300);
+            await InvokeAsync(StateHasChanged);
+       
             
 
 
             subnetMask = await NetworkService.GetSubnetMask();
             Debug.WriteLine($"Máscara disponível: {subnetMask}");
-            StateHasChanged();
-            await Task.Delay(300);
+            await InvokeAsync(StateHasChanged);
+           
             
 
             // Obtém o IP disponível
             availableIP = NetworkService.GetAvailableIPAddress();
             Debug.WriteLine($"IP Disponível: {availableIP}");
-            StateHasChanged();
-            await Task.Delay(700);
+            await InvokeAsync(StateHasChanged);
+         
             
-
-            loader = false;
+            
+            
 
             if (ssid != null && gateway != null && availableIP != null && subnetMask != null)
             {
-                if (statusError == "Nenhuma conexão Wi-Fi ativa, conecte no Wi-Fi do seu estabelecimento.") { statusError = null; }
+                if (statusError == "Nenhuma conexão Wi-Fi ativa, conecte no Wi-Fi do seu estabelecimento." || statusError == "Interface de rede: Nenhum adaptador Wi-Fi encontrado. Tentando novamente.") { statusError = null; }
             }
 
 
-            StateHasChanged();
+            await InvokeAsync(StateHasChanged);
             // Verifica se a navegação ocorreu após a chamada assíncrona
             NavigationManager.LocationChanged += OnLocationChanged;
             if (isNavigatingAway) return;
+      
+            await InvokeAsync(StateHasChanged); // Atualiza a interface para exibir o loader
+            });
         }
         catch (Exception ex)
         {
@@ -564,7 +574,7 @@
                 if (isNavigatingAway) return;
                 statusInfo = "Ocorreu algum conflito, tente obter informações da rede novamente.";
                 Debug.WriteLine($"Erro: {ex.Message}");
-                StateHasChanged();
+                await InvokeAsync(StateHasChanged);
                 return;
             }
             // Verifica se a navegação ocorreu após a chamada assíncrona
@@ -572,9 +582,13 @@
             if (isNavigatingAway) return;
             statusError = $"Erro: {ex.Message}";
             Debug.WriteLine($"Erro: {ex.Message}");
-            StateHasChanged();
+            await InvokeAsync(StateHasChanged);
         }
-        
+        finally
+        {
+            loader = false;
+            await InvokeAsync(StateHasChanged); // Oculta o loader
+        }
         isValid(true);
     }
 

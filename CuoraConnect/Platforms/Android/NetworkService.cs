@@ -318,7 +318,18 @@ namespace CuoraConnect.Platforms.Android
 
 
         public async Task<string> IsConnectedTo5G()
-        {
+        { 
+            // Obtém o contexto da aplicação
+            var context = Application.Context;
+
+            // Obtém o WifiManager
+            var wifiManager = (WifiManager)context.GetSystemService(Context.WifiService);
+
+
+            await Task.Delay(1000);
+            // Reinicia o WifiManager
+            RestartWifiManager(wifiManager);
+
             // Obtém o SSID da rede conectada
             string connectedSsid = await GetCurrentSSID();
 
@@ -328,17 +339,16 @@ namespace CuoraConnect.Platforms.Android
                 return "Nenhuma rede conectada"; // Caso não esteja conectado a nenhuma rede
             }
 
-            // Obtém o contexto da aplicação
-            var context = Application.Context;
-
-            // Obtém o WifiManager
-            var wifiManager = (WifiManager)context.GetSystemService(Context.WifiService);
+           
 
             // Verifica se o WifiManager foi obtido corretamente
             if (wifiManager == null)
             {
                 return "Não foi possível obter a interface de rede."; // Erro ao obter o WifiManager
             }
+
+            // Reinicia o WifiManager
+            RestartWifiManager(wifiManager);
 
             // Inicia a varredura das redes
             wifiManager.StartScan();
@@ -378,7 +388,16 @@ namespace CuoraConnect.Platforms.Android
 
 
 
+        // Método para reiniciar o WifiManager
+        private void RestartWifiManager(WifiManager wifiManager)
+        {
+            // Desativa o Wi-Fi
+            wifiManager.SetWifiEnabled(false);
+            Task.Delay(500).Wait(); // Aguarda um momento para garantir que o Wi-Fi seja desligado
 
+            // Ativa o Wi-Fi novamente
+            wifiManager.SetWifiEnabled(true);
+        }
 
 
         public bool IsMobileDataEnabled()

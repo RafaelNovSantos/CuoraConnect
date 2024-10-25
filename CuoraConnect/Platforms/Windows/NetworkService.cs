@@ -10,6 +10,7 @@ namespace CuoraConnect.Platforms.Windows
 {
     public class NetworkService : INetworkService
     {
+        public string Bssid { get; }
         public async Task<string> GetCurrentSSID()
         {
             return await Task.Run(() =>
@@ -191,8 +192,23 @@ namespace CuoraConnect.Platforms.Windows
 
         public async Task<string> IsConnectedTo5G()
         {
+            await Task.Delay(1000);
             // Obtém o SSID da rede atual
             var connectedSsid = GetConnectedSSID();
+            var wifiAdapters = await WiFiAdapter.FindAllAdaptersAsync();
+
+            if (wifiAdapters == null || wifiAdapters.Count == 0)
+            {
+                Debug.WriteLine("Nenhum adaptador Wi-Fi encontrado. Tentando novamente...");
+;
+                await Task.Delay(1000); // Espera antes de tentar novamente
+
+            }
+
+
+
+     
+
 
             if (connectedSsid == null)
             {
@@ -210,7 +226,7 @@ namespace CuoraConnect.Platforms.Windows
                 {
                     Debug.WriteLine($"Tentativa {attemptCount} de verificar conexão 2.4g ou 5g");
                     // Obtém os adaptadores Wi-Fi disponíveis no dispositivo
-                    var wifiAdapters = await WiFiAdapter.FindAllAdaptersAsync();
+               
 
                     if (wifiAdapters == null || wifiAdapters.Count == 0)
                     {
@@ -220,10 +236,43 @@ namespace CuoraConnect.Platforms.Windows
                         continue;
                     }
 
+
+
                     foreach (var adapter in wifiAdapters)
-                    {                
-                        // Escaneia todas as redes visíveis
-                        await adapter.ScanAsync();
+                    {
+                       
+
+                        // Encontra a rede desejada (SSID) entre as redes disponíveis no adaptador atual
+                        var targetNetwork = adapter.NetworkReport.AvailableNetworks
+                            .FirstOrDefault(network => network.Ssid.Equals(connectedSsid, StringComparison.OrdinalIgnoreCase));
+
+                        // Se a rede estiver disponível no adaptador atual
+                        if (targetNetwork != null)
+                        {
+                            // Desconecta o adaptador
+                            adapter.Disconnect();
+                            Debug.WriteLine($"Desconectado do adaptador {adapter.NetworkAdapter.NetworkAdapterId}.");
+
+                            
+
+                            // Reconecta à mesma rede usando o adaptador atual
+                            var connectionResult = await adapter.ConnectAsync(targetNetwork, WiFiReconnectionKind.Automatic);
+
+                            if (connectionResult.ConnectionStatus == WiFiConnectionStatus.Success)
+                            {
+                                Debug.WriteLine($"Reconectado à rede {connectedSsid} com sucesso no adaptador {adapter.NetworkAdapter.NetworkAdapterId}.");
+                            }
+                            else
+                            {
+                                Debug.WriteLine($"Falha ao reconectar à rede {connectedSsid} no adaptador {adapter.NetworkAdapter.NetworkAdapterId}. Status: {connectionResult.ConnectionStatus}");
+                            }
+                        }
+                        else
+                        {
+                            Debug.WriteLine($"Rede {connectedSsid} não encontrada no adaptador {adapter.NetworkAdapter.NetworkAdapterId}");
+                        }
+
+                     
 
                         foreach (var network in adapter.NetworkReport.AvailableNetworks)
                         {

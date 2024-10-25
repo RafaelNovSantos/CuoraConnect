@@ -74,6 +74,13 @@ svg {
 
 
     }
+main {
+    display: grid;
+    justify-content: center;
+    align-items: center;
+    justify-items: center;
+    align-content: center;
+}
 
     @media (min-width: 992px) {
 
@@ -240,13 +247,14 @@ svg {
 
 .product-image-card {
     object-fit: cover;
-    margin: 30px;
+    margin: 30px 0px 30px;
     padding-left: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     padding-bottom: 10px;
     transition: transform 0.3s ease;
     border-radius: 20px;
-  
+    align-items: center;
+    text-align: center;
 }
 
 
@@ -278,16 +286,17 @@ svg {
         box-shadow: 0 10px 12px rgba(0, 0, 0, 0.1);
     }
 
-    .button svg {
+    .button .icon,
+    .button  svg {
         margin: -0.3em 0.3em 1em;
         position: absolute;
         display: flex;
         transition: all 0.5s cubic-bezier(0.13, 0.78, 0.3, 0.99);
     }
 
+    .button:hover .icon,
     .button:hover svg {
         transform: translateY(3px);
-
     }
 
 .textButton {
@@ -325,6 +334,8 @@ svg {
             left: 0;
             background: linear-gradient(to right, var(--c1) var(--stop), var(--c2) var(--stop));
         }
+
+
 
     h3 {
         display: flex;
@@ -665,5 +676,12 @@ body {
         clip-path: inset(0 0 0 100%);
     }
 }
- 
 
+
+.barCardImport {
+    position: absolute;
+    width: 100%;
+    top: 0;
+    height: 16px;
+    background: #00357a;
+}
