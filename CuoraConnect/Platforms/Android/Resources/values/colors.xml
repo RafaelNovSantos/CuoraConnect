@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="colorPrimary">@android:color/black</color>
-    <color name="colorPrimaryDark">@android:color/holo_blue_dark</color>
-    <color name="colorAccent">@color/m3_ref_palette_white</color>
+    <color name="colorPrimaryDark">#00357a</color>
+    <color name="colorAccent">#00357a</color>
+	
 </resources>

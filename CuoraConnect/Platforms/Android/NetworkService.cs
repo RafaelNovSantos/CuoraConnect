@@ -362,7 +362,7 @@ namespace CuoraConnect.Platforms.Android
                         if (network.Frequency >= 2400 && network.Frequency <= 2500)
                         {
                             is5G = false; // A rede está em 2.4 GHz
-                            return ""; // Não precisamos continuar verificando
+                            return "Conectado a 2.4 GHz"; // Não precisamos continuar verificando
                         }
                     }
                 }
