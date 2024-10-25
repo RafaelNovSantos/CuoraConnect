@@ -191,7 +191,10 @@
 
         using var db = new SQLiteConnection(dbPath);
         db.CreateTable<ExportInfo>();
+        SetActiveMenu("importconfig");
     }
+
+  
 
 
     private async Task CallJavaScriptAfterRender()

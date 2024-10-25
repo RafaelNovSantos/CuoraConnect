@@ -1,14 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using CuoraConnect.Services;
 using System.Diagnostics;
-using System.Management;
 using System.Net.NetworkInformation;
-using System.Threading.Tasks;
-using CuoraConnect.Services;
-using Microsoft.Maui.Controls;
 using Windows.Devices.Enumeration;
 using Windows.Devices.WiFi;
-using Windows.Media.Devices;
-using Windows.Networking.Connectivity;
 using Windows.Security.Credentials;
 
 [assembly: Dependency(typeof(CuoraConnect.Platforms.Windows.NetworkService))]
@@ -161,27 +155,31 @@ namespace CuoraConnect.Platforms.Windows
             return availableNetworks.Count > 0 ? availableNetworks : new List<string> { "Nenhuma rede disponível." };
         }
 
-        public string GetSubnetMask()
+        public async Task<string> GetSubnetMask()
         {
-            foreach (var networkInterface in NetworkInterface.GetAllNetworkInterfaces())
+            return await Task.Run(() =>
             {
-                if (networkInterface.OperationalStatus == OperationalStatus.Up &&
-                    networkInterface.NetworkInterfaceType != NetworkInterfaceType.Loopback &&
-                    networkInterface.NetworkInterfaceType != NetworkInterfaceType.Tunnel)
+                foreach (var networkInterface in NetworkInterface.GetAllNetworkInterfaces())
                 {
-                    foreach (var ipInfo in networkInterface.GetIPProperties().UnicastAddresses)
+                    if (networkInterface.OperationalStatus == OperationalStatus.Up &&
+                        networkInterface.NetworkInterfaceType != NetworkInterfaceType.Loopback &&
+                        networkInterface.NetworkInterfaceType != NetworkInterfaceType.Tunnel)
                     {
-                        if (ipInfo.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                        foreach (var ipInfo in networkInterface.GetIPProperties().UnicastAddresses)
                         {
-                            string subnetMask = ipInfo.IPv4Mask.ToString();
-                            Debug.WriteLine($"Máscara de Sub-rede encontrada: {subnetMask}");
-                            return subnetMask; // Retorna a máscara de sub-rede
+                            if (ipInfo.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                            {
+                                string subnetMask = ipInfo.IPv4Mask.ToString();
+                                Debug.WriteLine($"Máscara de Sub-rede encontrada: {subnetMask}");
+                                return subnetMask; // Retorna a máscara de sub-rede
+                            }
                         }
                     }
                 }
-            }
-            return "Máscara de rede não encontrada.";
+                return "Máscara de rede não encontrada."; // Retorna mensagem se não encontrar
+            });
         }
+
 
 
         public bool IsMobileDataEnabled()

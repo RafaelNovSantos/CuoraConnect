@@ -273,7 +273,6 @@
     {
         if (firstRender)
         {
-            await SetActiveMenu("Wi-FiConfig");
             await GetNetworkInfo();
 
             // Aqui você pode registrar eventos de navegação, por exemplo
@@ -507,25 +506,39 @@
 
             // Obtém o Gateway Padrão
             gateway = NetworkService.GetDefaultGateway();
-            StateHasChanged();
             Debug.WriteLine($"Gateway Padrão: {gateway}");
-
+            StateHasChanged();
+            await Task.Delay(300);
+            
             // Obtém o IP Local
             localIP = NetworkService.GetLocalIPAddress();
-            StateHasChanged();
             Debug.WriteLine($"IP Local: {localIP}");
+            StateHasChanged();
+            await Task.Delay(300);
+            
+
+
+            subnetMask = await NetworkService.GetSubnetMask();
+            Debug.WriteLine($"Máscara disponível: {subnetMask}");
+            StateHasChanged();
+            await Task.Delay(300);
+            
 
             // Obtém o IP disponível
             availableIP = NetworkService.GetAvailableIPAddress();
-            StateHasChanged();
             Debug.WriteLine($"IP Disponível: {availableIP}");
-
-            subnetMask = NetworkService.GetSubnetMask();
-
-            Debug.WriteLine($"Máscara disponível: {subnetMask}");
             StateHasChanged();
+            await Task.Delay(700);
+            
 
             loader = false;
+
+            if (ssid != null && gateway != null && availableIP != null && subnetMask != null)
+            {
+                if (statusError == "Nenhuma conexão Wi-Fi ativa, conecte no Wi-Fi do seu estabelecimento.") { statusError = null; }
+            }
+
+
             StateHasChanged();
             // Verifica se a navegação ocorreu após a chamada assíncrona
             NavigationManager.LocationChanged += OnLocationChanged;

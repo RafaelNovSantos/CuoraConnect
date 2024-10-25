@@ -1,8 +1,9 @@
-﻿using System.Net.NetworkInformation;
-using CuoraConnect.Services;
-using Android.Net.Wifi;
-using Android.Content;
+﻿using Android.Content;
 using Android.Net;
+using Android.Net.Wifi;
+using CuoraConnect.Services;
+using System.Diagnostics;
+using System.Net.NetworkInformation;
 using Application = Android.App.Application;
 using System.Diagnostics;
 using static Android.Net.ConnectivityManager;
@@ -288,27 +289,30 @@ namespace CuoraConnect.Platforms.Android
         }
 
 
-        public string GetSubnetMask()
+        public async Task<string> GetSubnetMask()
         {
-            foreach (var networkInterface in NetworkInterface.GetAllNetworkInterfaces())
+            return await Task.Run(() =>
             {
-                if (networkInterface.OperationalStatus == OperationalStatus.Up &&
-                    networkInterface.NetworkInterfaceType != NetworkInterfaceType.Loopback &&
-                    networkInterface.NetworkInterfaceType != NetworkInterfaceType.Tunnel)
+                foreach (var networkInterface in NetworkInterface.GetAllNetworkInterfaces())
                 {
-                    foreach (var ipInfo in networkInterface.GetIPProperties().UnicastAddresses)
+                    if (networkInterface.OperationalStatus == OperationalStatus.Up &&
+                        networkInterface.NetworkInterfaceType != NetworkInterfaceType.Loopback &&
+                        networkInterface.NetworkInterfaceType != NetworkInterfaceType.Tunnel)
                     {
-                        if (ipInfo.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                        foreach (var ipInfo in networkInterface.GetIPProperties().UnicastAddresses)
                         {
-                            string subnetMask = ipInfo.IPv4Mask.ToString();
-                            Debug.WriteLine($"Máscara de Sub-rede encontrada: {subnetMask}");
-                            return subnetMask; // Retorna a máscara de sub-rede
+                            if (ipInfo.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                            {
+                                string subnetMask = ipInfo.IPv4Mask.ToString();
+                                Debug.WriteLine($"Máscara de Sub-rede encontrada: {subnetMask}");
+                                return subnetMask; // Retorna a máscara de sub-rede
+                            }
                         }
                     }
                 }
-            }
-            //Máscara de rede não encontrada.
-            return "";
+                // Máscara de rede não encontrada.
+                return "";
+            });
         }
 
 
@@ -341,7 +345,7 @@ namespace CuoraConnect.Platforms.Android
             await Task.Delay(1000); // Aguarda o scan
 
             // Verifica as redes escaneadas
-            bool is5G = true; // Assume que a rede é 5G até que se prove o contrário
+          
             int countVerific5g = 0;
 
             while (countVerific5g <= 3)
@@ -361,14 +365,14 @@ namespace CuoraConnect.Platforms.Android
                         // Verifica se a rede está na frequência de 2.4 GHz (bandas 2400-2500 MHz)
                         if (network.Frequency >= 2400 && network.Frequency <= 2500)
                         {
-                            is5G = false; // A rede está em 2.4 GHz
+                            
                             return "Conectado a 2.4 GHz"; // Não precisamos continuar verificando
                         }
                     }
                 }
             }
-
-            return is5G ? "Conectado a 5 GHz" : "Conectado a 2.4 GHz"; // Retorna o status da conexão
+            
+            return "Conectado a 5 GHz";
         }
 
 

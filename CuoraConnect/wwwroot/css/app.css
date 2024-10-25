@@ -556,11 +556,11 @@ body {
             }
 
                 #wifi-loader svg.circle-outer circle.back {
-                    animation: circle-outer135 1.4s ease infinite 0.09s;
+                    animation: circle-outer135 1.6s ease infinite 0.13s;
                 }
 
                 #wifi-loader svg.circle-outer circle.front {
-                    animation: circle-outer135 1.4s ease infinite;
+                    animation: circle-outer135 1.6s ease infinite;
                 }
 
         #wifi-loader svg.circle-middle {
@@ -573,11 +573,11 @@ body {
             }
 
                 #wifi-loader svg.circle-middle circle.back {
-                    animation: circle-middle6123 1.4s ease infinite 0.08s;
+                    animation: circle-middle6123 1.6s ease infinite 0.12s;
                 }
 
                 #wifi-loader svg.circle-middle circle.front {
-                    animation: circle-middle6123 1.4s ease infinite;
+                    animation: circle-middle6123 1.6s ease infinite;
                 }
 
         #wifi-loader svg.circle-inner {
@@ -590,11 +590,11 @@ body {
             }
 
                 #wifi-loader svg.circle-inner circle.back {
-                    animation: circle-inner162 1.4s ease infinite 0.07s;
+                    animation: circle-inner162 1.6s ease infinite 0.11s;
                 }
 
                 #wifi-loader svg.circle-inner circle.front {
-                    animation: circle-inner162 1.4s ease infinite;
+                    animation: circle-inner162 1.6s ease infinite;
                 }
 
     #wifi-loader .text {
