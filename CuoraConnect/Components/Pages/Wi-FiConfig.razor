@@ -507,21 +507,26 @@
 
             // Obtém o Gateway Padrão
             gateway = NetworkService.GetDefaultGateway();
+            StateHasChanged();
             Debug.WriteLine($"Gateway Padrão: {gateway}");
 
             // Obtém o IP Local
             localIP = NetworkService.GetLocalIPAddress();
+            StateHasChanged();
             Debug.WriteLine($"IP Local: {localIP}");
 
             // Obtém o IP disponível
             availableIP = NetworkService.GetAvailableIPAddress();
+            StateHasChanged();
             Debug.WriteLine($"IP Disponível: {availableIP}");
 
             subnetMask = NetworkService.GetSubnetMask();
 
             Debug.WriteLine($"Máscara disponível: {subnetMask}");
+            StateHasChanged();
 
             loader = false;
+            StateHasChanged();
             // Verifica se a navegação ocorreu após a chamada assíncrona
             NavigationManager.LocationChanged += OnLocationChanged;
             if (isNavigatingAway) return;

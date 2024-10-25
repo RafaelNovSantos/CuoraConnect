@@ -205,7 +205,7 @@ namespace CuoraConnect.Platforms.Windows
             int attemptCount = 0;
             int adpterErrorCount = 0;
 
-            while (attemptCount <= maxAttempts || adpterErrorCount <= 3)
+            while (attemptCount <= maxAttempts || adpterErrorCount <= maxAttempts)
             {
                 attemptCount++;
                 try
@@ -252,6 +252,19 @@ namespace CuoraConnect.Platforms.Windows
                     Debug.WriteLine($"Erro ao buscar adaptadores em IsConnectedTo5G: {ex.Message}");
                     adpterErrorCount++;
                     await Task.Delay(1000); // Espera antes de tentar novamente
+
+                    if (ex.Message == null)
+                    {
+                        Debug.WriteLine("Nenhum adaptador Wi-Fi encontrado. Tentando novamente...");
+                        adpterErrorCount++;
+                        await Task.Delay(1000); // Espera antes de tentar novamente
+                        continue;
+                    }
+
+                    if (adpterErrorCount <= maxAttempts)
+                    {
+                        return "Nenhum adaptador Wi-Fi encontrado. Tentando novamente.";
+                    }
                 }
                 
             }
