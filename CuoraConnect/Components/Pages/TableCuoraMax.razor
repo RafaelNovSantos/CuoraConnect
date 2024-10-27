@@ -56,8 +56,8 @@
 
     <RowTemplate>
         <MudTd DataLabel="Imagem">
-            <img style="width: 80px;
-    height: 80px;" src="/Images/producto-cuora-max-05.jpg" class="product-image" />
+         @*    <img style="width: 80px;
+    height: 80px;" src="/Images/producto-cuora-max-05.jpg" class="product-image" /> *@
         </MudTd>
 
         <MudTd DataLabel="Nome">@context.Id</MudTd>
@@ -106,7 +106,7 @@
         <MudTablePager PageSizeOptions="[5, 15, 25, 50, 100]"
                        
            
-         RowsPerPageString="Equipamentos"
+         RowsPerPageString="Máximo de Equipamentos por página:"
          
         />
     </PagerContent>
@@ -244,22 +244,28 @@ flex: unset;
     public Origin TransformOrigin { get; set; } = Origin.TopCenter;
     public Origin AnchorOrigin { get; set; } = Origin.BottomLeft;
 
-    protected override void OnInitialized()
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (firstRender)
+        {
+            SetActiveMenu("tablecuoramax");
+            currentPage = NavigationManager.Uri;
+            Debug.WriteLine($"Página atual: {currentPage}");
+            
 
-        string dbPath = FileUploadService.pathDB();
+            string dbPath = FileUploadService.pathDB();
 
-        using var db = new SQLiteConnection(dbPath);
-        db.CreateTable<ExportInfo>();
+            using var db = new SQLiteConnection(dbPath);
+            db.CreateTable<ExportInfo>();
 
-        connectionBD();
-        currentPage = NavigationManager.Uri;
-        Debug.WriteLine($"Página atual: {currentPage}");
+            connectionBD();
 
 
-        SetActiveMenu("tablecuoramax");
 
+           
 
+        }
 
     }
 

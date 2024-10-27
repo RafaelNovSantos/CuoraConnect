@@ -41,10 +41,20 @@ namespace CuoraConnect.Platforms.Windows
                     }
                 }
 
+                for (int count = 3; ssid == "" && count <= 3;  GetCurrentSSID())
+                {
+                    count++;
+                }
+
                 return string.IsNullOrEmpty(ssid) ? "SSID Indisponível." : ssid;
             });
         }
 
+        public async Task<PermissionStatus> CheckAndRequestLocationPermission()
+        {
+            var status = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
+            return status;
+        }
         public string GetLocalIPAddress()
         {
             foreach (NetworkInterface networkInterface in NetworkInterface.GetAllNetworkInterfaces())

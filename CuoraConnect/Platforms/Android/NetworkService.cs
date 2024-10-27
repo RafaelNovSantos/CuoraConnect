@@ -2,13 +2,13 @@
 using Android.Net;
 using Android.Net.Wifi;
 using CuoraConnect.Services;
+using MudBlazor;
 using System.Diagnostics;
+using CuoraConnect.Components.Pages;
+using CuoraConnect.Components.DialogMudBlazor;
 using System.Net.NetworkInformation;
 using Application = Android.App.Application;
-using System.Diagnostics;
-using static Android.Net.ConnectivityManager;
-using Android.Media.Midi;
-using Android.Util;
+using Microsoft.AspNetCore.Components;
 
 [assembly: Dependency(typeof(CuoraConnect.Platforms.Android.NetworkService))]
 namespace CuoraConnect.Platforms.Android
@@ -16,20 +16,21 @@ namespace CuoraConnect.Platforms.Android
     public class NetworkService : INetworkService
     {
 
-        private async Task<bool> CheckAndRequestPermissions()
-        {
-            var status = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
-            if (status != PermissionStatus.Granted)
-            {
-                status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
-            }
-            return status == PermissionStatus.Granted;
-        }
+        //private async Task<bool> CheckAndRequestPermissions()
+        //{
+        //    var status = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
+        //    if (status != PermissionStatus.Granted)
+        //    {
+        //        status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
+        //    }
+        //    return status == PermissionStatus.Granted;
+        //}
 
 
 
         public string GetDefaultGateway()
         {
+            CheckAndRequestLocationPermission();
             var wifiManager = (WifiManager)Application.Context.GetSystemService(Context.WifiService);
             var dhcpInfo = wifiManager.DhcpInfo;
 
@@ -56,11 +57,12 @@ namespace CuoraConnect.Platforms.Android
 
         public async Task<string> GetCurrentSSID()
         {
-            // Verifica permissões de rede
-            if (!await CheckAndRequestPermissions())
-            {
-                return "Permissão não concedida para acessar informações de rede.";
-            }
+         
+            //// Verifica permissões de rede
+            //if (!await CheckAndRequestPermissions())
+            //{
+            //    return "Permissão não concedida para acessar informações de rede.";
+            //}
 
             // Obtém o contexto da aplicação
             var context = Application.Context;
@@ -97,6 +99,8 @@ namespace CuoraConnect.Platforms.Android
 
             // Retorna o SSID, removendo aspas
             var ssid = info.SSID?.Replace("\"", "");
+
+
             return !string.IsNullOrEmpty(ssid) ? ssid : "SSID Indisponível.";
         }
 
@@ -109,15 +113,17 @@ namespace CuoraConnect.Platforms.Android
 
         public async Task<bool> ConnectToWifiAsync(string ssid, string password)
         {
-            var status = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
-            if (status != PermissionStatus.Granted)
-            {
-                status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
-                if (status != PermissionStatus.Granted)
-                {
-                    return false;
-                }
-            }
+            //var status = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
+            //if (status != PermissionStatus.Granted)
+            //{
+            //    status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
+            //    if (status != PermissionStatus.Granted)
+            //    {
+            //        return false;
+            //    }
+            //}
+
+            
 
             var wifiNetworkSpecifier = new WifiNetworkSpecifier.Builder()
                 .SetSsid(ssid)
@@ -176,14 +182,33 @@ namespace CuoraConnect.Platforms.Android
                 _tcs.TrySetResult(false);
             }
         }
-    
+
+        [Inject]
+        IDialogService DialogService
+        {
+            get; set;
+        }
+
+
+        public async Task<PermissionStatus> CheckAndRequestLocationPermission()
+        {
+            Wi_FiConfig config = new Wi_FiConfig();
+            var status = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
+
+            if (status == PermissionStatus.Granted)
+                return status;
+
+            // Depois de mostrar o diálogo, você pode solicitar a permissão
+            status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
+
+          
+            return status;
+        }
 
 
 
 
-
-
-    public string GetLocalIPAddress()
+        public string GetLocalIPAddress()
         {
             foreach (NetworkInterface networkInterface in NetworkInterface.GetAllNetworkInterfaces())
             {

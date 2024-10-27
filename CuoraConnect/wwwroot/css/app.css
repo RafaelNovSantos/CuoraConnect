@@ -39,7 +39,7 @@ svg {
 @media (max-width: 640px) {
 
     body {
-        padding-bottom: 4rem;
+        padding-bottom: 3.3rem;
     }
 
 }
@@ -74,7 +74,21 @@ svg {
 
 
     }
+
+article {
+    max-width: 100vw;
+}
+
+    .disable-menu{
+        opacity: 0.1;
+    }
+.disabled-body {
+    pointer-events: none; /* Desativa todos os cliques dentro do body */
+    cursor: not-allowed; /* Mostra o cursor de não permitido */
+}
+
 main {
+    min-height: 80vh;
     display: grid;
     justify-content: center;
     align-items: center;
@@ -223,13 +237,15 @@ main {
         line-height: 1.6;
     }
 
-    ol {
-        display: flex;
-        justify-content: center;
-        list-style: none;
-        counter-reset: list;
-        padding: 0 1rem;
-    }
+ol {
+    display: grid;
+    justify-content: center;
+    list-style: none;
+    counter-reset: list;
+    padding: 0 1rem;
+    align-items: center;
+    align-content: center;
+}
 
 
 .product-image {
@@ -335,14 +351,34 @@ main {
             background: linear-gradient(to right, var(--c1) var(--stop), var(--c2) var(--stop));
         }
 
+.titleCard {
+    display: flex;
+    align-items: baseline;
+    margin: 0 0 1rem;
+    color: rgb(70 70 70);
+}
 
-
-    h3 {
+    .titleCard::before {
         display: flex;
-        align-items: baseline;
-        margin: 0 0 1rem;
-        color: rgb(70 70 70);
+        justify-content: center;
+        align-items: center;
+        flex: 0 0 auto;
+        margin-right: 1rem;
+        width: 3rem;
+        height: 3rem;
+        padding: 1rem;
+        content: none;
+        border-radius: 50%;
+        background-color: var(--c1);
+        color: white;
     }
+
+h3 {
+    display: flex;
+    align-items: baseline;
+    margin: 0 0 1rem;
+    color: rgb(70 70 70);
+}
 
         h3::before {
             display: flex;

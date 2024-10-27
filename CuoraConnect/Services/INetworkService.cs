@@ -16,5 +16,8 @@ namespace CuoraConnect.Services
         Task<bool> ConnectToWifiAsync(string ssid, string password);
         void DisconnectFromWifi();
 
+
+        Task<PermissionStatus> CheckAndRequestLocationPermission();
+
     }
 }

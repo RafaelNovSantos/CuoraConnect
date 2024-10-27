@@ -111,8 +111,7 @@
         
      @if (statusSuccess != null)
         {
-            loader
-            = false;
+            ToggleBody(false);
             <!-- Success Alert -->
     <div class="alert alert-success d-flex justify-content-between align-items-center" role="alert">
         <div class="d-flex align-items-center">
@@ -129,8 +128,7 @@
 
         @if (statusInfo != null)
         {
-            loader
-    = false;
+            ToggleBody(false);
     <!-- Info Alert -->
     <div class="alert alert-info d-flex justify-content-between align-items-center" role="alert">
         <div class="d-flex align-items-center">
@@ -148,9 +146,8 @@
 
     @if (statusAlert != null)
         {
-           
-            loader
-        = false;
+
+            ToggleBody(false);
     <!-- Warning Alert -->
     <div class="alert alert-warning d-flex justify-content-between align-items-center" role="alert">
         <div class="d-flex align-items-center">
@@ -171,9 +168,8 @@
     }
 
     @if(statusError != null){
-           
-            loader
- = false;
+
+            ToggleBody(false);
     <!-- Error Alert -->
     <div class="alert alert-danger d-flex justify-content-between align-items-center" role="alert">
         <div class="d-flex align-items-center">
@@ -219,8 +215,6 @@
 }
 
 
-
-
 @code {
     private string? statusSuccess;
     private string? statusAlert;
@@ -249,6 +243,40 @@
 
 
 
+    // Função para alternar o estado do body
+    private async Task ToggleBody(bool activeisBodyDisabled)
+    {
+        if (activeisBodyDisabled)
+        {
+            loader = true;
+            await JSRuntime.InvokeVoidAsync("document.body.classList.add", "disabled-body");
+            Console.WriteLine("Added 'disabled-body' class.");
+
+            // Tente adicionar logs para depuração
+            var navElement = await JSRuntime.InvokeAsync<string>("eval", "document.querySelector('#nav-mobile')");
+            var sidebarElement = await JSRuntime.InvokeAsync<string>("eval", "document.querySelector('.sidebar')");
+
+            Console.WriteLine($"Nav Element: {navElement}, Sidebar Element: {sidebarElement}");
+
+            await JSRuntime.InvokeVoidAsync("document.querySelector('#nav-mobile').style.opacity", "0.9");
+            await JSRuntime.InvokeVoidAsync("document.querySelector('.sidebar').style.opacity", "0.9");
+        }
+        else
+        {
+            loader = false;
+            await JSRuntime.InvokeVoidAsync("document.body.classList.remove", "disabled-body");
+            Console.WriteLine("Removed 'disabled-body' class.");
+            await JSRuntime.InvokeVoidAsync("document.querySelector('.navigation').classList.remove", "disable-menu");
+            await JSRuntime.InvokeVoidAsync("document.querySelector('.sidebar').classList.remove", "disable-menu");
+        }
+
+        StateHasChanged();
+    }
+
+
+
+
+
 
     // Inicializa o caminho do banco de dados e cria a tabela
     protected override void OnInitialized()
@@ -273,9 +301,10 @@
     {
         if (firstRender)
         {
+            await Task.Delay(150);
             await GetNetworkInfo();
 
-            // Aqui você pode registrar eventos de navegação, por exemplo
+         
         }
     }
 
@@ -396,6 +425,13 @@
     }
 
 
+    public async Task ShowLocationPermissionDialog()
+    {
+        var options = new DialogOptions { CloseOnEscapeKey = true };
+
+        var dialogReference = await DialogService.ShowAsync<LocationPermissionDialog>("Permissão de Localização", options);
+
+    }
 
     private int CountBits(byte octet)
     {
@@ -410,52 +446,67 @@
 
     private async Task GetNetworkInfo()
     {
-        await Task.Delay(00);
+        // Verifica se está rodando no Android
+        if (DeviceInfo.Platform == DevicePlatform.Android)
+        {
+            var statusPermission = await NetworkService.CheckAndRequestLocationPermission();
+            Debug.WriteLine($"Status Permissão de localização: {statusPermission}");
+
+            // Se a permissão não for concedida, mostra o diálogo
+            if (statusPermission != PermissionStatus.Granted)
+            {
+                ShowLocationPermissionDialog();
+                return;
+            }
+        }
+
+
+
+
         // Verifica se a navegação ocorreu antes de iniciar a lógica do método
         NavigationManager.LocationChanged += OnLocationChanged;
         if (isNavigatingAway) return;
 
 
-        loader = true;
-    
-   
-      
+        ToggleBody(true);
+
+
+
         CallJavaScriptAfterRender();
         CleanStatus();
         CleanInputs();
-        await InvokeAsync(StateHasChanged);
+        ssid = "";
 
         Debug.WriteLine("Tentando obter informações da rede...");
-     
+       
         try
         {
             await Task.Run(async () =>
    {
-            ssid = await NetworkService.GetCurrentSSID();
-            // Verifica se a navegação ocorreu após a chamada assíncrona
-            NavigationManager.LocationChanged += OnLocationChanged;
-            if (isNavigatingAway) return;
+       ssid = await NetworkService.GetCurrentSSID();
+       // Verifica se a navegação ocorreu após a chamada assíncrona
+       NavigationManager.LocationChanged += OnLocationChanged;
+       if (isNavigatingAway) return;
 
-            Debug.WriteLine($"SSID: {ssid}");
-            ssidSave = ssid;
-            if (ssid == "" || ssid == "SSID Indisponível.")
-            {
-                ssid = "";
-                statusError = "Nenhuma conexão Wi-Fi ativa, conecte no Wi-Fi do seu estabelecimento.";
-                await InvokeAsync(StateHasChanged);
-                CallJavaScriptAfterRender();
-                return;
-            }
+       Debug.WriteLine($"SSID: {ssid}");
+       ssidSave = ssid;
+       if (ssid == "" || ssid == "SSID Indisponível.")
+       {
+           ssid = "";
+           statusError = "Nenhuma conexão Wi-Fi ativa, conecte no Wi-Fi do seu estabelecimento.";
+           await InvokeAsync(StateHasChanged);
+           CallJavaScriptAfterRender();
+           return;
+       }
+       ssidMinusculo = ssid.ToLower();
 
-            ssidMinusculo = ssid.ToLower();
+       if (ssidMinusculo.Contains("xpicowifi") || ssidMinusculo.Contains("cuora")){
 
-            if (ssidMinusculo.Contains("xpicowifi") || ssidMinusculo.Contains("cuora")){
-
-                statusError = "Desconecte da rede Cuora Max e conecte na rede do seu estabelecimento";
-                CleanInputs();
-                await InvokeAsync(StateHasChanged);
-                await CallJavaScriptAfterRender();
-                isValid(true);
+           statusError = "Desconecte da rede Cuora Max e conecte na rede do seu estabelecimento";
+           CleanInputs();
+           await InvokeAsync(StateHasChanged);
+           await CallJavaScriptAfterRender();
+           isValid(true);
                 return;
             }
 
@@ -496,7 +547,15 @@
                 IsRequiredSSID = true;
                 isValidSSID = true;
                 Debug.WriteLine("Conexão 2.4g");
-            }
+       }
+       else if (connected5g == "Nenhuma rede conectada")
+       {
+           ssid = "";
+           statusError = "Nenhuma conexão Wi-Fi ativa, conecte no Wi-Fi do seu estabelecimento.";
+           await InvokeAsync(StateHasChanged);
+           CallJavaScriptAfterRender();
+           return;
+       }
             else
             {
                 statusError = $"Interface de rede: {connected5g}";
@@ -514,27 +573,27 @@
             // Obtém o Gateway Padrão
             gateway = NetworkService.GetDefaultGateway();
             Debug.WriteLine($"Gateway Padrão: {gateway}");
-            await InvokeAsync(StateHasChanged);
+            
           
             
             // Obtém o IP Local
             localIP = NetworkService.GetLocalIPAddress();
             Debug.WriteLine($"IP Local: {localIP}");
-            await InvokeAsync(StateHasChanged);
+          
        
             
 
 
             subnetMask = await NetworkService.GetSubnetMask();
             Debug.WriteLine($"Máscara disponível: {subnetMask}");
-            await InvokeAsync(StateHasChanged);
+          
            
             
 
             // Obtém o IP disponível
             availableIP = NetworkService.GetAvailableIPAddress();
             Debug.WriteLine($"IP Disponível: {availableIP}");
-            await InvokeAsync(StateHasChanged);
+          
          
             
             
@@ -551,7 +610,7 @@
             NavigationManager.LocationChanged += OnLocationChanged;
             if (isNavigatingAway) return;
       
-            await InvokeAsync(StateHasChanged); // Atualiza a interface para exibir o loader
+         
             });
         }
         catch (Exception ex)
@@ -586,7 +645,7 @@
         }
         finally
         {
-            loader = false;
+            ToggleBody(false);
             await InvokeAsync(StateHasChanged); // Oculta o loader
         }
         isValid(true);
@@ -594,7 +653,7 @@
 
     private async void SaveNetworkInfo()
     {
-        loader = true;
+        ToggleBody(true);
         CallJavaScriptAfterRender();
         statusAlert = null;
         statusError = null;
