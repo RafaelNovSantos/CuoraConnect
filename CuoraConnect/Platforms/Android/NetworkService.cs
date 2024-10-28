@@ -13,41 +13,41 @@ using Microsoft.AspNetCore.Components;
 [assembly: Dependency(typeof(CuoraConnect.Platforms.Android.NetworkService))]
 namespace CuoraConnect.Platforms.Android
 {
+   
     public class NetworkService : INetworkService
     {
+        public string nameinterface = "";
 
-        //private async Task<bool> CheckAndRequestPermissions()
-        //{
-        //    var status = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
-        //    if (status != PermissionStatus.Granted)
-        //    {
-        //        status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
-        //    }
-        //    return status == PermissionStatus.Granted;
-        //}
-
-
-
-        public string GetDefaultGateway()
+        public async Task<string> GetDefaultGateway()
         {
-            CheckAndRequestLocationPermission();
-            var wifiManager = (WifiManager)Application.Context.GetSystemService(Context.WifiService);
-            var dhcpInfo = wifiManager.DhcpInfo;
+           
 
-            if (dhcpInfo != null)
+            int count = 0;
+            while (count <= 4)
             {
-                // Converte o número inteiro para um endereço IP
-                var gateway = string.Format("{0}.{1}.{2}.{3}",
-                    (dhcpInfo.Gateway & 0xff),
-                    (dhcpInfo.Gateway >> 8 & 0xff),
-                    (dhcpInfo.Gateway >> 16 & 0xff),
-                    (dhcpInfo.Gateway >> 24 & 0xff));
-                if (gateway == "0.0.0.0")
-                {
-                    gateway = "";
-                }
 
-                return gateway;
+                Debug.WriteLine($"Tentativa {count} de verificar Gateway do roteador");
+                count++;
+
+                CheckAndRequestLocationPermission();
+                var wifiManager = (WifiManager)Application.Context.GetSystemService(Context.WifiService);
+                var dhcpInfo = wifiManager.DhcpInfo;
+
+                if (dhcpInfo != null)
+                {
+                    // Converte o número inteiro para um endereço IP
+                    var gateway = string.Format("{0}.{1}.{2}.{3}",
+                        (dhcpInfo.Gateway & 0xff),
+                        (dhcpInfo.Gateway >> 8 & 0xff),
+                        (dhcpInfo.Gateway >> 16 & 0xff),
+                        (dhcpInfo.Gateway >> 24 & 0xff));
+                    if (gateway == "0.0.0.0")
+                    {
+                        gateway = "";
+                    }
+
+                    return gateway;
+                }
             }
             return "Gateway padrão não encontrado.";
         }
@@ -55,15 +55,10 @@ namespace CuoraConnect.Platforms.Android
 
 
 
-        public async Task<string> GetCurrentSSID()
+        public async Task<string> GetInfoInterface(string type)
         {
          
-            //// Verifica permissões de rede
-            //if (!await CheckAndRequestPermissions())
-            //{
-            //    return "Permissão não concedida para acessar informações de rede.";
-            //}
-
+         
             // Obtém o contexto da aplicação
             var context = Application.Context;
             if (context == null)
@@ -88,20 +83,48 @@ namespace CuoraConnect.Platforms.Android
                 //Nenhuma conexão Wi-Fi ativa
                 return "";
             }
-
-            // Obtém informações sobre a conexão
-            var info = wifiManager.ConnectionInfo;
-            Debug.WriteLine($"SSID INFO:{info}");
-            if (info == null || info.NetworkId == -1)
+            int count = 1;
+            while (count <= 4)
             {
-                return "Wi-Fi Desconectado ou Informação Indisponível.";
+                Debug.WriteLine($"Tentativa {count} de encontrar o SSID");
+                count++;
+
+                // Obtém informações sobre a conexão
+                var info = wifiManager.ConnectionInfo;
+                Debug.WriteLine($"SSID INFO:{info}");
+                if (info == null || info.NetworkId == -1)
+                {
+                    return "Wi-Fi Desconectado ou Informação Indisponível.";
+                }
+
+                if (type == "SSID")
+                {
+                    // Retorna o SSID, removendo aspas
+                    var ssid = info.SSID?.Replace("\"", "");
+
+                    if (string.IsNullOrEmpty(ssid))
+                    {
+                        return "SSID Indisponível.";
+                    }
+                    return ssid;
+                }
+
+                if (type == "BSSID")
+                {
+                    var bssid = info.BSSID?.Replace("\"", "");
+                    // Remove os dois pontos do BSSID
+                    bssid = bssid.Replace(":", string.Empty);
+                    bssid = bssid.ToUpper();
+
+                    if (string.IsNullOrEmpty(bssid))
+                    {
+                        return "BSSID Indisponível.";
+                    }
+                    return bssid;
+                }   
             }
 
-            // Retorna o SSID, removendo aspas
-            var ssid = info.SSID?.Replace("\"", "");
-
-
-            return !string.IsNullOrEmpty(ssid) ? ssid : "SSID Indisponível.";
+           return "";
         }
 
 
@@ -356,7 +379,7 @@ namespace CuoraConnect.Platforms.Android
             RestartWifiManager(wifiManager);
 
             // Obtém o SSID da rede conectada
-            string connectedSsid = await GetCurrentSSID();
+            string connectedSsid = await GetInfoInterface("SSID");
 
             // Verifica se não há conexão
             if (string.IsNullOrEmpty(connectedSsid))

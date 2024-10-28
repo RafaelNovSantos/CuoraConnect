@@ -302,7 +302,7 @@ margin-bottom: 10px;" src="/Images/sendconfig.svg" alt="Enviar configuração ic
         }
 
 
-        string ssid = await NetworkService.GetCurrentSSID();
+        string ssid = await NetworkService.GetInfoInterface("SSID");
         Debug.WriteLine($"SSID: {ssid}");
 
         if (ssid == "SSID Indisponível." || ssid == "")

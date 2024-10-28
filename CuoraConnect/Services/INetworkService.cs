@@ -1,14 +1,11 @@
-﻿using System.Collections.Generic; 
-using System.Threading.Tasks; 
-
-namespace CuoraConnect.Services
+﻿namespace CuoraConnect.Services
 {
     public interface INetworkService
     {
-        Task<string> GetCurrentSSID();
+        Task<string> GetInfoInterface(string type);
         string GetLocalIPAddress();
         string GetAvailableIPAddress();
-        string GetDefaultGateway();
+        Task<string> GetDefaultGateway();
         List<string> GetAvailableWifiNetworks();
         Task<string> GetSubnetMask();
         Task<string> IsConnectedTo5G();

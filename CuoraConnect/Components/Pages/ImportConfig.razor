@@ -1,4 +1,5 @@
 ﻿@page "/importconfig"
+
 @using System.Reflection
 @using System.IO
 @using System.Diagnostics
@@ -180,6 +181,7 @@
     private string? statusMessage { get; set; }
     private string? fileXMLPath;
     private bool loader;
+          private string subnetMask = "";
     private static readonly HttpClient client = new HttpClient();
 
     protected override void OnInitialized()
@@ -192,7 +194,7 @@
         SetActiveMenu("importconfig");
     }
 
-  
+
 
 
     private async Task CallJavaScriptAfterRender()
@@ -247,7 +249,7 @@
 
 
 
-        ssid = await NetworkService.GetCurrentSSID();
+        ssid = await NetworkService.GetInfoInterface("SSID");
         Debug.WriteLine($"SSID: {ssid}");
 
         if (ssid == "SSID Indisponível." || ssid == "")
@@ -260,7 +262,7 @@
 
         if (ssidMinusculo.StartsWith("xpicowifi") || ssidMinusculo.StartsWith("cuora"))
         {
-            
+
 
             bool isMobileDataEnabled = NetworkService.IsMobileDataEnabled();
             if (isMobileDataEnabled)
@@ -528,7 +530,7 @@
 
         Debug.WriteLine("Iniciando envio de configuração...");
 
-        FileUploadService.SaveXmlToFile();
+      
 
 
         // Função para calcular o hash MD5 de uma string
@@ -564,7 +566,7 @@
         }
 
         // Função para realizar a autenticação digest com MD5 e enviar o arquivo
-        async Task<HttpWebResponse> DigestAuthWithFile(string urlString, string username, string password, string filePath)
+        async Task<HttpWebResponse> DigestAuthWithFile(string urlString, string username, string password)
         {
             Debug.WriteLine($"Iniciando autenticação Digest para URL: {urlString}");
             var url = new Uri(urlString);
@@ -649,26 +651,21 @@
             request.ContentType = $"multipart/form-data; boundary={boundary}";
             request.AllowWriteStreamBuffering = true;
 
-            Debug.WriteLine($"Enviando arquivo {filePath} com tipo de conteúdo {request.ContentType}");
+            Debug.WriteLine($"Enviando arquivo  com tipo de conteúdo {request.ContentType}");
 
             using (var requestStream = await request.GetRequestStreamAsync())
             using (var writer = new StreamWriter(requestStream, Encoding.UTF8))
             {
                 // Adiciona o arquivo ao multipart/form-data
-                var filePathName = Path.GetFileName(filePath);
+             
                 writer.Write($"--{boundary}\r\n");
-                writer.Write($"Content-Disposition: form-data; name=\"configrecord\"; filename=\"{filePathName}\"\r\n");
-                string mimeType = GetMimeType(filePath);
-                writer.Write($"Content-Type: {mimeType}\r\n");
+                writer.Write($"Content-Disposition: form-data; name=\"configrecord\"; filename=\"\"\r\n");
+                
                 writer.Write("\r\n");
                 writer.Flush();
 
                 // Copia o conteúdo do arquivo
-                using (var fileStream = File.OpenRead(filePath))
-                {
-                    Debug.WriteLine($"Lendo e copiando o conteúdo do arquivo: {filePathName}");
-                    await fileStream.CopyToAsync(requestStream);
-                }
+
 
                 writer.Write("\r\n");
                 writer.Write($"--{boundary}--\r\n");
@@ -719,8 +716,8 @@
                             if (configGroup.Attribute("name")?.Value == "Interface" && configGroup.Attribute("instance")?.Value == "wlan0")
                             {
                                 // Extraindo os valores desejados apenas do grupo "wlan0"
-                                 ipAddress = GetConfigValue(configGroup, "IP Address");
-                                 defaultGateway = GetConfigValue(configGroup, "Default Gateway");
+                                ipAddress = GetConfigValue(configGroup, "IP Address");
+                                defaultGateway = GetConfigValue(configGroup, "Default Gateway");
 
                                 // Exibindo os resultados
                                 Debug.WriteLine($"IP Address: {ipAddress}");
@@ -734,7 +731,7 @@
                                                                     .FirstOrDefault(v => v.Attribute("name")?.Value == "Network Name");
 
                                 networkName = networkNameElement?.Value;
-                                
+
 
                                 // Exibindo os resultados no Debug
                                 Debug.WriteLine($"Network Name: {networkName}");
@@ -772,12 +769,12 @@
 
         // Executando a função de envio
         string url = "http://192.168.0.1/export/config";
-        string _filePathExport = FileUploadService.SaveXmlToFile(); // Agora deve funcionar corretamente
+        // string _filePathExport = FileUploadService.SaveXmlToFile(); 
 
         try
         {
             Debug.WriteLine($"Tentando enviar arquivo para {url}...");
-            var response = await DigestAuthWithFile(url, username, password, _filePathExport);
+            var response = await DigestAuthWithFile(url, username, password);
 
             // Verifica se o código de status da resposta é 401 (Unauthorized)
             if (response.StatusCode == HttpStatusCode.Unauthorized)
@@ -853,18 +850,42 @@
         await JSRuntime.InvokeVoidAsync("setActiveClass", menuId);
     }
 
+     public static string CidrToSubnetMask(int cidr)
+    {
+        if (cidr < 0 || cidr > 32)
+        {
+            throw new ArgumentOutOfRangeException(nameof(cidr), "O valor CIDR deve estar entre 0 e 32.");
+        }
+
+        uint mask = uint.MaxValue << (32 - cidr);
+        return string.Join(".", BitConverter.GetBytes(mask).Reverse());
+    }
+
     private string saveExportInfoSQL(string ipAddress, string defaultGateway, string networkName)
     {
         // Salvando no SQLite
         using var db = new SQLiteConnection(FileUploadService.pathDB());
 
         var table = db.Table<ExportInfo>().FirstOrDefault(c => c.Id == ssid);
+
+
+            if (ipAddress.Contains("/"))
+            {
+                int cidr = int.Parse(ipAddress.Substring(ipAddress.IndexOf("/") + 1));
+               
+
+                // Calcula a máscara de sub-rede com base no CIDR
+                subnetMask = CidrToSubnetMask(cidr);
+                Debug.WriteLine($"CIDR: {cidr}, Mascara de rede: {subnetMask}");
+            }
         if (table is null)
         {
+
             var exportInfo = new ExportInfo
                 {
                     Id = ssid,
                     IP_Address = ipAddress,
+                    SubnetMask = subnetMask,
                     Default_Gateway = defaultGateway,
                     Network_Name = networkName
                 };
@@ -874,6 +895,7 @@
         else
         {
             table.IP_Address = ipAddress;
+            table.SubnetMask = subnetMask;
             table.Default_Gateway = defaultGateway;
             table.Network_Name = networkName;
             db.Update(table);
@@ -886,4 +908,3 @@
         return "";
     }
 }
-

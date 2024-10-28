@@ -665,7 +665,7 @@ body {
 
         #wifi-loader .text::after {
             color: var(--front-color);
-            animation: text-animation76 2.8s ease infinite;
+            animation: text-animation76 3.2s ease infinite;
             position: absolute;
             left: 0;
         }

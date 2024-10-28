@@ -229,6 +229,7 @@
     private bool IsRequiredSubnetMask;
     private bool IsRequiredAvailableIP;
     private string ssid = "";
+    private string bssid = "";
     private string gateway = "";
     private string localIP = "";
     private string availableIP = "";
@@ -483,7 +484,9 @@
         {
             await Task.Run(async () =>
    {
-       ssid = await NetworkService.GetCurrentSSID();
+       ssid = await NetworkService.GetInfoInterface("SSID");
+       bssid = await NetworkService.GetInfoInterface("BSSID");
+       Debug.WriteLine($"BSSID da rede {bssid}");
        // Verifica se a navegação ocorreu após a chamada assíncrona
        NavigationManager.LocationChanged += OnLocationChanged;
        if (isNavigatingAway) return;
@@ -505,8 +508,8 @@
            statusError = "Desconecte da rede Cuora Max e conecte na rede do seu estabelecimento";
            CleanInputs();
            await InvokeAsync(StateHasChanged);
-           await CallJavaScriptAfterRender();
-           isValid(true);
+           await InvokeAsync(CallJavaScriptAfterRender);
+           // isValid(true);
                 return;
             }
 
@@ -516,8 +519,8 @@
             {
                 Debug.WriteLine("Dados móveis estão ativados.");
                 statusError = "Desative sua conexão com os dados móveis.";
-                await CallJavaScriptAfterRender();
-                isValid(true);
+               await InvokeAsync(CallJavaScriptAfterRender);
+                // isValid(true);
                 return;
             }
             else
@@ -571,7 +574,7 @@
             Debug.WriteLine($"SSID: {ssid}");
 
             // Obtém o Gateway Padrão
-            gateway = NetworkService.GetDefaultGateway();
+            gateway = await NetworkService.GetDefaultGateway();
             Debug.WriteLine($"Gateway Padrão: {gateway}");
             
           

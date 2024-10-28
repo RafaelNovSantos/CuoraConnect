@@ -56,8 +56,8 @@
 
     <RowTemplate>
         <MudTd DataLabel="Imagem">
-         @*    <img style="width: 80px;
-    height: 80px;" src="/Images/producto-cuora-max-05.jpg" class="product-image" /> *@
+            <img  style="width: 80px;
+    height: 80px;" src="/Images/producto-cuora-max-05.jpg" class="product-image" />
         </MudTd>
 
         <MudTd DataLabel="Nome">@context.Id</MudTd>
@@ -106,7 +106,7 @@
         <MudTablePager PageSizeOptions="[5, 15, 25, 50, 100]"
                        
            
-         RowsPerPageString="Máximo de Equipamentos por página:"
+        RowsPerPageString="Máximo de Equipamentos por página:"
          
         />
     </PagerContent>
@@ -119,7 +119,7 @@
 
 <MudThemeProvider Theme="MyCustomTheme" />
 
-<!--<MudIconButton Icon="fas fa-database" Color="Color.Primary" OnClick="createDataBaseTest" />-->
+@*  <MudIconButton Icon="fas fa-database" Color="Color.Primary" OnClick="createDataBaseTest" /> *@
 
 <style>
     body {
@@ -244,32 +244,24 @@ flex: unset;
     public Origin TransformOrigin { get; set; } = Origin.TopCenter;
     public Origin AnchorOrigin { get; set; } = Origin.BottomLeft;
 
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override void OnInitialized()
     {
-        if (firstRender)
-        {
-            SetActiveMenu("tablecuoramax");
-            currentPage = NavigationManager.Uri;
-            Debug.WriteLine($"Página atual: {currentPage}");
-            
 
-            string dbPath = FileUploadService.pathDB();
+        string dbPath = FileUploadService.pathDB();
 
-            using var db = new SQLiteConnection(dbPath);
-            db.CreateTable<ExportInfo>();
+        using var db = new SQLiteConnection(dbPath);
+        db.CreateTable<ExportInfo>();
 
-            connectionBD();
+        connectionBD();
+        currentPage = NavigationManager.Uri;
+        Debug.WriteLine($"Página atual: {currentPage}");
 
 
+        SetActiveMenu("tablecuoramax");
 
-           
 
-        }
 
     }
-
-
 
     MudTheme MyCustomTheme = new MudTheme()
         {

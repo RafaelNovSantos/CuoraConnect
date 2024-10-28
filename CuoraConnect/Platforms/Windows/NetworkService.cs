@@ -10,13 +10,19 @@ namespace CuoraConnect.Platforms.Windows
 {
     public class NetworkService : INetworkService
     {
-        public string Bssid { get; }
-        public async Task<string> GetCurrentSSID()
+        public string nameinterface = "";
+        public string bssid = "";
+        public async Task<string> GetInfoInterface(string type)
         {
             return await Task.Run(() =>
             {
                 string ssid = string.Empty;
-                var process = new Process
+                int count = 1;
+                while (count <= 4)
+                {
+                    Debug.WriteLine($"Tentativa {count} de encontrar o SSID");
+                    count++;
+                    var process = new Process
                 {
                     StartInfo = new ProcessStartInfo
                     {
@@ -32,21 +38,69 @@ namespace CuoraConnect.Platforms.Windows
                 process.WaitForExit();
 
                 var lines = output.Split('\n');
-                foreach (var line in lines)
-                {
-                    if (line.Trim().StartsWith("SSID"))
+                    foreach (var line in lines)
                     {
-                        ssid = line.Split(':')[1].Trim();
-                        break;
+                        if (type == "SSID")
+                        {
+
+
+                            if (line.Trim().StartsWith("SSID"))
+                            {
+                                ssid = line.Split(':')[1].Trim();
+                                if (string.IsNullOrEmpty(ssid))
+                                {
+                                    continue;
+                                }
+                                else
+                                {
+                                    return ssid;
+                                }
+                            }
+                        }
+                        if (type == "BSSID")
+                        {
+
+                            if (line.Trim().StartsWith("BSSID"))
+                            {
+                                // Encontra o índice do primeiro ':'
+                                int index = line.IndexOf(':');
+
+                                if (index != -1) // Verifica se o ':' foi encontrado
+                                {
+                                    // Captura tudo que vem após o primeiro ':', removendo espaços em branco
+                                    bssid = line.Substring(index + 1).Trim();
+
+                                    // Remove os dois pontos do BSSID
+                                    bssid = bssid.Replace(":", string.Empty);
+                                    bssid = bssid.ToUpper();
+
+                                    if (!string.IsNullOrEmpty(bssid))
+                                    {
+                                        return bssid; // Retorna o BSSID completo
+                                    }
+                                }
+                            }
+
+                        }
+                        if (type == "NameInterface")
+                        {
+
+                            if (line.Trim().StartsWith("Nome") || line.Trim().StartsWith("Name") || line.Trim().StartsWith("Nombre"))
+                            {
+                                nameinterface = line.Split(':')[1].Trim();
+                                if (string.IsNullOrEmpty(nameinterface))
+                                {
+                                    continue;
+                                }
+                                else
+                                {
+                                    return nameinterface;
+                                }
+                            }
+                        }
                     }
                 }
-
-                for (int count = 3; ssid == "" && count <= 3;  GetCurrentSSID())
-                {
-                    count++;
-                }
-
-                return string.IsNullOrEmpty(ssid) ? "SSID Indisponível." : ssid;
+                return "SSID Indisponível.";
             });
         }
 
@@ -78,7 +132,7 @@ namespace CuoraConnect.Platforms.Windows
                 return "IP Não Encontrado";
             }
 
-            string gateway = GetDefaultGateway();
+            string gateway = GetDefaultGateway().Result;
             if (gateway == "Gateway padrão não encontrado.")
             {
                 return "Gateway padrão não encontrado.";
@@ -118,22 +172,47 @@ namespace CuoraConnect.Platforms.Windows
             return "Nenhum IP disponível encontrado.";
         }
 
-
-        public string GetDefaultGateway()
+        // Método para obter o gateway do Wi-Fi com base no SSID
+        public async Task<string> GetDefaultGateway()
         {
-            foreach (var networkInterface in NetworkInterface.GetAllNetworkInterfaces())
+            string targetSSID = await GetInfoInterface("NameInterface");
+
+
+            return await Task.Run(() =>
             {
-                var properties = networkInterface.GetIPProperties();
-                foreach (var gateway in properties.GatewayAddresses)
+                int count = 0;
+                while (count <= 4)
                 {
-                    if (gateway.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                    
+                    Debug.WriteLine($"Tentativa {count} de verificar Gateway do roteador");
+                count++;
+                foreach (var networkInterface in NetworkInterface.GetAllNetworkInterfaces())
+                {
+                    // Verifica se a interface é Wi-Fi e está ativa
+                    if (networkInterface.NetworkInterfaceType == NetworkInterfaceType.Wireless80211 &&
+                        networkInterface.OperationalStatus == OperationalStatus.Up)
                     {
-                        return gateway.Address.ToString();
+                        var properties = networkInterface.GetIPProperties();
+
+                        // Compara o SSID da interface Wi-Fi com o SSID desejado
+                        if (networkInterface.Name == targetSSID)
+                        {
+                            foreach (var gateway in properties.GatewayAddresses)
+                            {
+                                if (gateway.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                                {
+                                    return gateway.Address.ToString(); // Retorna o gateway IPv4
+                                }
+                            }
+                        }
                     }
                 }
-            }
-            return "Gateway padrão não encontrado.";
+                }
+                return "Gateway não encontrado para o SSID especificado.";
+            });
         }
+    
+   
 
         public List<string> GetAvailableWifiNetworks()
         {
@@ -166,30 +245,30 @@ namespace CuoraConnect.Platforms.Windows
             return availableNetworks.Count > 0 ? availableNetworks : new List<string> { "Nenhuma rede disponível." };
         }
 
-        public async Task<string> GetSubnetMask()
+public async Task<string> GetSubnetMask()
+{
+    return await Task.Run(() =>
+    {
+        foreach (var networkInterface in NetworkInterface.GetAllNetworkInterfaces())
         {
-            return await Task.Run(() =>
+            if (networkInterface.OperationalStatus == OperationalStatus.Up &&
+                networkInterface.NetworkInterfaceType == NetworkInterfaceType.Wireless80211) // Verifica se é Wi-Fi
             {
-                foreach (var networkInterface in NetworkInterface.GetAllNetworkInterfaces())
+                foreach (var ipInfo in networkInterface.GetIPProperties().UnicastAddresses)
                 {
-                    if (networkInterface.OperationalStatus == OperationalStatus.Up &&
-                        networkInterface.NetworkInterfaceType != NetworkInterfaceType.Loopback &&
-                        networkInterface.NetworkInterfaceType != NetworkInterfaceType.Tunnel)
+                    if (ipInfo.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
                     {
-                        foreach (var ipInfo in networkInterface.GetIPProperties().UnicastAddresses)
-                        {
-                            if (ipInfo.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
-                            {
-                                string subnetMask = ipInfo.IPv4Mask.ToString();
-                                Debug.WriteLine($"Máscara de Sub-rede encontrada: {subnetMask}");
-                                return subnetMask; // Retorna a máscara de sub-rede
-                            }
-                        }
+                        string subnetMask = ipInfo.IPv4Mask.ToString();
+                        Debug.WriteLine($"Máscara de Sub-rede Wi-Fi encontrada: {subnetMask}");
+                        return subnetMask; // Retorna a máscara de sub-rede
                     }
                 }
-                return "Máscara de rede não encontrada."; // Retorna mensagem se não encontrar
-            });
+            }
         }
+        return "Máscara de rede Wi-Fi não encontrada."; // Retorna mensagem se não encontrar
+    });
+}
+
 
 
 
@@ -262,6 +341,8 @@ namespace CuoraConnect.Platforms.Windows
                             // Desconecta o adaptador
                             adapter.Disconnect();
                             Debug.WriteLine($"Desconectado do adaptador {adapter.NetworkAdapter.NetworkAdapterId}.");
+
+                           
 
                             
 
