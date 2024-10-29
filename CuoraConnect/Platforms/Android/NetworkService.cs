@@ -23,13 +23,6 @@ namespace CuoraConnect.Platforms.Android
 
 
 
-        // Método para limpar o cache do localStorage e sessionStorage
-        public async Task ClearCacheAsync()
-        {
-            await _jsRuntime.InvokeVoidAsync("localStorage.clear");
-            await _jsRuntime.InvokeVoidAsync("sessionStorage.clear");
-        }
-
         public async Task<string> GetDefaultGateway()
         {
            
@@ -416,7 +409,7 @@ namespace CuoraConnect.Platforms.Android
 
                     // Reinicia o WifiManager
                     await RestartWifiManager(wifiManager);
-                    await ClearCacheAsync();
+
                     // Verifica se o SSID da rede escaneada é igual ao SSID conectado
                     if (network.Ssid.Equals(connectedSsid))
                     {
@@ -446,20 +439,16 @@ namespace CuoraConnect.Platforms.Android
             // Desativa o Wi-Fi
             wifiManager.SetWifiEnabled(false);
 
-            // Aguarda até que o Wi-Fi seja realmente desativado (pode levar um tempo)
-            while (wifiManager.IsWifiEnabled)
-            {
-                await Task.Delay(500); // Verifica a cada 500ms
-            }
+
+              
+            
 
             // Ativa o Wi-Fi novamente
             wifiManager.SetWifiEnabled(true);
 
-            // Aguarda até que o Wi-Fi seja ativado
-            while (!wifiManager.IsWifiEnabled)
-            {
-                await Task.Delay(500); // Verifica a cada 500ms
-            }
+
+                
+          
         }
 
 
