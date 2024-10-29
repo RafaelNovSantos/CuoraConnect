@@ -305,7 +305,7 @@
             await Task.Delay(150);
             await GetNetworkInfo();
 
-         
+
         }
     }
 
@@ -479,7 +479,7 @@
         ssid = "";
 
         Debug.WriteLine("Tentando obter informações da rede...");
-       
+
         try
         {
             await Task.Run(async () =>
@@ -503,54 +503,54 @@
        }
        ssidMinusculo = ssid.ToLower();
 
-       if (ssidMinusculo.Contains("xpicowifi") || ssidMinusculo.Contains("cuora")){
+       if (ssidMinusculo.Contains("xpicowifi") || ssidMinusculo.Contains("cuora")) {
 
            statusError = "Desconecte da rede Cuora Max e conecte na rede do seu estabelecimento";
            CleanInputs();
            await InvokeAsync(StateHasChanged);
            await InvokeAsync(CallJavaScriptAfterRender);
            // isValid(true);
-                return;
-            }
+           return;
+       }
 
 
-            bool isMobileDataEnabled = NetworkService.IsMobileDataEnabled();
-            if (isMobileDataEnabled)
-            {
-                Debug.WriteLine("Dados móveis estão ativados.");
-                statusError = "Desative sua conexão com os dados móveis.";
-               await InvokeAsync(CallJavaScriptAfterRender);
-                // isValid(true);
-                return;
-            }
-            else
-            {
-                Debug.WriteLine("Dados móveis estão desativados.");
-            }
+       bool isMobileDataEnabled = NetworkService.IsMobileDataEnabled();
+       if (isMobileDataEnabled)
+       {
+           Debug.WriteLine("Dados móveis estão ativados.");
+           statusError = "Desative sua conexão com os dados móveis.";
+           await InvokeAsync(CallJavaScriptAfterRender);
+           // isValid(true);
+           return;
+       }
+       else
+       {
+           Debug.WriteLine("Dados móveis estão desativados.");
+       }
 
-            // Verifica se a navegação ocorreu após a chamada assíncrona
-            NavigationManager.LocationChanged += OnLocationChanged;
-            if (isNavigatingAway) return;
+       // Verifica se a navegação ocorreu após a chamada assíncrona
+       NavigationManager.LocationChanged += OnLocationChanged;
+       if (isNavigatingAway) return;
 
 
-            string connected5g = await NetworkService.IsConnectedTo5G();
-            if (connected5g == "Conectado a 5 GHz")
-            {
-                Debug.WriteLine("Conectado no 5g");
-                // isValidSSID false mostra a mensagem de erro em caso de 5g habilitado no wi-fi
-                isValidSSID = false;
-                // IsRequiredSSID false oculta a borda verde em caso de 5g habilitado no wi-fi
-                IsRequiredSSID = false;
-                statusError = "Não é possível configurar em redes Wi-Fi 5g, conecte em uma rede Wi-Fi 2.4g";
-                CallJavaScriptAfterRender();
+       string connected5g = await NetworkService.IsConnectedTo5G();
+       if (connected5g == "Conectado a 5 GHz")
+       {
+           Debug.WriteLine("Conectado no 5g");
+           // isValidSSID false mostra a mensagem de erro em caso de 5g habilitado no wi-fi
+           isValidSSID = false;
+           // IsRequiredSSID false oculta a borda verde em caso de 5g habilitado no wi-fi
+           IsRequiredSSID = false;
+           statusError = "Não é possível configurar em redes Wi-Fi 5g, conecte em uma rede Wi-Fi 2.4g";
+           CallJavaScriptAfterRender();
 
-                // return;
-            }
-            else if (connected5g == "Conectado a 2.4 GHz")
-            {
-                IsRequiredSSID = true;
-                isValidSSID = true;
-                Debug.WriteLine("Conexão 2.4g");
+           // return;
+       }
+       else if (connected5g == "Conectado a 2.4 GHz")
+       {
+           IsRequiredSSID = true;
+           isValidSSID = true;
+           Debug.WriteLine("Conexão 2.4g");
        }
        else if (connected5g == "Nenhuma rede conectada")
        {
@@ -560,22 +560,25 @@
            CallJavaScriptAfterRender();
            return;
        }
-            else
-            {
-                statusError = $"Interface de rede: {connected5g}";
-            }
-   
-            // Verifica se a navegação ocorreu após a chamada assíncrona
-            NavigationManager.LocationChanged += OnLocationChanged;
-            if (isNavigatingAway) return;
+       else
+       {
+           statusError = $"Interface de rede: {connected5g}";
+       }
 
-            Debug.WriteLine("Serviço de rede obtido.");
+       // Verifica se a navegação ocorreu após a chamada assíncrona
+       NavigationManager.LocationChanged += OnLocationChanged;
+       if (isNavigatingAway) return;
 
-            // Obtém o SSID
-            Debug.WriteLine($"SSID: {ssid}");
+       Debug.WriteLine("Serviço de rede obtido.");
 
-            // Obtém o Gateway Padrão
-            gateway = await NetworkService.GetDefaultGateway();
+       // Obtém o SSID
+       Debug.WriteLine($"SSID: {ssid}");
+
+       // Obtém o Gateway Padrão
+       gateway = await NetworkService.GetDefaultGateway();
+       if (gateway == "Gateway não encontrado para o SSID especificado."){
+           statusAlert = "Gateway não encontrado, clique em obter informações da rede para tentar novamente."
+       }
             Debug.WriteLine($"Gateway Padrão: {gateway}");
             
           

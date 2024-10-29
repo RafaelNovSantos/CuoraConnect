@@ -88,14 +88,11 @@ namespace CuoraConnect.Platforms.Windows
                             if (line.Trim().StartsWith("Nome") || line.Trim().StartsWith("Name") || line.Trim().StartsWith("Nombre"))
                             {
                                 nameinterface = line.Split(':')[1].Trim();
-                                if (string.IsNullOrEmpty(nameinterface))
-                                {
-                                    continue;
-                                }
-                                else
+                                if (!string.IsNullOrEmpty(nameinterface))
                                 {
                                     return nameinterface;
                                 }
+                            
                             }
                         }
                     }
@@ -288,7 +285,7 @@ public async Task<string> GetSubnetMask()
 
             if (wifiAdapters == null || wifiAdapters.Count == 0)
             {
-                Debug.WriteLine("Nenhum adaptador Wi-Fi encontrado. Tentando novamente...");
+                Debug.WriteLine("Nenhum adaptador Wi-Fi encontrado.");
 ;
                 await Task.Delay(1000); // Espera antes de tentar novamente
 
