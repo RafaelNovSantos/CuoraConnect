@@ -534,7 +534,13 @@
 
 
        string connected5g = await NetworkService.IsConnectedTo5G();
-       if (connected5g == "Conectado a 5 GHz")
+       if (connected5g == "Conectado a 2.4 GHz")
+       {
+           IsRequiredSSID = true;
+           isValidSSID = true;
+           Debug.WriteLine("Conexão 2.4g");
+       }
+       else if (connected5g == "Conectado a 5 GHz")
        {
            Debug.WriteLine("Conectado no 5g");
            // isValidSSID false mostra a mensagem de erro em caso de 5g habilitado no wi-fi
@@ -546,12 +552,7 @@
 
            // return;
        }
-       else if (connected5g == "Conectado a 2.4 GHz")
-       {
-           IsRequiredSSID = true;
-           isValidSSID = true;
-           Debug.WriteLine("Conexão 2.4g");
-       }
+       
        else if (connected5g == "Nenhuma rede conectada")
        {
            ssid = "";
@@ -576,8 +577,10 @@
 
        // Obtém o Gateway Padrão
        gateway = await NetworkService.GetDefaultGateway();
-       if (gateway == "Gateway não encontrado para o SSID especificado."){
-           statusAlert = "Gateway não encontrado, clique em obter informações da rede para tentar novamente."
+       if (gateway == "Gateway não encontrado para o SSID especificado." || gateway == "Gateway padrão não encontrado.")
+       {
+           gateway = "";
+           statusAlert = "Gateway não encontrado, clique em obter informações da rede para tentar novamente.";
        }
             Debug.WriteLine($"Gateway Padrão: {gateway}");
             
@@ -598,11 +601,15 @@
             
 
             // Obtém o IP disponível
-            availableIP = NetworkService.GetAvailableIPAddress();
+            availableIP = await NetworkService.GetAvailableIPAddress();
             Debug.WriteLine($"IP Disponível: {availableIP}");
           
-         
-            
+       if (availableIP == "Não foi possível encontrar IP disponível na rede.")
+       {
+           availableIP = "";
+           statusAlert = "Não foi possível encontrar IP disponível na rede, clique em obter informações da rede para tentar novamente.";
+       }
+    
             
             
 

@@ -121,8 +121,9 @@ namespace CuoraConnect.Platforms.Windows
             return "IP Não Encontrado";
         }
 
-        public string GetAvailableIPAddress()
+        public async Task<string> GetAvailableIPAddress()
         {
+            await Task.Delay(1000);
             string localIPAddress = GetLocalIPAddress();
             if (localIPAddress == "IP Não Encontrado")
             {
@@ -138,7 +139,7 @@ namespace CuoraConnect.Platforms.Windows
             string[] gatewayParts = gateway.Split('.');
             if (gatewayParts.Length < 4)
             {
-                return "Gateway inválido.";
+                return "Não foi possível encontrar IP disponível na rede.";
             }
 
             string subnetPrefix = $"{gatewayParts[0]}.{gatewayParts[1]}.{gatewayParts[2]}.";
@@ -152,7 +153,7 @@ namespace CuoraConnect.Platforms.Windows
                     try
                     {
                         Ping ping = new Ping();
-                        PingReply reply = ping.Send(ip, 100); // Timeout de 100ms
+                        PingReply reply = ping.Send(ip, 200); // Timeout de 100ms
 
                         if (reply.Status != IPStatus.Success)
                         {
@@ -180,9 +181,9 @@ namespace CuoraConnect.Platforms.Windows
                 int count = 0;
                 while (count <= 4)
                 {
-                    
+                    count++;
                     Debug.WriteLine($"Tentativa {count} de verificar Gateway do roteador");
-                count++;
+                
                 foreach (var networkInterface in NetworkInterface.GetAllNetworkInterfaces())
                 {
                     // Verifica se a interface é Wi-Fi e está ativa
@@ -326,10 +327,14 @@ public async Task<string> GetSubnetMask()
 
                     foreach (var adapter in wifiAdapters)
                     {
-                       
+                        int countAdapterReconnect = 0;
+                        bool sucessAdapterReconnect = false;
+                        while (countAdapterReconnect <= 4 && sucessAdapterReconnect == false) {
+                            countAdapterReconnect++;
+                            Debug.WriteLine($"Tentativa {countAdapterReconnect} de reconectar no Wi-Fi.");
 
-                        // Encontra a rede desejada (SSID) entre as redes disponíveis no adaptador atual
-                        var targetNetwork = adapter.NetworkReport.AvailableNetworks
+                            // Encontra a rede desejada (SSID) entre as redes disponíveis no adaptador atual
+                            var targetNetwork = adapter.NetworkReport.AvailableNetworks
                             .FirstOrDefault(network => network.Ssid.Equals(connectedSsid, StringComparison.OrdinalIgnoreCase));
 
                         // Se a rede estiver disponível no adaptador atual
@@ -349,6 +354,7 @@ public async Task<string> GetSubnetMask()
                             if (connectionResult.ConnectionStatus == WiFiConnectionStatus.Success)
                             {
                                 Debug.WriteLine($"Reconectado à rede {connectedSsid} com sucesso no adaptador {adapter.NetworkAdapter.NetworkAdapterId}.");
+                                    sucessAdapterReconnect = true;
                             }
                             else
                             {
@@ -360,7 +366,7 @@ public async Task<string> GetSubnetMask()
                             Debug.WriteLine($"Rede {connectedSsid} não encontrada no adaptador {adapter.NetworkAdapter.NetworkAdapterId}");
                         }
 
-                     
+                        }
 
                         foreach (var network in adapter.NetworkReport.AvailableNetworks)
                         {
@@ -378,8 +384,8 @@ public async Task<string> GetSubnetMask()
                             }
                         }
                     }
+                    
 
-                  
                 }
 
                 catch (Exception ex)

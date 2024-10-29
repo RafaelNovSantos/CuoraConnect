@@ -54,7 +54,7 @@ namespace CuoraConnect.Platforms.Android
                     return gateway;
                 }
             }
-            return "Gateway padrão não encontrado.";
+            return "Não foi possível encontrar IP disponível na rede.";
         }
 
 
@@ -260,8 +260,9 @@ namespace CuoraConnect.Platforms.Android
             return availableNetworks;
         }
 
-        public string GetAvailableIPAddress()
+        public async Task<string> GetAvailableIPAddress()
         {
+           await Task.Delay(2000);
             string localIPAddress = GetLocalIPAddress();
             if (localIPAddress == "IP Não Encontrado")
             {
@@ -282,13 +283,13 @@ namespace CuoraConnect.Platforms.Android
                         int count = 0;
                         int failedPingCount = 0;
 
-                        while (count < 5)
+                        while (count < 20)
                         {
                             count++;
                             try
                             {
                                 Ping ping = new Ping();
-                                PingReply reply = ping.Send(ip, 100); // Timeout de 100ms
+                                PingReply reply = ping.Send(ip, 200); // Timeout de 100ms
 
                                 // Se o ping for bem-sucedido, o IP está em uso
                                 if (reply.Status == IPStatus.Success)
@@ -301,8 +302,8 @@ namespace CuoraConnect.Platforms.Android
                                     failedPingCount++;
                                 }
 
-                                // Se falhou nos 5 pings, o IP pode ser considerado disponível
-                                if (failedPingCount == 5)
+                                // Se falhou nos 10 pings, o IP pode ser considerado disponível
+                                if (failedPingCount == 20)
                                 {
                                     return ip; // IP está disponível
                                 }
@@ -310,7 +311,7 @@ namespace CuoraConnect.Platforms.Android
                             catch
                             {
                                 failedPingCount++;
-                                if (failedPingCount == 5)
+                                if (failedPingCount == 20)
                                 {
                                     return ip; // IP está disponível mesmo com exceção
                                 }
@@ -437,14 +438,14 @@ namespace CuoraConnect.Platforms.Android
         private async Task RestartWifiManager(WifiManager wifiManager)
         {
             // Desativa o Wi-Fi
-            wifiManager.SetWifiEnabled(false);
+             wifiManager.SetWifiEnabled(false);
 
 
-              
-            
+
+             wifiManager.Reassociate();
 
             // Ativa o Wi-Fi novamente
-            wifiManager.SetWifiEnabled(true);
+             wifiManager.SetWifiEnabled(true);
 
 
                 

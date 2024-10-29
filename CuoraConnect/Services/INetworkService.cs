@@ -4,7 +4,7 @@
     {
         Task<string> GetInfoInterface(string type);
         string GetLocalIPAddress();
-        string GetAvailableIPAddress();
+        Task<string> GetAvailableIPAddress();
         Task<string> GetDefaultGateway();
         List<string> GetAvailableWifiNetworks();
         Task<string> GetSubnetMask();
