@@ -1,22 +1,34 @@
 ﻿using Android.Content;
 using Android.Net;
 using Android.Net.Wifi;
+using CuoraConnect.Components.Pages;
 using CuoraConnect.Services;
+using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using System.Diagnostics;
-using CuoraConnect.Components.Pages;
-using CuoraConnect.Components.DialogMudBlazor;
 using System.Net.NetworkInformation;
 using Application = Android.App.Application;
-using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 
 [assembly: Dependency(typeof(CuoraConnect.Platforms.Android.NetworkService))]
 namespace CuoraConnect.Platforms.Android
 {
-   
+
     public class NetworkService : INetworkService
     {
         public string nameinterface = "";
+
+        private readonly IJSRuntime _jsRuntime;
+
+
+
+
+        // Método para limpar o cache do localStorage e sessionStorage
+        public async Task ClearCacheAsync()
+        {
+            await _jsRuntime.InvokeVoidAsync("localStorage.clear");
+            await _jsRuntime.InvokeVoidAsync("sessionStorage.clear");
+        }
 
         public async Task<string> GetDefaultGateway()
         {
@@ -136,15 +148,7 @@ namespace CuoraConnect.Platforms.Android
 
         public async Task<bool> ConnectToWifiAsync(string ssid, string password)
         {
-            //var status = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
-            //if (status != PermissionStatus.Granted)
-            //{
-            //    status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
-            //    if (status != PermissionStatus.Granted)
-            //    {
-            //        return false;
-            //    }
-            //}
+
 
             
 
@@ -206,11 +210,6 @@ namespace CuoraConnect.Platforms.Android
             }
         }
 
-        [Inject]
-        IDialogService DialogService
-        {
-            get; set;
-        }
 
 
         public async Task<PermissionStatus> CheckAndRequestLocationPermission()
@@ -221,7 +220,7 @@ namespace CuoraConnect.Platforms.Android
             if (status == PermissionStatus.Granted)
                 return status;
 
-            // Depois de mostrar o diálogo, você pode solicitar a permissão
+            // solicita a permissão
             status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
 
           
@@ -366,7 +365,8 @@ namespace CuoraConnect.Platforms.Android
 
 
         public async Task<string> IsConnectedTo5G()
-        { 
+        {
+            await Task.Delay(1000);
             // Obtém o contexto da aplicação
             var context = Application.Context;
 
@@ -374,7 +374,7 @@ namespace CuoraConnect.Platforms.Android
             var wifiManager = (WifiManager)context.GetSystemService(Context.WifiService);
 
 
-            await Task.Delay(1000);
+            
             // Reinicia o WifiManager
             RestartWifiManager(wifiManager);
 
@@ -395,8 +395,7 @@ namespace CuoraConnect.Platforms.Android
                 return "Não foi possível obter a interface de rede."; // Erro ao obter o WifiManager
             }
 
-            // Reinicia o WifiManager
-            RestartWifiManager(wifiManager);
+
 
             // Inicia a varredura das redes
             wifiManager.StartScan();
@@ -406,15 +405,18 @@ namespace CuoraConnect.Platforms.Android
           
             int countVerific5g = 0;
 
-            while (countVerific5g <= 3)
+            while (countVerific5g <= 6)
             {
+                await Task.Delay(1000);
                 countVerific5g++;
                 Debug.WriteLine($"Tentativa {countVerific5g} de verificar conexão 2.4g ");
 
                 foreach (var network in wifiManager.ScanResults)
                 {
-                    
 
+                    // Reinicia o WifiManager
+                    await RestartWifiManager(wifiManager);
+                    await ClearCacheAsync();
                     // Verifica se o SSID da rede escaneada é igual ao SSID conectado
                     if (network.Ssid.Equals(connectedSsid))
                     {
@@ -436,16 +438,30 @@ namespace CuoraConnect.Platforms.Android
 
 
 
-        // Método para reiniciar o WifiManager
-        private void RestartWifiManager(WifiManager wifiManager)
+    
+
+        // Método para reiniciar o WifiManager de forma assíncrona
+        private async Task RestartWifiManager(WifiManager wifiManager)
         {
             // Desativa o Wi-Fi
             wifiManager.SetWifiEnabled(false);
-            Task.Delay(500).Wait(); // Aguarda um momento para garantir que o Wi-Fi seja desligado
+
+            // Aguarda até que o Wi-Fi seja realmente desativado (pode levar um tempo)
+            while (wifiManager.IsWifiEnabled)
+            {
+                await Task.Delay(500); // Verifica a cada 500ms
+            }
 
             // Ativa o Wi-Fi novamente
             wifiManager.SetWifiEnabled(true);
+
+            // Aguarda até que o Wi-Fi seja ativado
+            while (!wifiManager.IsWifiEnabled)
+            {
+                await Task.Delay(500); // Verifica a cada 500ms
+            }
         }
+
 
 
         public bool IsMobileDataEnabled()

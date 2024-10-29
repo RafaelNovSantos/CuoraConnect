@@ -532,6 +532,9 @@
             NavigationManager.LocationChanged += OnLocationChanged;
             if (isNavigatingAway) return;
 
+       await JSRuntime.InvokeVoidAsync("localStorage.clear");
+       await JSRuntime.InvokeVoidAsync("sessionStorage.clear");
+
             string connected5g = await NetworkService.IsConnectedTo5G();
             if (connected5g == "Conectado a 5 GHz")
             {
