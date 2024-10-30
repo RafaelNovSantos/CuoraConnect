@@ -16,11 +16,14 @@
 @using System.Text.RegularExpressions
 @using Microsoft.Maui.ApplicationModel;
 @using System.Diagnostics
+@using CuoraConnect.Models.NetworkInfo;
+@using System.ComponentModel
+@inject IFileUploadService FileUploadService
 @inject IJSRuntime JSRuntime
+@inject INetworkService NetworkService
 @inject NavigationManager NavigationManager
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
-@inject IFileUploadService FileUploadService
 @inject IJSRuntime JS
 
 

@@ -91,7 +91,7 @@ namespace CuoraConnect.Platforms.Android
             int count = 1;
             while (count <= 4)
             {
-                Debug.WriteLine($"Tentativa {count} de encontrar o SSID");
+                Debug.WriteLine($"Tentativa {count} de encontrar {type}");
                 count++;
 
                 // Obtém informações sobre a conexão
@@ -345,7 +345,6 @@ namespace CuoraConnect.Platforms.Android
                             if (ipInfo.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
                             {
                                 string subnetMask = ipInfo.IPv4Mask.ToString();
-                                Debug.WriteLine($"Máscara de Sub-rede encontrada: {subnetMask}");
                                 return subnetMask; // Retorna a máscara de sub-rede
                             }
                         }

@@ -238,7 +238,7 @@ main {
     }
 
 ol {
-    display: grid;
+/*    display: grid;*/
     justify-content: center;
     list-style: none;
     counter-reset: list;

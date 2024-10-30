@@ -20,7 +20,7 @@ namespace CuoraConnect.Platforms.Windows
                 int count = 1;
                 while (count <= 4)
                 {
-                    Debug.WriteLine($"Tentativa {count} de encontrar o SSID");
+                    Debug.WriteLine($"Tentativa {count} de encontrar {type}");
                     count++;
                     var process = new Process
                 {
@@ -59,7 +59,6 @@ namespace CuoraConnect.Platforms.Windows
                         }
                         if (type == "BSSID")
                         {
-
                             if (line.Trim().StartsWith("BSSID"))
                             {
                                 // Encontra o índice do primeiro ':'

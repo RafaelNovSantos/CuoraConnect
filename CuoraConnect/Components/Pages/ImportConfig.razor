@@ -309,7 +309,7 @@
                 }
                 else
                 {
-                    statusError = "Erro ao enviar configuração. Verifique a conexão.";
+                    statusError = "Erro ao extrair configuração. Verifique a conexão.";
                 }
                 StateHasChanged();
             }
@@ -318,14 +318,14 @@
                 // Verifica se a mensagem de exceção contém a string específica
                 if (ex.Message.Contains("An error occurred while sending the request"))
                 {
-                    statusSuccess = "Cuora Max configurada com sucesso, reinicie sua balança!";
+                    statusSuccess = "Informações da balança extraídas com sucesso, vá para a tela de Gerenciar Equipamentos para visualizar.";
                     Debug.WriteLine($"Resposta do servidor (An error occurred while sending the request): {ex.Message}");
                     StateHasChanged();
                 }
                 else if (ex.Message.Contains("Object reference not set to an instance of an object.") && sendReq == true)
                 {
                     // Para outros tipos de exceções
-                    statusSuccess = "Configuração enviada para a balança com sucesso! Reinicie sua balança para atualizar a configuração.";
+                    statusSuccess = "Informações da balança extraídas com sucesso, vá para a tela de Gerenciar Equipamentos para visualizar.";
                     Debug.WriteLine($"Resposta do servidor (Object reference not set to an instance of an object.): {ex.Message}");
                     StateHasChanged();
                 }
@@ -336,8 +336,8 @@
                 }
                 else
                 {
-                    Debug.WriteLine($"Erro ao enviar configuração (Exception ex): {ex.Message}");
-                    statusMessage = $"Erro ao enviar configuração (Exception ex): {ex.Message}";
+                    Debug.WriteLine($"Erro ao extrair configuração (Exception ex): {ex.Message}");
+                    statusMessage = $"Erro ao extrair configuração (Exception ex): {ex.Message}";
                     StateHasChanged();
                 }
 
@@ -490,13 +490,13 @@
                     }
                     else if (ex.Message.Contains("The operation has timed out."))
                     {
-                        statusSuccess = "Cuora Max configurada com sucesso, reinicie sua balança!";
+                        statusSuccess = "Informações da balança extraídas com sucesso, vá para a tela de Gerenciar Equipamentos para visualizar.";
                         Debug.WriteLine($"Resposta do servidor (The operation has timed out.): {ex.Message}");
                         StateHasChanged();
                     }
                     else if (ex.Message.Contains("An error occurred while sending the request"))
                     {
-                        statusSuccess = "Cuora Max configurada com sucesso, reinicie sua balança!";
+                        statusSuccess = "Informações da balança extraídas com sucesso, vá para a tela de Gerenciar Equipamentos para visualizar.";
                         Debug.WriteLine($"Resposta do servidor (An error occurred while sending the request): {ex.Message}");
                         StateHasChanged();
                     }
@@ -565,7 +565,7 @@
             return values;
         }
 
-        // Função para realizar a autenticação digest com MD5 e enviar o arquivo
+        // Função para realizar a autenticação digest com MD5 e extrair o arquivo
         async Task<HttpWebResponse> DigestAuthWithFile(string urlString, string username, string password)
         {
             Debug.WriteLine($"Iniciando autenticação Digest para URL: {urlString}");
@@ -641,7 +641,7 @@
 
             Debug.WriteLine($"Cabeçalho Authorization montado: {authValue}");
 
-            // Cria a nova conexão para enviar o arquivo com autenticação
+            // Cria a nova conexão para extrair o arquivo com autenticação
             request = (HttpWebRequest)WebRequest.Create(url);
             request.Method = "POST";
             request.Headers["Authorization"] = authValue;
@@ -689,7 +689,7 @@
                     // Verifica se o código de status da resposta é 200 (OK)
                     if (response.StatusCode == HttpStatusCode.OK)
                     {
-                        statusSuccess = "Cuora Max configurada com sucesso, reinicie sua balança!";
+                        statusSuccess = "Informações da balança extraídas com sucesso, vá para a tela de Gerenciar Equipamentos para visualizar.";
                         Debug.WriteLine($"Resposta do servidor: {responseContent}");
                         StateHasChanged();
 
@@ -773,7 +773,7 @@
 
         try
         {
-            Debug.WriteLine($"Tentando enviar arquivo para {url}...");
+            Debug.WriteLine($"Tentando extrair arquivo para {url}...");
             var response = await DigestAuthWithFile(url, username, password);
 
             // Verifica se o código de status da resposta é 401 (Unauthorized)
@@ -816,8 +816,8 @@
                                 }
                             }
                         }
-                        Debug.WriteLine($"Erro ao enviar configuração: {webEx.Message}, Resposta: {errorResponse}");
-                        statusMessage = $"Erro ao enviar configuração: {webEx.Message}, Resposta: {errorResponse}";
+                        Debug.WriteLine($"Erro ao extrair configuração: {webEx.Message}, Resposta: {errorResponse}");
+                        statusMessage = $"Erro ao extrair configuração: {webEx.Message}, Resposta: {errorResponse}";
                         StateHasChanged();
                     }
                 }
@@ -829,13 +829,13 @@
             }
             else if (webEx.Message == "An error occurred while sending the request.")
             {
-                Debug.WriteLine($"Erro ao enviar configuração: {webEx.Message}");
-                statusError = "Erro ao enviar a configuração para a balança, verifique se está conectado no Wi-Fi correto";
+                Debug.WriteLine($"Erro ao extrair configuração: {webEx.Message}");
+                statusError = "Erro ao extrair a configuração para a balança, verifique se está conectado no Wi-Fi correto";
                 StateHasChanged();
             }
             else{
-                Debug.WriteLine($"Erro ao enviar configuração: {webEx.Message}");
-                statusMessage = $"Erro ao enviar configuração: {webEx.Message}";
+                Debug.WriteLine($"Erro ao extrair configuração: {webEx.Message}");
+                statusMessage = $"Erro ao extrair configuração: {webEx.Message}";
                 StateHasChanged();
             }
         }
@@ -901,7 +901,7 @@
             db.Update(table);
         }
 
-        statusSuccess = "Informações de rede salvas.";
+        statusSuccess = "Informações da balança extraídas com sucesso, vá para a tela de Gerenciar Equipamentos para visualizar.";
         CallJavaScriptAfterRender();
         StateHasChanged();
         Debug.WriteLine("Informações de rede salvas.");

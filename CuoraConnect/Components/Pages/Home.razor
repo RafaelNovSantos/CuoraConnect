@@ -1,4 +1,4 @@
-﻿@page "/"
+﻿@page "/f"
 @using System.Reflection
 @using System.IO
 @using System.Diagnostics
@@ -202,7 +202,29 @@
         return "";
     }
 
+    public async Task ShowLocationPermissionDialog()
+    {
+        var options = new DialogOptions { CloseOnEscapeKey = true };
+
+        var dialogReference = await DialogService.ShowAsync<LocationPermissionDialog>("Permissão de Localização", options);
+
+    }
+
     private async Task<string> DataMobileInfo() {
+        // Verifica se está rodando no Android
+        if (DeviceInfo.Platform == DevicePlatform.Android)
+        {
+            var statusPermission = await NetworkService.CheckAndRequestLocationPermission();
+            Debug.WriteLine($"Status Permissão de localização: {statusPermission}");
+
+            // Se a permissão não for concedida, mostra o diálogo
+            if (statusPermission != PermissionStatus.Granted)
+            {
+                ShowLocationPermissionDialog();
+                return "";
+            }
+        }
+
         loader
     = true;
         CallJavaScriptAfterRender();

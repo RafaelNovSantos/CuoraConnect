@@ -10350,8 +10350,8 @@ ul {
 }
 
 .mud-typography-caption {
-    font-size: var(--mud-typography-caption-size);
-    font-family: var(--mud-typography-caption-family);
+/*    font-size: var(--mud-typography-caption-size);
+    font-family: var(--mud-typography-caption-family);*/
     font-weight: var(--mud-typography-caption-weight);
     line-height: var(--mud-typography-caption-lineheight);
     letter-spacing: var(--mud-typography-caption-letterspacing);
@@ -13264,11 +13264,15 @@ ul {
         display: contents
     }
 
-    .mud-stepper .mud-stepper-nav .mud-step {
-        padding: 24px;
-        position: relative;
-        cursor: default
-    }
+.mud-stepper .mud-stepper-nav .mud-step {
+    border-radius: 10px;
+    padding-top: 10px;
+    margin: 37px 26px 20px 28px;
+    position: relative;
+    cursor: default;
+    position: relative;
+    cursor: default
+}
 
         .mud-stepper .mud-stepper-nav .mud-step.mud-ripple {
             transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,border 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
@@ -13324,8 +13328,11 @@ ul {
             }
 
             .mud-stepper .mud-stepper-nav .mud-step .mud-step-label .mud-step-label-content-title {
-                line-height: var(--mud-typography-body2-lineheight)
-            }
+                
+    font-weight: bold;
+    font-size: 17px;
+    line-height: var(--mud-typography-body2-lineheight)
+}
 
         .mud-stepper .mud-stepper-nav .mud-step.active .mud-step-label-content {
             color: var(--mud-palette-text-primary)
@@ -13336,7 +13343,7 @@ ul {
     }
 
         .mud-stepper .mud-stepper-nav.mud-stepper-nav-scrollable .mud-step {
-            min-width: fit-content
+   min-width: min-content;
         }
 
         .mud-stepper .mud-stepper-nav.mud-stepper-nav-scrollable .mud-stepper-nav-connector {
@@ -13380,7 +13387,7 @@ ul {
         }
 
     .mud-stepper.mud-stepper__horizontal.mud-stepper__center-labels .mud-stepper-nav-connector {
-        margin: 35px -67px 0;
+margin: 35px -40px 0;
         align-self: flex-start
     }
 
