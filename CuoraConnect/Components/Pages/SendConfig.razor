@@ -230,8 +230,31 @@ margin-bottom: 10px;" src="/Images/sendconfig.svg" alt="Enviar configuração ic
         return Task.CompletedTask;
     }
 
+    public async Task ShowLocationPermissionDialog()
+    {
+        var options = new DialogOptions { CloseOnEscapeKey = true };
+
+        var dialogReference = await DialogService.ShowAsync<LocationPermissionDialog>("Permissão de Localização", options);
+
+    }
+
     private async Task EnviarConfig()
     {
+
+        // Verifica se está rodando no Android
+        if (DeviceInfo.Platform == DevicePlatform.Android)
+        {
+            var statusPermission = await NetworkService.CheckAndRequestLocationPermission();
+            Debug.WriteLine($"Status Permissão de localização: {statusPermission}");
+
+            // Se a permissão não for concedida, mostra o diálogo
+            if (statusPermission != PermissionStatus.Granted)
+            {
+                ShowLocationPermissionDialog();
+                return;
+            }
+        }
+
         currentPage = NavigationManager.Uri;
         Debug.WriteLine($"Página atual: {currentPage}");
         int contadorExecucoes = 0;

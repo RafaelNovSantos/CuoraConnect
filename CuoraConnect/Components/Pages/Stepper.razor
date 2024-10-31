@@ -5,7 +5,7 @@
 
 <MudPaper id="pop-up" Style="    margin: 30px 15px 40px 15px;   padding: 0px !important;">
     <div class="barCardImport" />
-    <MudStepper NonLinear  CenterLabels="true" ShowResetButton OnPreviewInteraction="OnPreviewInteraction">
+    <MudStepper NonLinear CenterLabels="true" ShowResetButton OnPreviewInteraction="OnPreviewInteraction">
 
         <MudStep Title="Passo 1"  SecondaryText="Conecte no Wi-Fi do seu Comércio" HasError="@(_step1Complete==false)">
 
@@ -338,7 +338,7 @@
         if (firstRender)
         {
             await Task.Delay(150);
-            await GetNetworkInfo();
+            // await GetNetworkInfo();
 
 
         }
