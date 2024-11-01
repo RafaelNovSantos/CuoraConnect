@@ -2,6 +2,9 @@
 using CuoraConnect.Services;
 using MudBlazor.Services;
 using Microsoft.Maui.LifecycleEvents;
+using MudBlazor.Translations;
+using Microsoft.Extensions.DependencyInjection;
+using MudBlazor;
 
 namespace CuoraConnect
 {
@@ -21,7 +24,8 @@ namespace CuoraConnect
                 });
 
             builder.Services.AddSingleton<NavigationInterceptor>();
-
+            
+            builder.Services.AddTransient<MudLocalizer, DictionaryMudLocalizer>();
             builder.Services.AddMudServices();
             builder.Services.AddScoped<DigestAuthService>();
             builder.Services.AddScoped<IExportInfoService, ExportInfoService>();

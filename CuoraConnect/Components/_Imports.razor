@@ -18,6 +18,16 @@
 @using System.Diagnostics
 @using CuoraConnect.Models.NetworkInfo;
 @using System.ComponentModel
+@using Microsoft.Extensions.Localization;
+@using System.Reflection
+@using System.IO
+@using System.Net
+@using System.Security.Cryptography
+@using System.Text
+@using Microsoft.AspNetCore.Components
+@using System.Net.Sockets
+@inject INetworkService NetworkService
+@inject MudLocalizer Localizer
 @inject IFileUploadService FileUploadService
 @inject IJSRuntime JSRuntime
 @inject INetworkService NetworkService
