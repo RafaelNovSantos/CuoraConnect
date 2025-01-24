@@ -190,6 +190,70 @@ namespace CuoraConnect.Platforms.Android
          <value name = 'name'></value>
       </configitem>
    </configgroup>
+   <configgroup name = ""Line"" instance = ""1"">
+      <configitem name = ""Name"">
+         <value></value>
+      </configitem>
+      <configitem name = ""State"">
+         <value>Enabled</value>
+      </configitem>
+      <configitem name = ""Protocol"">
+         <value>Tunnel</value>
+      </configitem>
+      <configitem name = ""Baud Rate"">
+         <value>115200 bits per second</value>
+      </configitem>
+      <configitem name = ""Parity"">
+         <value>None</value>
+      </configitem>
+      <configitem name = ""Data Bits"">
+         <value>8</value>
+      </configitem>
+      <configitem name = ""Stop Bits"">
+         <value>1</value>
+      </configitem>
+      <configitem name = ""Flow Control"">
+         <value>None</value>
+      </configitem>
+      <configitem name = ""Gap Timer"">
+         <value>&lt;Four Character Periods&gt;</value>
+      </configitem>
+      <configitem name = ""Threshold"">
+         <value>56 bytes</value>
+      </configitem>
+   </configgroup>
+   <configgroup name = ""Line"" instance = ""2"">
+      <configitem name = ""Name"">
+         <value></value>
+      </configitem>
+      <configitem name = ""State"">
+         <value>Disabled</value>
+      </configitem>
+      <configitem name = ""Protocol"">
+         <value>Command Line</value>
+      </configitem>
+      <configitem name = ""Baud Rate"">
+         <value>9600 bits per second</value>
+      </configitem>
+      <configitem name = ""Parity"">
+         <value>None</value>
+      </configitem>
+      <configitem name = ""Data Bits"">
+         <value>8</value>
+      </configitem>
+      <configitem name = ""Stop Bits"">
+         <value>1</value>
+      </configitem>
+      <configitem name = ""Flow Control"">
+         <value>None</value>
+      </configitem>
+      <configitem name = ""Gap Timer"">
+         <value>&lt;Four Character Periods&gt;</value>
+      </configitem>
+      <configitem name = ""Threshold"">
+         <value>56 bytes</value>
+      </configitem>
+   </configgroup>
 </configrecord>";
 
             Debug.WriteLine($"{xmlContent}");

@@ -84,16 +84,16 @@
             <MudMenu AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Dense="true" Icon="@Icons.Material.Filled.MoreVert"
                      AriaLabel="Abrir menu" >
 
-                <MudMenuItem IconSize="Size.Small" IconColor="Color.Dark" Icon="@Icons.Material.Outlined.Edit" OnClick="@(() => StartEditingItemAsync(context))"
+               @*  <MudMenuItem IconSize="Size.Small" IconColor="Color.Dark" Icon="@Icons.Material.Outlined.Edit" OnClick="@(() => StartEditingItemAsync(context))"
                              >
                      Editar
-                    </MudMenuItem>
-                <MudMenuItem IconSize="Size.Small" IconColor="Color.Success" Icon="@Icons.Material.Filled.Send">
+                    </MudMenuItem> *@
+               @*  <MudMenuItem IconSize="Size.Small" IconColor="Color.Success" Icon="@Icons.Material.Filled.Send">
                     Enviar configuração
                 </MudMenuItem>
                 <MudMenuItem IconSize="Size.Small" IconColor="Color.Info" Icon="@Icons.Material.Filled.Autorenew">
                     Recuperar configuração
-                </MudMenuItem>
+                </MudMenuItem> *@
                 <MudMenuItem IconSize="Size.Small" IconColor="Color.Error" Icon="@Icons.Material.Filled.DeleteOutline" OnClick="@(() => StartDeletingItemAsync(context))">Apagar</MudMenuItem>
 
             </MudMenu>
@@ -135,6 +135,7 @@
     }
 
     .tableEdit {
+        display: grid;
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
         text-align: center;
         margin: 20px;

@@ -479,10 +479,10 @@ public async Task<string> GetSubnetMask()
 
         public void DisconnectFromWifi()
         {
-            if (_wifiAdapter != null)
-            {
-                _wifiAdapter.Disconnect();
-            }
+            //if (_wifiAdapter != null)
+            //{
+            //    _wifiAdapter.Disconnect();
+            //}
         }
     }
 

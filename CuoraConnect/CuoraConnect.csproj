@@ -117,6 +117,8 @@
 
 	<ItemGroup>
 	  <Compile Remove="Components\Pages\Element.cs" />
+	  <Compile Remove="Platforms\Windows\InstallWebView2.cs" />
+	  <Compile Remove="Services\IInstallWebView2.cs" />
 	</ItemGroup>
 
 

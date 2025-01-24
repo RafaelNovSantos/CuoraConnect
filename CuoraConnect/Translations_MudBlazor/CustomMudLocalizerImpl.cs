@@ -15,6 +15,8 @@ internal class DictionaryMudLocalizer : MudLocalizer
             {"MudStepper_Next", "Próximo" },
             {"MudStepper_Previous", "Voltar" },
             {"MudStepper_Reset", "Resetar"},
+            {"MudDataGridPager_InfoFormat", "{0}-{1} de {2}"},
+            {"MudStepper_Complete", "Completar"},
         };
     }
 

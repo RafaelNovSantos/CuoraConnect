@@ -15,7 +15,7 @@
 </script>
 
 <ol style="--length: 5">
-    <li id="pop-up" style="--i: 5; text-align: center; counter-reset: list 3;">
+    <li id="pop-up" class="cardinterior" style="--i: 5; text-align: center; counter-reset: list 3;">
         <h3>Conecte no Wi-Fi da balança para enviar as configurações</h3>
         <p>Logo após conectar no Wi-Fi clique no botão abaixo para enviar a configuração para a balança.</p>
 
@@ -114,7 +114,7 @@ margin-bottom: 10px;" src="/Images/sendconfig.svg" alt="Enviar configuração ic
 </svg>
                 <div class="mx-3">Atênção - @statusAlert</div>
         </div>
-            <a href="Wi-FiConfig"  class="btn btn-outline-warning btn-sm" @onclick="@(() => SetActiveMenu("Wi-FiConfig"))">Configurar Wi-Fi</a>
+                <a class="btn btn-outline-warning btn-sm" @onclick="@(() => SetActivePageStepper(1))">Configurar Wi-Fi</a>
     </div>
         }
         @if(statusErrorSend != null){
@@ -854,5 +854,11 @@ margin-bottom: 10px;" src="/Images/sendconfig.svg" alt="Enviar configuração ic
     {
         // Chama a função JavaScript passando o ID do menu ativo
         await JSRuntime.InvokeVoidAsync("setActiveClass", menuId);
+    }
+
+    private async Task SetActivePageStepper(int menuId)
+    {
+        PagesStepper.SetValue(PagesStepper.page = menuId);
+
     }
 }

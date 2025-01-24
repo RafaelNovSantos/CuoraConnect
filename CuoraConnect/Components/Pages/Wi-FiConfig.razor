@@ -36,7 +36,7 @@
 
 
 <ol style="--length: 5;">
-    <li id="pop-up" style="--i: 3; counter-reset: list 2;">
+    <li id="pop-up" class="cardinterior" style="--i: 3; counter-reset: list 2;">
 
         <div class="href-target" id="icons"></div>
         <h3>
@@ -113,7 +113,7 @@
             </svg>
             <div class="mx-3">Sucesso - @statusSuccess</div>
         </div>
-            <a href="sendconfig" class="btn btn-outline-success btn-sm" @onclick="@(() => SetActiveMenu("sendconfig"))">Avançar</a>
+                <a  class="btn btn-outline-success btn-sm" @onclick="@(() => SetActivePageStepper(2))">Avançar</a>
     </div>
         }
 
@@ -290,16 +290,16 @@
 
 
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            await Task.Delay(150);
-            await GetNetworkInfo();
+    // protected override async Task OnAfterRenderAsync(bool firstRender)
+    // {
+    //     if (firstRender)
+    //     {
+    //         await Task.Delay(150);
+    //         await GetNetworkInfo();
 
 
-        }
-    }
+    //     }
+    // }
 
 
     public void Dispose()
@@ -539,7 +539,7 @@
            isValidSSID = false;
            // IsRequiredSSID false oculta a borda verde em caso de 5g habilitado no wi-fi
            IsRequiredSSID = false;
-           statusError = "Não é possível configurar em redes Wi-Fi 5g, conecte em uma rede Wi-Fi 2.4g";
+           statusError = "Não é possível configurar em redes Wi-Fi 5g, somente em uma rede Wi-Fi 2.4g";
            CallJavaScriptAfterRender();
 
            // return;
@@ -734,5 +734,11 @@
     {
         // Chama a função JavaScript passando o ID do menu ativo
         await JSRuntime.InvokeVoidAsync("setActiveClass", menuId);
+    }
+
+    private async Task SetActivePageStepper(int menuId)
+    {
+        PagesStepper.SetValue(PagesStepper.page = menuId);
+
     }
 }

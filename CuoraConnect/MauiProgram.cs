@@ -29,6 +29,9 @@ namespace CuoraConnect
             builder.Services.AddMudServices();
             builder.Services.AddScoped<DigestAuthService>();
             builder.Services.AddScoped<IExportInfoService, ExportInfoService>();
+            builder.Services.AddSingleton<PagesStepper>(); // Registra o serviço como singleton
+ 
+
 
             builder.ConfigureLifecycleEvents(events => {
 #if ANDROID
