@@ -178,7 +178,7 @@ namespace CuoraConnect.Platforms.Android
          <value>Disabled</value>
       </configitem>
       <configitem name = 'Reboot'>
-         <value>Enabled</value>
+         <value>Disabled</value>
       </configitem>
       <configitem name = 'Missing Values'>
          <value>Set to Default</value>

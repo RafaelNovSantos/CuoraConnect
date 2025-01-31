@@ -104,9 +104,11 @@
         /* Never collapse the sidebar for wide screens */
         display: block;
         /* Allow sidebar to scroll for tall menus */
-      
-      
     }
+    .github-link-landscale {
+        display: none;
+    }
+    
 }
 
 @media (max-width: 640px) {
@@ -117,6 +119,9 @@
 
     .nav-scrollable {
         display: none; /* Esconde a barra de navegação para evitar sobrecarga visual */
+    }
+    .github-link-portatil {
+        display: none;
     }
 }
 

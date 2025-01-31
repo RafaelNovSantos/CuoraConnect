@@ -190,7 +190,7 @@ namespace CuoraConnect.Platforms.Windows
          <value>Disabled</value>
       </configitem>
       <configitem name = 'Reboot'>
-         <value>Enabled</value>
+         <value>Disabled</value>
       </configitem>
       <configitem name = 'Missing Values'>
          <value>Set to Default</value>
