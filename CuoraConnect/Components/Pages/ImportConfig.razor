@@ -1,5 +1,7 @@
 ﻿@page "/importconfig"
-
+@using CuoraConnect.Models
+@inject PagesStepper PagesStepper
+@inject LicenseService LicenseService
 @using System.Reflection
 @using System.IO
 @using System.Diagnostics
@@ -29,7 +31,8 @@
     }
 
 </script>
-
+@if (isLicenseValid)
+{
 <ol >
     <li id="pop-up" style="display: grid; align-items: center; text-align: center; justify-items: center; ">
         <div class="barCardImport"/>
@@ -169,6 +172,19 @@
     }
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
 
+}
+else if (isConnectedInternet && !isLicenseValid)
+{
+    <MudAlert Severity="Severity.Error">
+        A licença está vencida. Entre em contato com o suporte.
+    </MudAlert>
+}
+else
+{
+    <MudAlert Severity="Severity.Info">
+        Você não está conectado à internet.
+    </MudAlert>
+}
 
 @code {
     private string? statusAlert;
@@ -185,10 +201,13 @@
     private bool loader;
           private string subnetMask = "";
     private static readonly HttpClient client = new HttpClient();
+    private bool isLicenseValid;
+    private bool isConnectedInternet;
 
     protected override void OnInitialized()
     {
-
+        // Verificar licença ao iniciar a página
+        CheckLicenseStatusAsync();
         string dbPath = FileUploadService.pathDB();
 
         using var db = new SQLiteConnection(dbPath);
@@ -198,6 +217,15 @@
 
 
 
+    private async Task CheckLicenseStatusAsync()
+    {
+        await LicenseService.CheckLicenseAsync();
+        isLicenseValid = LicenseService.IsLicenseValid;
+        isConnectedInternet = LicenseService.IsConnectedInternet;
+
+        // Atualiza a UI
+        StateHasChanged();
+    }
 
     private async Task CallJavaScriptAfterRender()
     {

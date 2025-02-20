@@ -1,7 +1,10 @@
 ﻿@page "/tablecuoramax"
+@using CuoraConnect.Models
+@inject PagesStepper PagesStepper
+@inject LicenseService LicenseService
 
-
-
+@if (isLicenseValid)
+{
 <MudTable T="ExportInfo" Items="@ExportInfos"
           Filter="new Func<ExportInfo, bool>(Procurar)"
           Bordered="true" Dense="true" Class="tableEdit" ReadOnly="@_readOnly">
@@ -111,10 +114,26 @@
         />
     </PagerContent>
 </MudTable>
+}
+else if (isConnectedInternet && !isLicenseValid)
+{
+    
+    <MudAlert Severity="Severity.Error">
+        A licença está vencida. Entre em contato com o suporte.
+    </MudAlert>
+ 
+}
+else
+{
+  
+     
+                <MudAlert Severity="Severity.Info">
+                    Você não está conectado à internet.
+                </MudAlert>
+       
 
-
-
-
+   
+}
 
 
 <MudThemeProvider Theme="MyCustomTheme" />
@@ -122,10 +141,7 @@
 @*  <MudIconButton Icon="fas fa-database" Color="Color.Primary" OnClick="createDataBaseTest" /> *@
 
 <style>
-    body {
-        background-color: #f7f9fc;
-        margin: 0;
-    }
+
 
     h1 {
         color: #333;
@@ -144,9 +160,7 @@
         overflow: hidden;
     }
 
-    main {
-        align-content: start !important;
-    }
+   
 
 
     .action-btn {
@@ -225,10 +239,10 @@ flex: unset;
 
 
 
-
-
 @code {
 
+    private bool isLicenseValid;
+    private bool isConnectedInternet;
     public IMask ipv4Mask = RegexMask.IPv4();
     private List<ExportInfo> ExportInfos = new List<ExportInfo>(); // Inicialização
     private bool activeSave;
@@ -260,8 +274,20 @@ flex: unset;
 
         SetActiveMenu("tablecuoramax");
 
+               // Verificar licença ao iniciar a página
+        CheckLicenseStatusAsync();
+
+    }
 
 
+    private async Task CheckLicenseStatusAsync()
+    {
+        await LicenseService.CheckLicenseAsync();
+        isLicenseValid = LicenseService.IsLicenseValid;
+        isConnectedInternet = LicenseService.IsConnectedInternet;
+
+        // Atualiza a UI
+        StateHasChanged();
     }
 
     MudTheme MyCustomTheme = new MudTheme()

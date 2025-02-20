@@ -30,7 +30,8 @@ namespace CuoraConnect
             builder.Services.AddScoped<DigestAuthService>();
             builder.Services.AddScoped<IExportInfoService, ExportInfoService>();
             builder.Services.AddSingleton<PagesStepper>(); // Registra o serviço como singleton
- 
+            builder.Services.AddSingleton<HttpClient>(); // Adiciona HttpClient
+            builder.Services.AddSingleton<LicenseService>(); // Adiciona o serviço de licença
 
 
             builder.ConfigureLifecycleEvents(events => {

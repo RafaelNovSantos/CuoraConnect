@@ -1,76 +1,65 @@
 ﻿@page "/"
-@using System;
-@using System.Net.Http;
-@using System.Threading.Tasks;
-@using System.Xml.Linq;
+@using CuoraConnect.Models
 @inject PagesStepper PagesStepper
-
+@inject LicenseService LicenseService
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 
-<MudPaper id="pop-up" Style="    margin: 30px 15px 40px 15px;   padding: 0px !important;">
-    <div class="barCardImport" />
-    <MudStepper @bind-ActiveIndex="@PagesStepper.page" NonLinear CenterLabels="true" ShowResetButton>
-
-        <MudStep Title="Passo 1"  SecondaryText="Wi-Fi do seu Comércio" >
-            <Home></Home>
-
-
-         
-        </MudStep>
-        <MudStep Title="Passo 2" SecondaryText="Informações do Wi-Fi">
-            <Wi_FiConfig></Wi_FiConfig>
-        
-
-        </MudStep>
-        <MudStep Title="Passo 3" SecondaryText="Enviar configuração">
-            <SendConfig></SendConfig>
-        </MudStep>
-    </MudStepper>
-    
-</MudPaper>
-
-
-
-
-
-
+@if (isLicenseValid)
+{
+    <MudPaper id="pop-up" Style="margin: 30px 15px 40px 15px; padding: 0px !important;">
+        <div class="barCardImport" />
+        <MudStepper @bind-ActiveIndex="@PagesStepper.page" NonLinear CenterLabels="true" ShowResetButton>
+            <MudStep Title="Passo 1" SecondaryText="Wi-Fi do seu Comércio">
+                <Home></Home>
+            </MudStep>
+            <MudStep Title="Passo 2" SecondaryText="Informações do Wi-Fi">
+                <Wi_FiConfig></Wi_FiConfig>
+            </MudStep>
+            <MudStep Title="Passo 3" SecondaryText="Enviar configuração">
+                <SendConfig></SendConfig>
+            </MudStep>
+        </MudStepper>
+    </MudPaper>
+}
+else if (isConnectedInternet && !isLicenseValid)
+{
+    <MudAlert Severity="Severity.Error">
+        A licença está vencida. Entre em contato com o suporte.
+    </MudAlert>
+}
+else
+{
+    <MudAlert Severity="Severity.Info">
+        Você não está conectado à internet.
+    </MudAlert>
+}
 
 @code {
 
-    protected override void OnInitialized()
+    private bool isLicenseValid;
+    private bool isConnectedInternet;
+
+    protected override async Task OnInitializedAsync()
     {
-        // Assine o evento para notificar quando a página mudar
         PagesStepper.OnPageChanged += StateHasChanged;
 
-        getLicense();
+        // Verificar licença ao iniciar a página
+        await CheckLicenseStatusAsync();
     }
 
-    public async void getLicense()
+    private async Task CheckLicenseStatusAsync()
     {
-        string url = "https://github.com/RafaelNovSantos/CuoraConnect/blob/master/CuoraConnect/Licenca/activeLicense.xml"; // Substitua pela URL real
+        await LicenseService.CheckLicenseAsync();
+        isLicenseValid = LicenseService.IsLicenseValid;
+        isConnectedInternet = LicenseService.IsConnectedInternet;
 
-        using (HttpClient client = new HttpClient())
-        {
-            try
-            {
-                string xmlContent = await client.GetStringAsync(url);
-                XDocument xdoc = XDocument.Parse(xmlContent);
-
-                Debug.WriteLine("XML carregado com sucesso!");
-                Debug.WriteLine($"Conteudo xml: {xdoc}");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Erro ao acessar o XML: {ex.Message}");
-            }
-        }
+        // Atualiza a UI
+        StateHasChanged();
     }
 
     public void Dispose()
     {
-        // Desinscreva-se do evento quando o componente for descartado
         PagesStepper.OnPageChanged -= StateHasChanged;
     }
-    
 }
