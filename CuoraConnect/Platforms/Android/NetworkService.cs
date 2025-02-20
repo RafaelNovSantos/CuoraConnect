@@ -424,7 +424,6 @@ namespace CuoraConnect.Platforms.Android
                     }
                 }
             }
-            
             return "Conectado a 5 GHz";
         }
 
@@ -435,26 +434,16 @@ namespace CuoraConnect.Platforms.Android
         {
             // Desativa o Wi-Fi
              wifiManager.SetWifiEnabled(false);
-
-
-
              wifiManager.Reassociate();
-
             // Ativa o Wi-Fi novamente
              wifiManager.SetWifiEnabled(true);
-
-
-                
-          
+ 
         }
-
-
 
         public bool IsMobileDataEnabled()
         {
             var context = Application.Context;
             var connectivityManager = (ConnectivityManager)context.GetSystemService(Context.ConnectivityService);
-
             try
             {
                 // Usa reflexão para acessar o método "getMobileDataEnabled"
@@ -469,6 +458,5 @@ namespace CuoraConnect.Platforms.Android
                 return false;
             }
         }
-
     }
 }
