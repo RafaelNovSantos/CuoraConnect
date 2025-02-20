@@ -430,9 +430,6 @@ namespace CuoraConnect.Platforms.Android
 
 
 
-
-    
-
         // Método para reiniciar o WifiManager de forma assíncrona
         private async Task RestartWifiManager(WifiManager wifiManager)
         {
