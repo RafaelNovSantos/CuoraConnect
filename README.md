@@ -53,7 +53,7 @@ Antes de iniciar, certifique-se de ter:
    cd CuoraConnect
 
 
-**Windows**
+# Windows
 
 ![Página inicial](https://github.com/user-attachments/assets/ef69c93d-0347-4a23-b776-223e19343a1f)
 
@@ -65,3 +65,15 @@ Antes de iniciar, certifique-se de ter:
 
 
 ![Página de equipamentos](https://github.com/user-attachments/assets/7fbc93f9-6d30-4bc8-8bc4-0bec81f9f809)
+
+
+# Android
+
+![WhatsApp Image 2025-04-03 at 20 26 13_09dfd92e](https://github.com/user-attachments/assets/642de0a1-6f32-4357-89cb-07088a410868)
+
+
+![WhatsApp Image 2025-04-03 at 20 26 15_267850e8](https://github.com/user-attachments/assets/1dc0f111-919d-4ede-b29b-7f8013d84c6e)
+
+
+![WhatsApp Image 2025-04-03 at 20 26 14_87cbe75f](https://github.com/user-attachments/assets/7f261caa-67a7-470d-8ceb-731937a6781f)
+
