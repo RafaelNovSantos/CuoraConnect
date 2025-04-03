@@ -1,4 +1,4 @@
-# 📡 Configurador de Wi-Fi para Balanças Comerciais  
+# 📡 Configurador de Wi-Fi para a balança Cuora Max
 
 ![Plataforma](https://img.shields.io/badge/Plataforma-Windows%20%7C%20Android-blue)  
 ![Tecnologias](https://img.shields.io/badge/Tecnologias-.NET%20%7C%20C%23%20%7C%20MAUI%20%7C%20Blazor%20%7C%20MudBlazor-blueviolet)  
@@ -18,7 +18,7 @@
 
 ## 📝 Sobre o Projeto  
 
-O **Cuora COnnect** foi desenvolvido para simplificar a configuração de redes Wi-Fi na balança Systel Cuora Max, tornando o processo mais rápido e intuitivo para os usuários.  
+O **Cuora Connect** foi desenvolvido para simplificar a configuração de redes Wi-Fi na balança Systel Cuora Max, tornando o processo mais rápido e intuitivo para os usuários.  
 
 ✅ **Disponível para:** Windows e Android  
 ✅ **Fácil de usar:** Interface moderna e intuitiva  
@@ -51,3 +51,17 @@ Antes de iniciar, certifique-se de ter:
    ```sh
    git clone https://github.com/RafaelNovSantos/CuoraConnect.git
    cd CuoraConnect
+
+
+**Windows**
+
+![Página inicial](https://github.com/user-attachments/assets/ef69c93d-0347-4a23-b776-223e19343a1f)
+
+
+![Página de configuração](https://github.com/user-attachments/assets/a3b6e038-035d-4f0e-a702-d52a5e353cba)
+
+
+![Envio de configuração](https://github.com/user-attachments/assets/49de990e-c8c6-4f84-bf6e-49688aa6b359)
+
+
+![Página de equipamentos](https://github.com/user-attachments/assets/7fbc93f9-6d30-4bc8-8bc4-0bec81f9f809)
